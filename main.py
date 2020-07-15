@@ -28,8 +28,7 @@ def getFoodHits(url: str):
     for item in hits:
 
         # get food link
-        soup = BeautifulSoup(str(item), 'lxml')
-        match = soup.find('a', id='example1')
+        match = item.find('a', id='example1')
         link = f"{namnyamURL[:-1]}{match['href']}"
 
         # get food info
