@@ -35,13 +35,17 @@ def getDailyMenu(url: str):
         typeLabel = mealType.find('div', class_='catering_item_name catering_item_name_complex').text.strip()
         if not typeLabel:
             continue
+        typeLabel+= f". {' '.join(mealType.find('div', class_='catering_item_price').text.split(' ')[1:])}"
+
         dailyMenu[typeLabel] = []
+
         foods = mealType.find('ul', class_='list_included_item').find_all('li')
+
         for item in foods:
 
-            weight = None
-            calories = None
-            price = None
+            weight = '? гр.'
+            calories = '? ккал'
+            price = '? руб.'
             link = f"https://www.nam-nyam.ru{item.a['href']}"
 
             foodPage = requests.get(link).text
@@ -64,7 +68,7 @@ def getDailyMenu(url: str):
                 if line.text.startswith("Вес: "):
                     weight = ' '.join(line.text.split(' ')[1:])
                 elif line.text.startswith("Калорийность: "):
-                    calories = ' '.join(line.text.split(' ')[1:])
+                    calories = f"{' '.join(line.text.split(' ')[1:])} ккал"
 
             price = ' '.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:])
 
@@ -76,25 +80,19 @@ import pandas as pd
 
 try:
     dailyMenu = getDailyMenu(requests.get(namnyamURL).text)
-    dailyMenu = {k: [x.title for x in v] for k, v in dailyMenu.items()}
-
-    writer = pd.ExcelWriter("result.xlsx", engine='xlsxwriter') # pylint: disable=abstract-class-instantiated
+    dailyMenu = {k: [f'{x.title}, {x.weight}, {x.calories}, {x.price}' for x in v] for k, v in dailyMenu.items()}
 
     columns = [pd.Series(foods, name=mealType) for mealType, foods in dailyMenu.items()]
 
-    result = pd.concat(columns, axis=1)
+    writer = pd.ExcelWriter("result.xlsx", engine='xlsxwriter') # pylint: disable=abstract-class-instantiated
 
-    # Convert the dataframe to an XlsxWriter Excel object.
+    result = pd.concat(columns, axis=1)
     result.to_excel(writer, sheet_name='Main', index=False)
 
-    # Get the xlsxwriter workbook and worksheet objects.
     workbook  = writer.book
     worksheet = writer.sheets['Main']
+    worksheet.set_column('A:D', 50, None)
 
-    # Set the column width and format.
-    worksheet.set_column('A:D', 30, None)
-
-    # Close the Pandas Excel writer and output the Excel file.
     writer.save()
 
 
