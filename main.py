@@ -1,6 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 import logging
+import pandas as pd
+
 
 namnyamURL = "https://www.nam-nyam.ru/catering/"
 
@@ -26,12 +28,11 @@ class foodItem:
 def getDailyMenu(url: str):
 
     dailyMenu = {}
-
     dailyMenuSoup = BeautifulSoup(url, 'lxml')
-
     dailyMealTypes = dailyMenuSoup.find_all('div', class_='catering_item included_item')
 
     for mealType in dailyMealTypes:
+
         typeLabel = mealType.find('div', class_='catering_item_name catering_item_name_complex').text.strip()
         if not typeLabel:
             continue
@@ -49,7 +50,6 @@ def getDailyMenu(url: str):
             link = f"https://www.nam-nyam.ru{item.a['href']}"
 
             foodPage = requests.get(link).text
-
             foodPageSoup = BeautifulSoup(foodPage, 'lxml')
 
             match = foodPageSoup.find('div', class_='right_pos')
@@ -76,8 +76,6 @@ def getDailyMenu(url: str):
 
     return dailyMenu
 
-import pandas as pd
-
 try:
     dailyMenu = getDailyMenu(requests.get(namnyamURL).text)
     dailyMenu = {k: [f'{x.title}, {x.weight}, {x.calories}, {x.price}' for x in v] for k, v in dailyMenu.items()}
@@ -89,7 +87,6 @@ try:
     result = pd.concat(columns, axis=1)
     result.to_excel(writer, sheet_name='Main', index=False)
 
-    workbook  = writer.book
     worksheet = writer.sheets['Main']
     worksheet.set_column('A:D', 50, None)
 
