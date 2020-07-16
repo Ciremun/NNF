@@ -80,10 +80,7 @@ try:
 
     writer = pd.ExcelWriter("result.xlsx", engine='xlsxwriter') # pylint: disable=abstract-class-instantiated
 
-    columns = []
-
-    for mealType, foods in dailyMenu.items():
-        columns.append(pd.Series(foods, name=mealType))
+    columns = [pd.Series(foods, name=mealType) for mealType, foods in dailyMenu.items()]
 
     result = pd.concat(columns, axis=1)
 
