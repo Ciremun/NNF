@@ -72,12 +72,34 @@ def getDailyMenu(url: str):
 
     return dailyMenu
 
+import pandas as pd
 
 try:
-    for mealType, foodItems in getDailyMenu(requests.get(namnyamURL).text).items():
-        print(f'{mealType}:')
-        for item in foodItems:
-            print(item)
-        print('-----------------\n')
+    dailyMenu = getDailyMenu(requests.get(namnyamURL).text)
+    dailyMenu = {k: [x.title for x in v] for k, v in dailyMenu.items()}
+
+    writer = pd.ExcelWriter("result.xlsx", engine='xlsxwriter') # pylint: disable=abstract-class-instantiated
+
+    columns = []
+
+    for mealType, foods in dailyMenu.items():
+        columns.append(pd.Series(foods, name=mealType))
+
+    result = pd.concat(columns, axis=1)
+
+    # Convert the dataframe to an XlsxWriter Excel object.
+    result.to_excel(writer, sheet_name='Main', index=False)
+
+    # Get the xlsxwriter workbook and worksheet objects.
+    workbook  = writer.book
+    worksheet = writer.sheets['Main']
+
+    # Set the column width and format.
+    worksheet.set_column('A:D', 30, None)
+
+    # Close the Pandas Excel writer and output the Excel file.
+    writer.save()
+
+
 except Exception:
     logging.exception('e')
