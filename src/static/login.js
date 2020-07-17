@@ -1,8 +1,13 @@
 
 var socket = io();
-socket.on('connect', function() {
-    socket.emit('connect_', {data: 'socketio connected'});
-});
+
+socket.on('loginSuccess', function(message) {
+    window.location.href = `http://localhost:5001/u/${message.username}`;
+})
+
+socket.on('loginFail', function(message) {
+    alert('password did not match');
+})
 
 function loginEnterKey() {
     if(event.key === 'Enter') login();
@@ -41,8 +46,7 @@ function login() {
 
     if (error) return;
 
-    socket.emit('register', {username: username, password: password});
+    socket.emit('login', {username: username.toLowerCase(), displayname: username, password: password, ip: window.ip});
 
-    usernameField.value = "";
     passwordField.value = "";
 }

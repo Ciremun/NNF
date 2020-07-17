@@ -15,14 +15,28 @@ class Database(threading.Thread):
         self.conn.autocommit = True
         self.cursor = self.conn.cursor()
 
-    def createLoginTable(self):
+    def createUsersTable(self):
         sql = """
-        CREATE TABLE IF NOT EXISTS login(username text, password text)
+        CREATE TABLE IF NOT EXISTS users(id serial primary key, username text, displayname text, password text)
         """
         self.cursor.execute(sql)
 
-    def addUser(self, username, password):
+    def addUser(self, username, displayname, password):
         sql = f"""
-        INSERT INTO login(username, password) VALUES ('{username}', '{password}')
+        INSERT INTO users(username, displayname, password) VALUES ('{username}', '{displayname}', '{password}')
         """
         self.cursor.execute(sql)
+
+    def getUser(self, username):
+        sql = f"""
+        SELECT username FROM users WHERE username = '{username}'
+        """
+        self.cursor.execute(sql)
+        return self.cursor.fetchall()
+
+    def getUserPasswordHash(self, username):
+        sql = f"""
+        SELECT password FROM users WHERE username = '{username}'
+        """
+        self.cursor.execute(sql)
+        return self.cursor.fetchall()

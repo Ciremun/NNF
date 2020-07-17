@@ -1,10 +1,13 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
-from flask import request
+from flask import request, redirect, url_for, Response
 import threading
+import json
 import src.database
+from src.salt import hash_password, verify_password
 
 db = src.database.Database()
+sessions = {}
 
 class FlaskApp(threading.Thread):
 
@@ -15,25 +18,55 @@ class FlaskApp(threading.Thread):
         threading.Thread.__init__(self)
         self.start()
 
-        db.createLoginTable()
+        db.createUsersTable()
 
     def run(self):
-        self.socketio.run(self.app)
+        self.socketio.run(self.app, host='localhost', port=5001)
 
     @staticmethod
-    @app.route('/', methods=["GET"])
+    @app.route('/')
     def index():
-        return render_template('login.html')
+        username = sessions.get(request.remote_addr)
+        if username:
+            return redirect(f'/u/{username}', code=302)
+        return render_template('login.html', ip=request.remote_addr)
 
     @staticmethod
-    @socketio.on('connect_')
-    def connect_(message):
-        print(message['data'])
+    @app.route('/u/<username>')
+    def userprofile(username):
+        if not db.getUser(username.lower()):
+            return Response("User not found", status=404)
+        elif not sessions.get(request.remote_addr) == username:
+            return Response("401 Unauthorized", status=401)
+        return render_template('userprofile.html', username=username, ip=request.remote_addr)
 
     @staticmethod
-    @socketio.on('register')
-    def register(message):
-        db.addUser(message["username"], message["password"])
-        print(f'register user {message["username"]}')
+    @socketio.on('login')
+    def login(message):
+        user = message['username']
+        password = message['password']
+        hashed_pwd = db.getUserPasswordHash(user)
+        if hashed_pwd:
+            hashed_pwd = hashed_pwd[0][0]
+            print(f'login status {verify_password(hashed_pwd, password)}')
+            if verify_password(hashed_pwd, password):
+                sessions[message['ip']] = user
+                emit('loginSuccess', {'username': user})
+                print(f'login user {user}')
+            else:
+                emit('loginFail')
+                print(f'failed login user {user}')
+            return
+        hashed_pwd = hash_password(password)
+        db.addUser(user, message["displayname"], hashed_pwd)
+        sessions[message['ip']] = user
+        emit('loginSuccess', {'username': user})
+        print(f'register user {user}')
+
+    @staticmethod
+    @socketio.on('logout')
+    def logout(message):
+        del sessions[message['ip']]
+        emit('mainPageRedirect')
 
 app = FlaskApp()
