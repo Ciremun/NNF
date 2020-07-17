@@ -27,9 +27,9 @@ class Database(threading.Thread):
         """
         self.cursor.execute(sql)
 
-    def getUser(self, username):
+    def getUserDisplayname(self, username):
         sql = f"""
-        SELECT username FROM users WHERE username = '{username}'
+        SELECT displayname FROM users WHERE username = '{username}'
         """
         self.cursor.execute(sql)
         return self.cursor.fetchall()

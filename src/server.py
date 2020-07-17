@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
-from flask import request, redirect, url_for, Response
+from flask import request, redirect, Response
 import threading
 import json
 import src.database
@@ -34,11 +34,14 @@ class FlaskApp(threading.Thread):
     @staticmethod
     @app.route('/u/<username>')
     def userprofile(username):
-        if not db.getUser(username.lower()):
+        username = username.lower()
+        displayname = db.getUserDisplayname(username)
+        if not displayname:
             return Response("User not found", status=404)
-        elif not sessions.get(request.remote_addr) == username:
+        elif not sessions.get(request.remote_addr) == username.lower():
             return Response("401 Unauthorized", status=401)
-        return render_template('userprofile.html', username=username, ip=request.remote_addr)
+        return render_template('userprofile.html', username=username,
+                                displayname=displayname[0][0], ip=request.remote_addr)
 
     @staticmethod
     @socketio.on('login')
