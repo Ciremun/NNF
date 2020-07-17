@@ -5,6 +5,7 @@ import threading
 import json
 import src.database
 from src.salt import hash_password, verify_password
+from src.config import config
 
 db = src.database.Database()
 sessions = {}
@@ -21,7 +22,7 @@ class FlaskApp(threading.Thread):
         db.createUsersTable()
 
     def run(self):
-        self.socketio.run(self.app, host='localhost', port=5001)
+        self.socketio.run(self.app, host=config['flaskHost'], port=config['flaskPort'])
 
     @staticmethod
     @app.route('/')
@@ -54,7 +55,7 @@ class FlaskApp(threading.Thread):
             print(f'login status {verify_password(hashed_pwd, password)}')
             if verify_password(hashed_pwd, password):
                 sessions[message['ip']] = user
-                emit('loginSuccess', {'username': user})
+                emit('loginSuccess', {'username': user, 'host': config['flaskHost'], 'port': config['flaskPort']})
                 print(f'login user {user}')
             else:
                 emit('loginFail')
@@ -63,13 +64,13 @@ class FlaskApp(threading.Thread):
         hashed_pwd = hash_password(password)
         db.addUser(user, message["displayname"], hashed_pwd)
         sessions[message['ip']] = user
-        emit('loginSuccess', {'username': user})
+        emit('loginSuccess', {'username': user, 'host': config['flaskHost'], 'port': config['flaskPort']})
         print(f'register user {user}')
 
     @staticmethod
     @socketio.on('logout')
     def logout(message):
         del sessions[message['ip']]
-        emit('mainPageRedirect')
+        emit('mainPageRedirect', {'host': config['flaskHost'], 'port': config['flaskPort']})
 
 app = FlaskApp()

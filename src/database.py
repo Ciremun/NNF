@@ -9,8 +9,8 @@ class Database(threading.Thread):
         self.start()
 
         self.conn = psycopg2.connect(
-            database=config['database'], user=config['user'], password=config['password'], 
-            host=config['host'], port=config['port']
+            database=config['PostgreDatabase'], user=config['PostgreUser'], password=config['PostgrePassword'], 
+            host=config['PostgreHost'], port=config['PostgrePort']
         )
         self.conn.autocommit = True
         self.cursor = self.conn.cursor()

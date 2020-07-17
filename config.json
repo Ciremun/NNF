@@ -1,7 +1,9 @@
 {
-    "database": "test",
-    "user": "postgres",
-    "password": "admin",
-    "host": "127.0.0.1",
-    "port": "5432"
+    "PostgreDatabase": "test",
+    "PostgreUser": "postgres",
+    "PostgrePassword": "admin",
+    "PostgreHost": "127.0.0.1",
+    "PostgrePort": "5432",
+    "flaskHost": "192.168.1.65",
+    "flaskPort": "5001"
 }

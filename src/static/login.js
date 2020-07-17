@@ -2,7 +2,7 @@
 var socket = io();
 
 socket.on('loginSuccess', function(message) {
-    window.location.href = `http://localhost:5001/u/${message.username}`;
+    window.location.href = `http://${message.host}:${message.port}/u/${message.username}`;
 })
 
 socket.on('loginFail', function() {

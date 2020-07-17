@@ -4,6 +4,6 @@ function logout() {
     socket.emit('logout', {ip: window.ip});
 }
 
-socket.on('mainPageRedirect', function() {
-    window.location.href = `http://localhost:5001`;
+socket.on('mainPageRedirect', function(message) {
+    window.location.href = `http://${message.host}:${message.port}`;
 })
