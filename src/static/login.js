@@ -19,21 +19,27 @@ function login() {
         return;
     }
 
+    let error = false;
+
     [username, password].forEach(x => {
         for (var i = 0; i < x.length; i++) {
             code = x.charCodeAt(i);
             if(code == 32)
             {
                 alert('no spaces please');
-                return;
+                error = true;
+                break;
             }
             if(48 <= code && code <= 57) continue;
             if(65 <= code && code <= 90) continue;
             if(97 <= code && code <= 122) continue;
             alert('only english characters and numbers');
-            return;
+            error = true;
+            break;
           }
     });
+
+    if (error) return;
 
     socket.emit('register', {username: username, password: password});
 
