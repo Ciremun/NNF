@@ -1,0 +1,62 @@
+/* * {
+    border: 1px solid red;
+} */
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #313163;
+    height: 100vh;
+}
+
+textarea:focus, input:focus{
+    outline: none;
+}
+
+.logincontainer {
+    width: 400px;
+    margin: auto;
+    padding-top: 30vh;
+    display: flex;
+    justify-content: center;
+}
+
+.loginbox {
+    padding: 20px 10px;
+    width: 400px;
+    border-radius: 15px;
+    background-color: rgba(75, 20, 20, 0.6);
+    font-family: 'Consolas';
+    color: #fff;
+}
+
+.loginhead {
+    font-size: 2em;
+    text-align: center;
+    cursor: default;
+    user-select: none;
+}
+
+.userbox {
+    margin-top: 20px;
+}
+
+.userbox, .passbox, .loginbutton {
+    text-align: center;
+}
+
+input {
+    color: #fff;
+    font-family: 'Consolas';
+    background-color: #1c1c1c;
+}
+
+.userbox input, .passbox input {
+    line-height: 2em;
+    width: 80%;
+}
+
+.loginbutton input {
+    line-height: 2em;
+    width: 30%;
+}

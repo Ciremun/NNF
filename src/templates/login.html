@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles.css') }}">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+    <title>login</title>
+</head>
+<body>
+    <div class="logincontainer">
+        <div class="loginbox">
+            <div class="loginhead">
+                hi!
+            </div>
+            <div class="userbox">
+                <input type="text" id="userfield" spellcheck="false" maxlength="50" onkeydown="loginEnterKey()"><br><br>
+            </div>
+            <div class="passbox">
+                <input type="password" id="passfield" spellcheck="false" maxlength="50" onkeydown="loginEnterKey()"><br><br>
+            </div>
+            <div class="loginbutton">
+                <input type="submit" value="login" onclick="login()">
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static',filename='login.js') }}"></script>
+</body>
+</html>

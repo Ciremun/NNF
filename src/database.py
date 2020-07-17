@@ -1,22 +1,28 @@
 import psycopg2
 import threading
+from src.config import config
 
 class Database(threading.Thread):
 
     def __init__(self):
         threading.Thread.__init__(self)
+        self.start()
 
         self.conn = psycopg2.connect(
-            database="test", user='postgres', password='admin', host='127.0.0.1', port='5432'
+            database=config['database'], user=config['user'], password=config['password'], 
+            host=config['host'], port=config['port']
         )
         self.conn.autocommit = True
         self.cursor = self.conn.cursor()
 
-        self.start()
+    def createLoginTable(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS login(username text, password text)
+        """
+        self.cursor.execute(sql)
 
-    def createTable(self):
-        pass
-
-db = Database()
-
-db.createTable()
+    def addUser(self, username, password):
+        sql = f"""
+        INSERT INTO login(username, password) VALUES ('{username}', '{password}')
+        """
+        self.cursor.execute(sql)
