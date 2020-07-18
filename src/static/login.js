@@ -2,8 +2,8 @@
 var socket = io();
 
 socket.on('loginSuccess', function(message) {
-    var now = new Date();
-    now.setMonth(now.getMinutes() + 1);
+    let now = new Date();
+    now.setMonth(now.getMonth() + 3);
     document.cookie = `SID=${message.SID}; expires=${now.toUTCString()}; path=/;`;
     window.location.href = `http://${window.fHost}:${window.fPort}/u/${message.username}`;
 })
