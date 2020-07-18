@@ -11,7 +11,8 @@
 
     <input type="submit" value="logout" onclick="logout()">
 
-    <script> window.ip = "{{ ip }}"; </script>
-    <script src="{{ url_for('static',filename='userprofile.js') }}?1500"></script>
+    <script> window.fHost = "{{ host }}"; window.fPort = "{{ port }}" </script>
+    <script src="{{ url_for('static',filename='utils.js') }}?{{ version }}"></script>
+    <script src="{{ url_for('static',filename='userprofile.js') }}?{{ version }}"></script>
 </body>
 </html>

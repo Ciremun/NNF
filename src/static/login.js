@@ -2,7 +2,10 @@
 var socket = io();
 
 socket.on('loginSuccess', function(message) {
-    window.location.href = `http://${message.host}:${message.port}/u/${message.username}`;
+    var now = new Date();
+    now.setMonth(now.getMinutes() + 1);
+    document.cookie = `SID=${message.SID}; expires=${now.toUTCString()}; path=/;`;
+    window.location.href = `http://${window.fHost}:${window.fPort}/u/${message.username}`;
 })
 
 socket.on('loginFail', function() {
@@ -14,6 +17,10 @@ function loginEnterKey() {
 }
 
 function login() {
+
+    let SID = window.getCookie('SID');
+    if (SID) socket.emit('clearSID', {SID: SID});
+
     let usernameField = document.getElementById('userfield'),
         passwordField = document.getElementById('passfield'),
         username = usernameField.value,
@@ -46,7 +53,7 @@ function login() {
 
     if (error) return;
 
-    socket.emit('login', {username: username.toLowerCase(), displayname: username, password: password, ip: window.ip});
+    socket.emit('login', {username: username.toLowerCase(), displayname: username, password: password});
 
     passwordField.value = "";
 }
