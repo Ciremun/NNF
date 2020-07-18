@@ -19,7 +19,7 @@ class FlaskApp(threading.Thread):
     socketio = SocketIO(app)
 
     if not config['flaskLogging']:
-        log = logging.getLogger('werkzeug').disabled = True
+        logging.getLogger('werkzeug').disabled = True
 
     def __init__(self):
         threading.Thread.__init__(self)
