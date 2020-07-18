@@ -12,6 +12,7 @@
     <input type="submit" value="logout" onclick="logout()">
 
     <script> window.fHost = "{{ host }}"; window.fPort = "{{ port }}" </script>
+    <script src="{{ url_for('static',filename='socketioEvents.js') }}?{{ version }}"></script>
     <script src="{{ url_for('static',filename='utils.js') }}?{{ version }}"></script>
     <script src="{{ url_for('static',filename='userprofile.js') }}?{{ version }}"></script>
 </body>

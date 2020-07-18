@@ -90,7 +90,7 @@ class FlaskApp(threading.Thread):
             del sessions[message['SID']]
             emit('logout')
         except KeyError:
-            return
+            emit('unknownSession')
 
     @staticmethod
     @socketio.on('clearSID')
@@ -98,6 +98,6 @@ class FlaskApp(threading.Thread):
         try:
             del sessions[message['SID']]
         except KeyError:
-            return
+            emit('unknownSession')
 
 app = FlaskApp()

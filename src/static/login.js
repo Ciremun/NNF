@@ -1,25 +1,9 @@
 
-var socket = io();
-
-socket.on('loginSuccess', function(message) {
-    let now = new Date();
-    now.setMonth(now.getMonth() + 3);
-    document.cookie = `SID=${message.SID}; expires=${now.toUTCString()}; path=/;`;
-    window.location.href = `http://${window.fHost}:${window.fPort}/u/${message.username}`;
-})
-
-socket.on('loginFail', function() {
-    alert('password did not match');
-})
-
 function loginEnterKey() {
     if(event.key === 'Enter') login();
 }
 
 function login() {
-
-    let SID = window.getCookie('SID');
-    if (SID) socket.emit('clearSID', {SID: SID});
 
     let usernameField = document.getElementById('userfield'),
         passwordField = document.getElementById('passfield'),

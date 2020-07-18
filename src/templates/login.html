@@ -24,6 +24,7 @@
         </div>
     </div>
     <script> window.fHost = "{{ host }}"; window.fPort = "{{ port }}" </script>
+    <script src="{{ url_for('static',filename='socketioEvents.js') }}?{{ version }}"></script>
     <script src="{{ url_for('static',filename='utils.js') }}?{{ version }}"></script>
     <script src="{{ url_for('static',filename='login.js') }}?{{ version }}"></script>
 </body>
