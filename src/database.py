@@ -17,26 +17,19 @@ class Database(threading.Thread):
 
     def createUsersTable(self):
         sql = """
-        CREATE TABLE IF NOT EXISTS users(id serial primary key, username text, displayname text, password text)
+        CREATE TABLE IF NOT EXISTS users(id serial primary key, username text, displayname text, password text, usertype text)
         """
         self.cursor.execute(sql)
 
-    def addUser(self, username, displayname, password):
+    def addUser(self, username, displayname, password, usertype):
         sql = f"""
-        INSERT INTO users(username, displayname, password) VALUES ('{username}', '{displayname}', '{password}')
+        INSERT INTO users(username, displayname, password, usertype) VALUES ('{username}', '{displayname}', '{password}', '{usertype}')
         """
         self.cursor.execute(sql)
 
-    def getUserDisplayname(self, username):
+    def getUser(self, username):
         sql = f"""
-        SELECT displayname FROM users WHERE username = '{username}'
+        SELECT displayname, password, usertype FROM users WHERE username = '{username}'
         """
         self.cursor.execute(sql)
-        return self.cursor.fetchall()
-
-    def getUserPasswordHash(self, username):
-        sql = f"""
-        SELECT password FROM users WHERE username = '{username}'
-        """
-        self.cursor.execute(sql)
-        return self.cursor.fetchall()
+        return self.cursor.fetchone()

@@ -13,6 +13,10 @@ db = src.database.Database()
 sessionSecret = json.load(open('keys.json'))['sessionSecret']
 sessions = {}
 
+def clearSessions():
+    global sessions
+    sessions.clear()
+
 class FlaskApp(threading.Thread):
 
     app = Flask(__name__)
@@ -33,7 +37,7 @@ class FlaskApp(threading.Thread):
     @staticmethod
     @app.route('/')
     def index():
-        return redirect('/profile', code=302)
+        return redirect('/login', code=302)
 
     @staticmethod
     @app.route('/login')
@@ -41,52 +45,43 @@ class FlaskApp(threading.Thread):
         return render_template('login.html', host=config['flaskHost'], port=config['flaskPort'], version=round(time.time()))
 
     @staticmethod
-    @app.route('/profile')
-    def autoprofile():
-        username = sessions.get(request.cookies.get("SID"))
-        if username:
-            displayname = db.getUserDisplayname(username)
-            if not displayname:
-                return Response("User not found", status=404)
-            return render_template('userprofile.html', username=username, displayname=displayname[0][0], 
-                                    host=config['flaskHost'], port=config['flaskPort'], version=round(time.time()))
-        return redirect('/login', code=302)
-
-    @staticmethod
     @app.route('/u/<username>')
     def linkprofile(username):
         username = username.lower()
-        displayname = db.getUserDisplayname(username)
-        if not displayname:
+        userinfo = db.getUser(username)
+        if not userinfo:
             return Response("User not found", status=404)
-        if sessions.get(request.cookies["SID"]) == username:
-            return render_template('userprofile.html', username=username, displayname=displayname[0][0], 
+        SID = request.cookies.get("SID")
+        session = sessions.get(SID)
+        if session and (session['username'] == username or session['usertype'] == 'admin'):
+            return render_template('userprofile.html', username=username, displayname=userinfo[0], 
                                     host=config['flaskHost'], port=config['flaskPort'], version=round(time.time()))
         return Response("401 Unauthorized", status=401)
 
     @staticmethod
     @socketio.on('login')
     def onlogin(message):
-        user = message['username']
+        username = message['username']
         password = message['password']
-        hashed_pwd = db.getUserPasswordHash(user)
-        if hashed_pwd:
-            hashed_pwd = hashed_pwd[0][0]
+        userinfo = db.getUser(username)
+        if userinfo:
+            hashed_pwd = userinfo[1]
+            usertype = userinfo[2]
             if verify_password(hashed_pwd, password):
                 SID = hash_password(sessionSecret)
-                sessions[SID] = user
-                emit('loginSuccess', {'username': user, 'SID': SID})
-                print(f'login user {user}')
+                sessions[SID] = {'username': username, 'usertype': usertype}
+                emit('loginSuccess', {'username': username, 'SID': SID})
+                print(f'login user {username}')
             else:
                 emit('loginFail')
-                print(f'failed login user {user}')
+                print(f'failed login user {username}')
             return
         hashed_pwd = hash_password(password)
-        db.addUser(user, message["displayname"], hashed_pwd)
+        db.addUser(username, message["displayname"], hashed_pwd, 'user')
         SID = hash_password(sessionSecret)
-        sessions[SID] = user
-        emit('loginSuccess', {'username': user, 'SID': SID})
-        print(f'register user {user}')
+        sessions[SID] = {'username': username, 'usertype': 'user'}
+        emit('loginSuccess', {'username': username, 'SID': SID})
+        print(f'register user {username}')
 
     @staticmethod
     @socketio.on('logout')
