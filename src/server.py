@@ -141,10 +141,10 @@ class FlaskApp(threading.Thread):
                 sessions[SID] = {'username': username, 'usertype': usertype, 'date': date}
                 db.addSession(SID, username, usertype, f'{date.year}-{date.month}-{date.day}')
                 emit('loginSuccess', {'username': username, 'SID': SID})
-                print(f'login user {username}')
+                logger.info(f'login user {username}')
             else:
                 emit('loginFail')
-                print(f'failed login user {username}')
+                logger.info(f'failed login user {username}')
             return
         hashed_pwd = hash_password(password)
         SID = hash_password(sessionSecret)
@@ -153,7 +153,7 @@ class FlaskApp(threading.Thread):
         db.addUser(username, message["displayname"], hashed_pwd, 'user')
         db.addSession(SID, username, 'user', f'{date.year}-{date.month}-{date.day}')
         emit('loginSuccess', {'username': username, 'SID': SID})
-        print(f'register user {username}')
+        logger.info(f'register user {username}')
 
     @staticmethod
     @socketio.on('logout')

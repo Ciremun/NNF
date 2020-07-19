@@ -62,7 +62,7 @@ class Database(threading.Thread):
         self.cursor.execute(sql)
 
     def deleteSessions(self, sids: list):
-        sql = f"""
+        sql = """
         DELETE FROM sessions WHERE sid = %s
         """
         self.cursor.executemany(sql, sids)
