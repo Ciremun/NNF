@@ -22,9 +22,6 @@ class FlaskApp(threading.Thread):
     app = Flask(__name__)
     socketio = SocketIO(app)
 
-    if not config['flaskLogging']:
-        logging.getLogger('werkzeug').disabled = True
-
     def __init__(self):
         threading.Thread.__init__(self)
         self.start()
@@ -32,7 +29,7 @@ class FlaskApp(threading.Thread):
         db.createUsersTable()
 
     def run(self):
-        self.socketio.run(self.app, host='0.0.0.0', port=config['flaskPort'])
+        self.socketio.run(self.app, host='0.0.0.0', port=config['flaskPort'], log_output=config['flaskLogging'])
 
     @staticmethod
     @app.route('/')
