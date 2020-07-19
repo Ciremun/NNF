@@ -1,6 +1,7 @@
 .vscode/
-index.html
 src/__pycache__
+log/
+index.html
 result.xlsx
 start.bat
 keys.json
