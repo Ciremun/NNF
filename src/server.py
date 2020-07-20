@@ -146,28 +146,13 @@ def linkprofile(username):
     return "401 Unauthorized"
 
 
-@app.route('/api/clearSID_onlogin', methods=['POST'])
-def clearSID_onlogin():
-    """
-    Delete old session cookie on successful login,
-    redirect to profile if session not found.
-    """
-    try:
-        message = request.get_json()
-        del sessions[message['SID']]
-        db.deleteSession(message['SID'])
-        return {'status': 200}
-    except KeyError:
-        logger.info('/api/clearSID_onlogin - KeyError')
-        return {'status': 404}
-
-
 @app.route('/logout', methods=['POST'])
 def logout():
     """
-    Logout event comes from JavaScript side.
-    Delete session from memory and database, delete cookie, redirect to index page.
-    Reload page if session not found.
+    Delete old session cookie or
+    delete session from memory and database,
+    delete cookie, redirect to index page,
+    reload page if session not found.
     """
     try:
         message = request.get_json()
@@ -175,6 +160,7 @@ def logout():
         db.deleteSession(message['SID'])
         return {'status': 200}
     except KeyError:
+        logger.info('KeyError in /logout')
         return {'status': 404}
 
 

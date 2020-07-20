@@ -47,8 +47,8 @@ async function login() {
     
     if (login_response.status === 200) {
         let SID = window.getCookie('SID'),
-        now = new Date();
-        if (SID) await postData('/api/clearSID_onlogin', {SID: SID});
+            now = new Date();
+        if (SID) postData('/logout', {SID: SID});
         now.setMonth(now.getMonth() + 1);
         document.cookie = `SID=${login_response.SID}; expires=${now.toUTCString()}; path=/;`;
         window.location.href = `${location.protocol}//${window.location.host}/u/${login_response.username}`;
