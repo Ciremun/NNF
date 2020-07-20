@@ -7,10 +7,12 @@
     <title>{{ displayname }}'s profile</title>
 </head>
 <body>
-    Hello, {{ displayname }}
-
-    <input type="submit" value="logout" onclick="logout()">
-
+    <header>
+        <ul>
+            <li><span onclick="logout()">Logout</span></li>
+            <li><span style="cursor: default;">Hello, {{ displayname }}!</span></li>
+        </ul>
+    </header>
     <script> window.fHost = "{{ host }}"; window.fPort = "{{ port }}" </script>
     <script src="{{ url_for('static',filename='socketioEvents.js') }}?{{ version }}"></script>
     <script src="{{ url_for('static',filename='utils.js') }}?{{ version }}"></script>
