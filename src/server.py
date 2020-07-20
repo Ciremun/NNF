@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from flask import request, redirect, Response
+from flask import request, redirect
 from logging.handlers import RotatingFileHandler
 from gevent.pywsgi import WSGIServer
 from src.salt import hash_password, verify_password
@@ -135,7 +135,7 @@ def linkprofile(username):
     username = username.lower()
     userinfo = db.getUser(username)
     if not userinfo:
-        return Response("User not found", status=404)
+        return "User not found"
     SID = request.cookies.get("SID")
     session = sessions.get(SID)
     if session and (session['username'] == username or session['usertype'] == 'admin'):
@@ -143,7 +143,7 @@ def linkprofile(username):
         session['date'] = newdate
         db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
         return render_template('userprofile.html', username=username, displayname=userinfo[0])
-    return Response("401 Unauthorized", status=401)
+    return "401 Unauthorized"
 
 
 @app.route('/api/clearSID_onlogin', methods=['POST'])

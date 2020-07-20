@@ -15,6 +15,12 @@ async function login() {
         return;
     }
 
+    if (username.length > 25 || password.length > 25)
+    {
+        alert('max username/password length = 25!');
+        return;
+    }
+
     let error = false;
 
     [username, password].forEach(x => {
@@ -24,14 +30,14 @@ async function login() {
             {
                 alert('no spaces please');
                 error = true;
-                break;
+                return;
             }
             if(48 <= code && code <= 57) continue;
             if(65 <= code && code <= 90) continue;
             if(97 <= code && code <= 122) continue;
             alert('only english characters and numbers');
             error = true;
-            break;
+            return;
           }
     });
 
