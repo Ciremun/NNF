@@ -13,3 +13,14 @@ window.getCookie = function getCookie(cname) {
     }
     return "";
 }
+
+async function postData(url = '', data = {}) {
+  const response = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+  return response.json();
+}

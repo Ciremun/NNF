@@ -1,7 +1,7 @@
 from flask import Flask, render_template
-from flask_socketio import SocketIO, emit
 from flask import request, redirect, Response
 from logging.handlers import RotatingFileHandler
+from gevent.pywsgi import WSGIServer
 from src.salt import hash_password, verify_password
 from src.config import config
 from pathlib import Path
@@ -65,70 +65,39 @@ sessions = {}
 monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
 monthlyClearSessionsThread.start()
 
-class FlaskApp(threading.Thread):
+app = Flask(__name__)
 
-    app = Flask(__name__)
-    socketio = SocketIO(app)
+# Production
+# requestLogs = 'default' if config['flaskLogging'] else None
 
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.start()
+# wsgi = WSGIServer(('0.0.0.0', config['flaskPort']), self.app, log=self.requestLogs, error_log=logger)
+# wsgi.serve_forever()
 
-    def run(self):
-        self.socketio.run(self.app, host='0.0.0.0', port=config['flaskPort'], log_output=config['flaskLogging'])
+@app.route('/')
+def index():
+    """
+    Index page checks for a session cookie,
+    redirect to userprofile (if cookie found) or login page.
+    """
+    SID = request.cookies.get("SID")
+    session = sessions.get(SID)
+    if session:
+        return redirect(f'/u/{session["username"]}', code=302)
+    return redirect('/login', code=302)
 
-    @staticmethod
-    @app.route('/')
-    def index():
-        """
-        Index page checks for a session cookie,
-        redirect to userprofile (if cookie found) or login page.
-        """
-        SID = request.cookies.get("SID")
-        session = sessions.get(SID)
-        if session:
-            return redirect(f'/u/{session["username"]}', code=302)
-        return redirect('/login', code=302)
 
-    @staticmethod
-    @app.route('/login')
-    def login():
-        """
-        Login page does signup and login (username+password)
-        """
-        return render_template('login.html', host=config['flaskHost'], port=config['flaskPort'], version=round(time.time()))
-
-    @staticmethod
-    @app.route('/u/<username>')
-    def linkprofile(username):
-        """
-        User page checks if user exists,
-        updates session and loads profile if session is valid.
-        """
-        username = username.lower()
-        userinfo = db.getUser(username)
-        if not userinfo:
-            return Response("User not found", status=404)
-        SID = request.cookies.get("SID")
-        session = sessions.get(SID)
-        if session and (session['username'] == username or session['usertype'] == 'admin'):
-            newdate = datetime.date.today()
-            session['date'] = newdate
-            db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
-            return render_template('userprofile.html', username=username, displayname=userinfo[0], 
-                                    host=config['flaskHost'], port=config['flaskPort'], version=round(time.time()))
-        return Response("401 Unauthorized", status=401)
-
-    @staticmethod
-    @socketio.on('login')
-    def onlogin(message):
-        """
-        Login event comes from JavaScript side.
-        If user exists: verify password, create new session,
-        send error message if wrong password.
-        Or register user: hash password, create new session, add user to database.
-        Emit create cookie and redirect to profile.
-        """
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """
+    Login page does signup and login (username+password)
+    If user exists: verify password, create new session,
+    send error message if wrong password.
+    Or register user: hash password, create new session,
+    add user to database.
+    Create cookie and redirect to profile.
+    """
+    if request.method == 'POST':
+        message = request.get_json()
         username = message['username']
         password = message['password']
         userinfo = db.getUser(username)
@@ -140,47 +109,73 @@ class FlaskApp(threading.Thread):
                 date = datetime.date.today()
                 sessions[SID] = {'username': username, 'usertype': usertype, 'date': date}
                 db.addSession(SID, username, usertype, f'{date.year}-{date.month}-{date.day}')
-                emit('loginSuccess', {'username': username, 'SID': SID})
                 logger.info(f'login user {username}')
+                return {'status': 200, 'username': username, 'SID': SID}
             else:
-                emit('loginFail')
                 logger.info(f'failed login user {username}')
-            return
-        hashed_pwd = hash_password(password)
-        SID = hash_password(sessionSecret)
-        date = datetime.date.today()
-        sessions[SID] = {'username': username, 'usertype': 'user', 'date': date}
-        db.addUser(username, message["displayname"], hashed_pwd, 'user')
-        db.addSession(SID, username, 'user', f'{date.year}-{date.month}-{date.day}')
-        emit('loginSuccess', {'username': username, 'SID': SID})
-        logger.info(f'register user {username}')
+                return {'status': 401}
+        else:
+            hashed_pwd = hash_password(password)
+            SID = hash_password(sessionSecret)
+            date = datetime.date.today()
+            sessions[SID] = {'username': username, 'usertype': 'user', 'date': date}
+            db.addUser(username, message["displayname"], hashed_pwd, 'user')
+            db.addSession(SID, username, 'user', f'{date.year}-{date.month}-{date.day}')
+            logger.info(f'register user {username}')
+            return {'status': 200, 'username': username, 'SID': SID}
+    return render_template('login.html')
 
-    @staticmethod
-    @socketio.on('logout')
-    def onlogout(message):
-        """
-        Logout event comes from JavaScript side.
-        Delete session from memory and database, emit delete cookie, redirect to index page.
-        Emit page reload if session not found.
-        """
-        try:
-            del sessions[message['SID']]
-            db.deleteSession(message['SID'])
-            emit('logout')
-        except KeyError:
-            emit('unknownSession')
 
-    @staticmethod
-    @socketio.on('clearSID_onlogin')
-    def clearSID_onlogin(message):
-        """
-        Delete old session cookie on successful login,
-        redirect to profile if session not found.
-        """
-        try:
-            del sessions[message['SID']]
-            db.deleteSession(message['SID'])
-        except KeyError:
-            emit('userprofileRedirect')
+@app.route('/u/<username>')
+def linkprofile(username):
+    """
+    User page checks if user exists,
+    updates session and loads profile if session is valid.
+    """
+    username = username.lower()
+    userinfo = db.getUser(username)
+    if not userinfo:
+        return Response("User not found", status=404)
+    SID = request.cookies.get("SID")
+    session = sessions.get(SID)
+    if session and (session['username'] == username or session['usertype'] == 'admin'):
+        newdate = datetime.date.today()
+        session['date'] = newdate
+        db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
+        return render_template('userprofile.html', username=username, displayname=userinfo[0])
+    return Response("401 Unauthorized", status=401)
 
-app = FlaskApp()
+
+@app.route('/api/clearSID_onlogin', methods=['POST'])
+def clearSID_onlogin():
+    """
+    Delete old session cookie on successful login,
+    redirect to profile if session not found.
+    """
+    try:
+        message = request.get_json()
+        del sessions[message['SID']]
+        db.deleteSession(message['SID'])
+        return {'status': 200}
+    except KeyError:
+        logger.info('/api/clearSID_onlogin - KeyError')
+        return {'status': 404}
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    """
+    Logout event comes from JavaScript side.
+    Delete session from memory and database, delete cookie, redirect to index page.
+    Reload page if session not found.
+    """
+    try:
+        message = request.get_json()
+        del sessions[message['SID']]
+        db.deleteSession(message['SID'])
+        return {'status': 200}
+    except KeyError:
+        return {'status': 404}
+
+
+app.run(debug=True, host='0.0.0.0', port=config['flaskPort'])

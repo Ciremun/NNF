@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='login.css') }}">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
     <title>login</title>
 </head>
 <body>
@@ -23,9 +22,7 @@
             </div>
         </div>
     </div>
-    <script> window.fHost = "{{ host }}"; window.fPort = "{{ port }}" </script>
-    <script src="{{ url_for('static',filename='socketioEvents.js') }}?{{ version }}"></script>
-    <script src="{{ url_for('static',filename='utils.js') }}?{{ version }}"></script>
-    <script src="{{ url_for('static',filename='login.js') }}?{{ version }}"></script>
+    <script src="{{ url_for('static',filename='utils.js') }}"></script>
+    <script src="{{ url_for('static',filename='login.js') }}"></script>
 </body>
 </html>

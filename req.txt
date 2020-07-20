@@ -4,6 +4,6 @@ lxml==4.5.2
 pandas==1.0.5
 XlsxWriter==1.2.9
 Flask==1.1.2
-Flask-SocketIO==4.3.0
+gevent==20.6.2
 psycopg2==2.8.5
 eventlet==0.25.2

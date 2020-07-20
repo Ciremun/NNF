@@ -3,7 +3,7 @@ function loginEnterKey() {
     if(event.key === 'Enter') login();
 }
 
-function login() {
+async function login() {
 
     let usernameField = document.getElementById('userfield'),
         passwordField = document.getElementById('passfield'),
@@ -37,7 +37,17 @@ function login() {
 
     if (error) return;
 
-    socket.emit('login', {username: username.toLowerCase(), displayname: username, password: password});
-
-    passwordField.value = "";
+    login_response = await postData('/login', {username: username.toLowerCase(), displayname: username, password: password});
+    
+    if (login_response.status === 200) {
+        let SID = window.getCookie('SID'),
+        now = new Date();
+        if (SID) await postData('/api/clearSID_onlogin', {SID: SID});
+        now.setMonth(now.getMonth() + 1);
+        document.cookie = `SID=${login_response.SID}; expires=${now.toUTCString()}; path=/;`;
+        window.location.href = `${location.protocol}//${window.location.host}/u/${login_response.username}`;
+    } else {
+        alert('password did not match');
+        passwordField.value = "";
+    }
 }
