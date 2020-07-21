@@ -45,6 +45,10 @@ def monthlyClearSessions():
         for _ in range(200):
             time.sleep(1315)
 
+def getDatetimeDateObject(dbDate: str):
+    year, month, day = [int(x) for x in dbDate.split('-')]
+    return datetime.date(year, month, day)
+
 def getStoredSessions():
     """
     Pull stored sessions from database, delete sessions older than a month.
@@ -53,8 +57,7 @@ def getStoredSessions():
     sessions = {}
     sessionsToDelete = []
     for s in db.getSessions():
-        s_year, s_month, s_day = [int(x) for x in s[3].split('-')]
-        s_date = datetime.date(s_year, s_month, s_day)
+        s_date = getDatetimeDateObject(s[3])
         if s_date + datetime.timedelta(days=30) < datetime.date.today():
             sessionsToDelete.append((s[0], ))
             continue
