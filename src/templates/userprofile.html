@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='userprofile.css') }}?4">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='userprofile.css') }}">
     <title>{{ displayname }}'s profile</title>
 </head>
 <body>
@@ -18,15 +18,16 @@
             <div class="category">
                 {% for item in items %}
                     <div class="item">
-                        <div class="item_title">{{ item.title }}</div>
                         <div class="item_image"><img src="{{ item.image_link }}" alt="{{ item.title }}"></div>
-                        <div class="item_tooltip_hover">
-                            Описание
-                            <div class="item_tooltip_hover_content">
-                                Вес: {{ item.weight }}<br>
-                                Калорийность: {{ item.calories }}<br>
-                                Цена: {{ item.price }}<br>
-                                <a target="_blank" rel="noopener noreferrer" href="{{ item.link }}">Ссылка</a>
+                        <div class="item_title">
+                            <div class="item_tooltip_hover">
+                                {{ item.title }}
+                                <div class="item_tooltip_hover_content">
+                                    Вес: {{ item.weight }}<br>
+                                    Калорийность: {{ item.calories }}<br>
+                                    Цена: {{ item.price }}<br>
+                                    <a target="_blank" rel="noopener noreferrer" href="{{ item.link }}">Ссылка</a>
+                                </div>
                             </div>
                         </div>
                     </div>
