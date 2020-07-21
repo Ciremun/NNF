@@ -10,12 +10,13 @@ class namnyamParser(threading.Thread):
 
     class foodItem:
 
-        def __init__(self, title, weight, calories, price, link):
+        def __init__(self, title, weight, calories, price, link, image_link):
             self.title = title
             self.weight = weight
             self.calories = calories
             self.price = price
             self.link = link
+            self.image_link = image_link
 
         def __str__(self):
             return f"\n{self.title}\n{self.weight}\n{self.calories}\n{self.price}\n{self.link}\n"
@@ -68,6 +69,7 @@ class namnyamParser(threading.Thread):
                 calories = '? ккал'
                 price = '? руб.'
                 link = f"https://www.nam-nyam.ru{item.a['href']}"
+                image_link = f"https://www.nam-nyam.ru{item.find('div', class_='img')['data-src']}"
 
                 foodPage = requests.get(link).text
                 foodPageSoup = BeautifulSoup(foodPage, 'lxml')
@@ -79,8 +81,11 @@ class namnyamParser(threading.Thread):
                 if title == 'Страница не найдена':
                     title = item.find('span', class_='complex_tooltip').text.strip()
                     weight = ' '.join(item.find('span', class_='catering_item_weight').text.split(' ')[1:])
-                    dailyMenu[typeLabel].append(self.foodItem(title, weight, calories, price, link))
+                    dailyMenu[typeLabel].append(self.foodItem(title, weight, calories, price, link, image_link))
                     continue
+
+                if title.startswith('.'):
+                    title = title[1:]
 
                 item_desc = foodPageSoup.find('td', itemprop="offers")
 
@@ -92,6 +97,6 @@ class namnyamParser(threading.Thread):
 
                 price = ' '.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:])
 
-                dailyMenu[typeLabel].append(self.foodItem(title, weight, calories, price, link))
+                dailyMenu[typeLabel].append(self.foodItem(title, weight, calories, price, link, image_link))
 
         return dailyMenu

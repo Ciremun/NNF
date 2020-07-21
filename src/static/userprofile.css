@@ -1,8 +1,9 @@
+div {box-sizing: border-box;}
+
 body {
     padding: 0;
     margin: 0;
     background-color: #191b1c;
-    height: 100vh;
 }
 
 ul {
@@ -29,4 +30,58 @@ li span {
 li span:hover {
     cursor: pointer;
     background-color: #2c2c5e;
+}
+
+.category, .category_label {
+    cursor: default;
+}
+
+.category {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0.5em;
+}
+
+.category .item {
+    font-family: Consolas;
+    font-size: 1.2em;
+    width: 270px;
+    border: 2px solid #ffa94d;
+    border-radius: 5px;
+    background-color: #ffd8a8;
+    margin: 0.5em;
+    padding: 0.5em;
+    color: #dedede;
+}
+
+.item_tooltip_hover {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.item_tooltip_hover:hover .item_tooltip_hover_content {
+    cursor: default;
+    display: block;
+}
+
+.item_tooltip_hover_content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 300px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    padding: 12px 16px;
+    z-index: 1;
+}
+
+.item img {
+    max-width: 180px;
+    max-height: 180px;
+}
+
+.category_label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 2em;
+    padding-left: 0.5em;
 }

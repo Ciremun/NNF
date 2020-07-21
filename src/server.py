@@ -12,7 +12,10 @@ import logging
 import sys
 import traceback
 import datetime
+import requests
 import src.database
+import src.parser
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -29,6 +32,8 @@ def uncaughtExceptionHandler(etype, value, tb):
 
 sys.excepthook = uncaughtExceptionHandler
 
+
+dailymenu = src.parser.namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
 
 def monthlyClearSessions():
     """
@@ -66,12 +71,6 @@ monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
 monthlyClearSessionsThread.start()
 
 app = Flask(__name__)
-
-# Production
-# requestLogs = 'default' if config['flaskLogging'] else None
-
-# wsgi = WSGIServer(('0.0.0.0', config['flaskPort']), self.app, log=self.requestLogs, error_log=logger)
-# wsgi.serve_forever()
 
 @app.route('/')
 def index():
@@ -142,7 +141,7 @@ def linkprofile(username):
         newdate = datetime.date.today()
         session['date'] = newdate
         db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
-        return render_template('userprofile.html', username=username, displayname=userinfo[0])
+        return render_template('userprofile.html', username=username, displayname=userinfo[0], dailymenu=dailymenu)
     return "401 Unauthorized"
 
 
@@ -160,8 +159,13 @@ def logout():
         db.deleteSession(message['SID'])
         return {'status': 200}
     except KeyError:
-        logger.info('KeyError in /logout')
         return {'status': 404}
 
+# Production
+# requestLogs = 'default' if config['flaskLogging'] else None
 
+# wsgi = WSGIServer(('0.0.0.0', config['flaskPort']), app, log=requestLogs, error_log=logger)
+# wsgi.serve_forever()
+
+# Debug
 app.run(debug=True, host='0.0.0.0', port=config['flaskPort'])
