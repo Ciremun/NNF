@@ -3,7 +3,7 @@ from flask import request, redirect
 from logging.handlers import RotatingFileHandler
 from gevent.pywsgi import WSGIServer
 from src.salt import hash_password, verify_password
-from src.config import config
+from src.config import config, keys
 from pathlib import Path
 import threading
 import json
@@ -33,10 +33,6 @@ def uncaughtExceptionHandler(etype, value, tb):
 sys.excepthook = uncaughtExceptionHandler
 
 
-dailycomplex, dailymenu = src.parser.namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
-
-
-
 def monthlyClearSessions():
     """
     Clear old sessions monthly.
@@ -48,11 +44,6 @@ def monthlyClearSessions():
             time.sleep(1315)
 
 
-def getDatetimeDateObject(dbDate: str):
-    year, month, day = [int(x) for x in dbDate.split('-')]
-    return datetime.date(year, month, day)
-
-
 def getStoredSessions():
     """
     Pull stored sessions from database, delete sessions older than a month.
@@ -61,22 +52,92 @@ def getStoredSessions():
     sessions = {}
     sessionsToDelete = []
     for s in db.getSessions():
-        s_date = getDatetimeDateObject(s[3])
-        if s_date + datetime.timedelta(days=30) < datetime.date.today():
+        if s[3] + datetime.timedelta(days=30) < datetime.date.today():
             sessionsToDelete.append((s[0], ))
             continue
-        sessions[s[0]] = {'username': s[1], 'usertype': s[2], 'date': s_date}
+        sessions[s[0]] = {'username': s[1], 'usertype': s[2], 'date': s[3]}
     if sessionsToDelete:
         db.deleteSessions(sessionsToDelete)
     return sessions
 
 
+def dailyUpdateMenu():
+    """
+    Update nam-nyam menu daily.
+    """
+
+    # DEBUG
+    if keys['DEBUG']:
+        return
+    keys['DEBUG'] = True
+    with open('keys.json', 'w') as o:
+        json.dump(keys, o, indent=4)
+
+    global dailycomplex, dailymenu
+    while True:
+
+        # DEBUG
+        time.sleep(3)
+        keys['DEBUG'] = False
+        with open('keys.json', 'w') as o:
+            json.dump(keys, o, indent=4)
+
+        dailyMenuDate = db.getDailyMenuDate()
+
+        if not dailyMenuDate or dailyMenuDate[0] < datetime.date.today():
+
+            db.clearDailyMenu()
+            date = datetime.date.today()
+            date = f'{date.year}-{date.month}-{date.day}'
+            dailycomplex, dailymenu = src.parser.namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
+            db.addDailyMenu([(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'complex', date) \
+                                for k, foods in dailycomplex.items() for v in foods] + \
+                                    [(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'menu', date) \
+                                        for k, foods in dailymenu.items() for v in foods])
+
+        now = datetime.datetime.today()
+        end = datetime.datetime(now.year, now.month, now.day, 23, 59, 59, 0)
+        sleep_for = (end - now).total_seconds()
+        time.sleep(sleep_for)
+
+
 db = src.database.Database()
-sessionSecret = json.load(open('keys.json'))['sessionSecret']
+sessionSecret = keys['sessionSecret']
 sessions = {}
 
-monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
-monthlyClearSessionsThread.start()
+if keys['DEBUG']:
+
+    dailycomplex = {}
+    dailymenu = {}
+
+    it = None
+
+    for i in db.getDailyMenu('complex'):
+
+        if i[6] != it:
+            dailycomplex[i[6]] = []
+            dailycomplex[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
+            it = i[6]
+            continue
+
+        dailycomplex[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
+
+    for i in db.getDailyMenu('menu'):
+
+        if i[6] != it:
+            dailymenu[i[6]] = []
+            dailymenu[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
+            it = i[6]
+            continue
+
+        dailymenu[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
+
+    monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
+    monthlyClearSessionsThread.start()
+
+dailyUpdateMenuThread = threading.Thread(target=dailyUpdateMenu)
+dailyUpdateMenuThread.start()
+
 
 app = Flask(__name__)
 
@@ -174,8 +235,8 @@ def logout():
 # Production
 # requestLogs = 'default' if config['flaskLogging'] else None
 
-# wsgi = WSGIServer(('0.0.0.0', config['flaskPort']), app, log=requestLogs, error_log=logger)
+# wsgi = WSGIServer(('0.0.0.0', keys['flaskPort']), app, log=requestLogs, error_log=logger)
 # wsgi.serve_forever()
 
 # Debug
-app.run(debug=True, host='0.0.0.0', port=config['flaskPort'])
+app.run(debug=True, host='0.0.0.0', port=keys['flaskPort'])
