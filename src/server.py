@@ -105,6 +105,7 @@ db = src.database.Database()
 sessionSecret = keys['sessionSecret']
 sessions = {}
 
+# DEBUG
 if keys['DEBUG']:
 
     dailycomplex = {}
@@ -150,7 +151,8 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
-    Login page does signup and login (username+password)
+    Login page does signup and login (username+password),
+    check if credentials are valid.
     If user exists: verify password, create new session,
     send error message if wrong password.
     Or register user: hash password, create new session,
@@ -161,6 +163,22 @@ def login():
         message = request.get_json()
         username = message['username']
         password = message['password']
+
+        if not (username and password):
+            return {'success': False, 'message': 'enter username and password'}
+
+        if any(len(x) > 25 for x in [username, password]):
+            return {'success': False, 'message': 'max username/password length = 25!'}
+
+        for i in username, password:
+            for letter in i:
+                code = ord(letter)
+                if(code == 32):
+                    return {'success': False, 'message': 'no spaces please'}
+                if (48 <= code <= 57) or (65 <= code <= 90) or (97 <= code <= 122):
+                    continue
+                return {'success': False, 'message': 'only english characters and numbers'}
+
         userinfo = db.getUser(username)
         if userinfo:
             hashed_pwd = userinfo[1]
@@ -171,10 +189,10 @@ def login():
                 sessions[SID] = {'username': username, 'usertype': usertype, 'date': date}
                 db.addSession(SID, username, usertype, f'{date.year}-{date.month}-{date.day}')
                 logger.info(f'login user {username}')
-                return {'status': 200, 'username': username, 'SID': SID}
+                return {'success': True, 'username': username, 'SID': SID}
             else:
                 logger.info(f'failed login user {username}')
-                return {'status': 401}
+                return {'success': False, 'message': 'password did not match'}
         else:
             hashed_pwd = hash_password(password)
             SID = hash_password(sessionSecret)
@@ -183,7 +201,7 @@ def login():
             db.addUser(username, message["displayname"], hashed_pwd, 'user')
             db.addSession(SID, username, 'user', f'{date.year}-{date.month}-{date.day}')
             logger.info(f'register user {username}')
-            return {'status': 200, 'username': username, 'SID': SID}
+            return {'success': True, 'username': username, 'SID': SID}
     return render_template('login.html')
 
 
@@ -220,9 +238,9 @@ def logout():
         message = request.get_json()
         del sessions[message['SID']]
         db.deleteSession(message['SID'])
-        return {'status': 200}
+        return {'success': True}
     except KeyError:
-        return {'status': 404}
+        return {'success': False}
 
 # Production
 # requestLogs = 'default' if config['flaskLogging'] else None
