@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='userprofile.css') }}?91">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='userprofile.css') }}?104">
     <title>{{ displayname }}'s profile</title>
 </head>
 <body>
@@ -12,7 +12,7 @@
             <li><span style="cursor: default;">Ку, {{ displayname }}!</span></li>
         </ul>
     </header>
-    <section>
+    <section class="orders_section">
         {% for category, items in dailycomplex.items() %}
             <div class="category_head">
                 <div class="category_label">{{ category }}</div>
