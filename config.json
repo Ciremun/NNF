@@ -1,10 +1,3 @@
 {
-    "PostgreDatabase": "test",
-    "PostgreUser": "postgres",
-    "PostgrePassword": "admin",
-    "PostgreHost": "127.0.0.1",
-    "PostgrePort": "5432",
-    "flaskHost": "95.27.213.159",
-    "flaskPort": 5001,
     "flaskLogging": true
 }
