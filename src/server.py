@@ -112,25 +112,17 @@ if keys['DEBUG']:
 
     it = None
 
-    for i in db.getDailyMenu('complex'):
+    for k, v in {'complex': dailycomplex, 'menu': dailymenu}.items():
 
-        if i[6] != it:
-            dailycomplex[i[6]] = []
-            dailycomplex[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
-            it = i[6]
-            continue
+        for i in db.getDailyMenu(k):
 
-        dailycomplex[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
+            if i[6] != it:
+                v[i[6]] = []
+                v[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
+                it = i[6]
+                continue
 
-    for i in db.getDailyMenu('menu'):
-
-        if i[6] != it:
-            dailymenu[i[6]] = []
-            dailymenu[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
-            it = i[6]
-            continue
-
-        dailymenu[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
+            v[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
 
     monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
     monthlyClearSessionsThread.start()
