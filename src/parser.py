@@ -27,7 +27,7 @@ class namnyamParser(threading.Thread):
 
     def createExcel(self):
         try:
-            dailyMenu = self.getDailyMenu(requests.get(namnyamURL).text)
+            dailycomplex, dailyMenu = self.getDailyMenu(requests.get(namnyamURL).text)
             dailyMenu = {k: [f'{x.title}, {x.weight}, {x.calories}, {x.price}' for x in v] for k, v in dailyMenu.items()}
 
             columns = [pd.Series(foods, name=mealType) for mealType, foods in dailyMenu.items()]
@@ -46,8 +46,49 @@ class namnyamParser(threading.Thread):
         except Exception:
             logging.exception('e')
 
+    def parseFoodPage(self, item, foodPageLink, image_link, typeLabel, items_dict, itemGroup=None):
+
+        title = "Без имени"
+        weight = '? гр.'
+        calories = '? ккал'
+        price = '? руб.'
+
+        foodPage = requests.get(foodPageLink).text
+        foodPageSoup = BeautifulSoup(foodPage, 'lxml')
+
+        match = foodPageSoup.find('div', class_='right_pos')
+        title = match.find('h1').text.strip()
+
+        if title == 'Страница не найдена':
+            if itemGroup == 'complex':
+                title = item.find('span', class_='complex_tooltip').text.strip()
+                weight = ' '.join(item.find('span', class_='catering_item_weight').text.split(' ')[1:])
+            elif itemGroup == 'menu':
+                title = item.find('div', class_="catering_item_name _showtooltip").text.strip()
+                weight = ' '.join(item.find('div', class_="catering_item_weight").text.split(' ')[1:])
+
+            items_dict[typeLabel].append(self.foodItem(title, weight, calories, price, foodPageLink, image_link))
+            return items_dict
+
+        if title.startswith('.'):
+            title = title[1:]
+
+        item_desc = foodPageSoup.find('td', itemprop="offers")
+
+        for line in item_desc.find_all('p'):
+            if line.text.startswith("Вес: "):
+                weight = ' '.join(line.text.split(' ')[1:])
+            elif line.text.startswith("Калорийность: "):
+                calories = f"{' '.join(line.text.split(' ')[1:])} ккал"
+
+        price = ' '.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:])
+
+        items_dict[typeLabel].append(self.foodItem(title, weight, calories, price, foodPageLink, image_link))
+        return items_dict
+
     def getDailyMenu(self, url: str):
 
+        dailyComplex = {}
         dailyMenu = {}
         dailyMenuSoup = BeautifulSoup(url, 'lxml')
         dailyMealTypes = dailyMenuSoup.find_all('div', class_='catering_item included_item')
@@ -55,48 +96,34 @@ class namnyamParser(threading.Thread):
         for mealType in dailyMealTypes:
 
             typeLabel = mealType.find('div', class_='catering_item_name catering_item_name_complex').text.strip()
-            if not typeLabel:
-                continue
+
             typeLabel+= f". {' '.join(mealType.find('div', class_='catering_item_price').text.split(' ')[1:])}"
 
-            dailyMenu[typeLabel] = []
+            dailyComplex[typeLabel] = []
 
             foods = mealType.find('ul', class_='list_included_item').find_all('li')
 
             for item in foods:
 
-                weight = '? гр.'
-                calories = '? ккал'
-                price = '? руб.'
                 link = f"https://www.nam-nyam.ru{item.a['href']}"
                 image_link = f"https://www.nam-nyam.ru{item.find('div', class_='img')['data-src']}"
+                dailyComplex = self.parseFoodPage(item, link, image_link, typeLabel, dailyComplex, itemGroup='complex')
 
-                foodPage = requests.get(link).text
-                foodPageSoup = BeautifulSoup(foodPage, 'lxml')
+        dailyMealsMenuGroups = [x.parent for x in dailyMenuSoup.find_all('div', class_="catering-sm-slider")]
 
-                match = foodPageSoup.find('div', class_='right_pos')
+        for group in dailyMealsMenuGroups:
 
-                title = match.find('h1').text.strip()
+            typeLabel = group.find('div', class_="h2").text.strip()
+            groupFoods = group.find('div', class_="catering-sm-slider").find_all('div', class_="catering_item")
 
-                if title == 'Страница не найдена':
-                    title = item.find('span', class_='complex_tooltip').text.strip()
-                    weight = ' '.join(item.find('span', class_='catering_item_weight').text.split(' ')[1:])
-                    dailyMenu[typeLabel].append(self.foodItem(title, weight, calories, price, link, image_link))
-                    continue
+            dailyMenu[typeLabel] = []
 
-                if title.startswith('.'):
-                    title = title[1:]
+            for item in groupFoods:
 
-                item_desc = foodPageSoup.find('td', itemprop="offers")
+                item = item.find('div', class_="catering_item_wrapper")
+                link = f"https://www.nam-nyam.ru{item.a['href']}"
+                image_link = f"https://www.nam-nyam.ru{item.a.find('img')['src']}"
 
-                for line in item_desc.find_all('p'):
-                    if line.text.startswith("Вес: "):
-                        weight = ' '.join(line.text.split(' ')[1:])
-                    elif line.text.startswith("Калорийность: "):
-                        calories = f"{' '.join(line.text.split(' ')[1:])} ккал"
+                dailyMenu = self.parseFoodPage(item, link, image_link, typeLabel, dailyMenu, itemGroup='menu')
 
-                price = ' '.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:])
-
-                dailyMenu[typeLabel].append(self.foodItem(title, weight, calories, price, link, image_link))
-
-        return dailyMenu
+        return dailyComplex, dailyMenu

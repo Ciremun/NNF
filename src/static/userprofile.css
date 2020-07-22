@@ -32,6 +32,10 @@ li span:hover {
     background-color: #2c2c5e;
 }
 
+header {
+    padding-bottom: 50px;
+}
+
 .category, .category_label {
     cursor: default;
 }
@@ -97,3 +101,32 @@ li span:hover {
     text-decoration: none;
     color: #3391ff;
 }
+
+.category_head {
+    display: flex;
+}
+
+.complex_buy {
+    width: 90px;
+    height: 35px;
+    margin-left: 0.7em;
+    background-color: #56340e;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 32px;
+    border: 2px solid #bc6408;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.complex_buy span {
+    font-size: 1em;
+    font-family: Arial;
+    font-weight: bold;
+    color: #d8d4cf;
+    user-select: none;
+}
+
+/* * {
+    border: 1px solid red;
+} */

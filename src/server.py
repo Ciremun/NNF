@@ -33,7 +33,9 @@ def uncaughtExceptionHandler(etype, value, tb):
 sys.excepthook = uncaughtExceptionHandler
 
 
-dailymenu = src.parser.namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
+dailycomplex, dailymenu = src.parser.namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
+
+
 
 def monthlyClearSessions():
     """
@@ -45,9 +47,11 @@ def monthlyClearSessions():
         for _ in range(200):
             time.sleep(1315)
 
+
 def getDatetimeDateObject(dbDate: str):
     year, month, day = [int(x) for x in dbDate.split('-')]
     return datetime.date(year, month, day)
+
 
 def getStoredSessions():
     """
@@ -66,6 +70,7 @@ def getStoredSessions():
         db.deleteSessions(sessionsToDelete)
     return sessions
 
+
 db = src.database.Database()
 sessionSecret = json.load(open('keys.json'))['sessionSecret']
 sessions = {}
@@ -74,6 +79,7 @@ monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
 monthlyClearSessionsThread.start()
 
 app = Flask(__name__)
+
 
 @app.route('/')
 def index():
@@ -144,7 +150,8 @@ def linkprofile(username):
         newdate = datetime.date.today()
         session['date'] = newdate
         db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
-        return render_template('userprofile.html', username=username, displayname=userinfo[0], dailymenu=dailymenu)
+        return render_template('userprofile.html', username=username, displayname=userinfo[0],
+                                dailymenu=dailymenu, dailycomplex=dailycomplex)
     return "401 Unauthorized"
 
 
