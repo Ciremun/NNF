@@ -110,19 +110,15 @@ if keys['DEBUG']:
 
     dailycomplex = {}
     dailymenu = {}
-
     it = None
 
     for k, v in {'complex': dailycomplex, 'menu': dailymenu}.items():
-
         for i in db.getDailyMenu(k):
-
             if i[6] != it:
                 v[i[6]] = []
                 v[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
                 it = i[6]
                 continue
-
             v[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
 
     monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
@@ -219,8 +215,8 @@ def linkprofile(username):
     session = sessions.get(SID)
     if session and (session['username'] == username or session['usertype'] == 'admin'):
         newdate = datetime.date.today()
-        session['date'] = newdate
         db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
+        sessions[SID]['date'] = newdate
         return render_template('userprofile.html', username=username, displayname=userinfo[0],
                                 dailymenu=dailymenu, dailycomplex=dailycomplex)
     return "401 Unauthorized"
@@ -241,6 +237,24 @@ def logout():
         return {'success': True}
     except KeyError:
         return {'success': False}
+
+
+@app.route('/buy', methods=['POST'])
+def buy():
+    """
+    Add items to cart.
+    """
+    message = request.get_json()
+    SID = request.cookies.get("SID")
+    session = sessions.get(SID)
+    if session:
+        if session['usertype'] == 'admin':
+            username = message['username']
+        else:
+            username = session['username']
+        return {'success': True, 'message': f'Add item {message["item"]}\nprice: {message["price"]}\nusername: {username}'}
+    return {'success': False, 'message': 'Unauthorized'}
+
 
 # Production
 # requestLogs = 'default' if config['flaskLogging'] else None

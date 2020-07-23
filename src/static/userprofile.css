@@ -20,7 +20,7 @@ li {
     float: right;
 }
 
-li span {
+li .top_panel {
     display: inline-block;
     color: white;
     text-align: center;
@@ -28,7 +28,7 @@ li span {
     text-decoration: none;
 }
 
-li span:hover {
+li .top_panel:hover {
     cursor: pointer;
     background-color: #2c2c5e;
 }

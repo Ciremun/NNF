@@ -8,15 +8,15 @@
 <body>
     <header>
         <ul>
-            <li><span onclick="logout()">Выйти</span></li>
-            <li><span style="cursor: default;">Ку, {{ displayname }}!</span></li>
+            <li><span class="top_panel" onclick="logout()">Выйти</span></li>
+            <li><span class="top_panel" style="cursor: default;">Ку, <span id="displayname">{{ displayname }}</span>!</span></li>
         </ul>
     </header>
     <section class="orders_section">
         {% for category, items in dailycomplex.items() %}
             <div class="category_head">
                 <div class="category_label">{{ category }}</div>
-                <div class="complex_buy"><span>Купить</span></div>
+                <div class="complex_buy" onclick="addToCart('complex')"><span>Купить</span></div>
             </div>
             <div class="category">
                 {% for item in items %}
