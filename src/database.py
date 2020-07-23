@@ -30,6 +30,7 @@ class Database(threading.Thread):
         self.createUsersTable()
         self.createSessionsTable()
         self.createDailyMenuTable()
+        self.createComplexProductTable()
 
     @acquireLock
     def createUsersTable(self):
@@ -53,6 +54,14 @@ sessions(id serial primary key, sid text, username text, usertype text, date dat
 CREATE TABLE IF NOT EXISTS \
 dailymenu(id serial primary key, title text, weight text, calories text, price text, \
 link text, image_link text, section text, type text, date date)\
+"""
+        self.cursor.execute(sql)
+
+    @acquireLock
+    def createComplexProductTable(self):
+        sql = """\
+CREATE TABLE IF NOT EXISTS \
+complexproduct(id serial primary key, title text, price text)\
 """
         self.cursor.execute(sql)
 
@@ -82,6 +91,34 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
         self.cursor.executemany(sql, menu)
 
     @acquireLock
+    def addComplexProducts(self, products: list):
+        sql = f"""\
+INSERT INTO \
+complexproduct(title, price) VALUES (%s, %s)\
+"""
+        self.cursor.executemany(sql, products)
+
+    @acquireLock
+    def getComplexProduct(self, title, price):
+        sql = f"""\
+SELECT \
+title, price FROM complexproduct \
+WHERE title = '{title}' and price = '{price}'\
+"""
+        self.cursor.execute(sql)
+        return self.cursor.fetchone()
+
+    @acquireLock
+    def getDailyMenuBySection(self, section):
+        sql = f"""\
+SELECT \
+title, weight, calories, price, link, image_link FROM dailymenu \
+WHERE section = '{section}'\
+"""
+        self.cursor.execute(sql)
+        return self.cursor.fetchall()
+
+    @acquireLock
     def getUser(self, username):
         sql = f"""\
 SELECT \
@@ -109,7 +146,7 @@ date FROM dailymenu\
         return self.cursor.fetchone()
 
     @acquireLock
-    def getDailyMenu(self, Type):
+    def getDailyMenuByType(self, Type):
         sql = f"""\
 SELECT \
 title, weight, calories, price, link, image_link, section FROM dailymenu \
@@ -146,5 +183,12 @@ sessions WHERE sid = %s\
     def clearDailyMenu(self):
         sql = """\
 DELETE FROM dailymenu\
+"""
+        self.cursor.execute(sql)
+
+    @acquireLock
+    def clearComplexProducts(self):
+        sql = """\
+DELETE FROM complexproduct\
 """
         self.cursor.execute(sql)

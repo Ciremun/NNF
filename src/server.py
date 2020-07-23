@@ -87,13 +87,22 @@ def dailyUpdateMenu():
         if not dailyMenuDate or dailyMenuDate[0] < datetime.date.today():
 
             db.clearDailyMenu()
+            db.clearComplexProducts()
+
             date = datetime.date.today()
             date = f'{date.year}-{date.month}-{date.day}'
             dailycomplex, dailymenu = src.parser.namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
+
+            complexProducts = []
+            for section in dailycomplex.keys():
+                section = section.split(' ')
+                complexProducts.append((' '.join(section[:-2]), ' '.join(section[-2:])))
+
             db.addDailyMenu([(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'complex', date) \
                                 for k, foods in dailycomplex.items() for v in foods] + \
                                     [(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'menu', date) \
                                         for k, foods in dailymenu.items() for v in foods])
+            db.addComplexProducts(complexProducts)
 
         now = datetime.datetime.today()
         end = datetime.datetime(now.year, now.month, now.day, 23, 59, 59, 0)
@@ -113,7 +122,7 @@ if keys['DEBUG']:
     it = None
 
     for k, v in {'complex': dailycomplex, 'menu': dailymenu}.items():
-        for i in db.getDailyMenu(k):
+        for i in db.getDailyMenuByType(k):
             if i[6] != it:
                 v[i[6]] = []
                 v[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
@@ -248,10 +257,29 @@ def buy():
     SID = request.cookies.get("SID")
     session = sessions.get(SID)
     if session:
+
         if session['usertype'] == 'admin':
             username = message['username']
         else:
             username = session['username']
+
+        Type = message.get('type')
+        if not Type:
+            return {'success': False, 'message': 'Error: no item type'}
+
+        product = None
+
+        if Type == 'complex':
+            title, price = db.getComplexProduct(message["item"], message["price"])
+            product = db.getDailyMenuBySection(' '.join((title, price)))
+            # product class?
+        elif Type == 'menu':
+            # get product
+            pass
+
+        if not product:
+            return {'success': False, 'message': 'Error: product not found'}
+
         return {'success': True, 'message': f'Add item {message["item"]}\nprice: {message["price"]}\nusername: {username}'}
     return {'success': False, 'message': 'Unauthorized'}
 
