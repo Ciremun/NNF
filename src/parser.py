@@ -49,9 +49,9 @@ class namnyamParser(threading.Thread):
     def parseFoodPage(self, item, foodPageLink, image_link, typeLabel, items_dict, itemGroup=None):
 
         title = "Без имени"
-        weight = '? гр.'
-        calories = '? ккал'
-        price = '? руб.'
+        weight = '?'
+        calories = '?'
+        price = 0
 
         foodPage = requests.get(foodPageLink).text
         foodPageSoup = BeautifulSoup(foodPage, 'lxml')
@@ -65,7 +65,8 @@ class namnyamParser(threading.Thread):
                 weight = ' '.join(item.find('span', class_='catering_item_weight').text.split(' ')[1:])
             elif itemGroup == 'menu':
                 title = item.find('div', class_="catering_item_name _showtooltip").text.strip()
-                weight = ' '.join(item.find('div', class_="catering_item_weight").text.split(' ')[1:])
+                weight = ' '.join(item.find('div', class_="catering_item_weight").text.strip().split(' ')[1:])
+                price = ''.join(item.find('div', class_="catering_item_price").text.strip().split(' ')[1:-1])
 
             items_dict[typeLabel].append(foodItem(title, weight, calories, price, foodPageLink, image_link))
             return items_dict
@@ -81,7 +82,7 @@ class namnyamParser(threading.Thread):
             elif line.text.startswith("Калорийность: "):
                 calories = f"{' '.join(line.text.split(' ')[1:])} ккал"
 
-        price = ' '.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:])
+        price = ''.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:-1])
 
         items_dict[typeLabel].append(foodItem(title, weight, calories, price, foodPageLink, image_link))
         return items_dict

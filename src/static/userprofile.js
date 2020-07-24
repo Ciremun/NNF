@@ -16,7 +16,7 @@ async function addToCart(type) {
                                 .getElementsByClassName('category_label')[0].innerText.split(' '),
             displayname = document.getElementById('displayname').innerText,
             response = await postData('/buy', {SID: window.getCookie('SID'), item: item.slice(0, -2).join(' '),
-                                            price: `${item[item.length - 2]} ${item[item.length - 1]}`,
+                                            price: `${item[item.length - 2]}`,
                                             type: type, username: displayname.toLowerCase()});
             if (response.success) {
                 alert('success');

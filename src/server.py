@@ -95,7 +95,7 @@ def dailyUpdateMenu():
             for section in dailycomplex.keys():
                 section = section.split(' ')
                 title = ' '.join(section[:-2])
-                price = ' '.join(section[-2:])
+                price = int(section[-2:-1][0])
                 complexProducts.append(foodItem(title, 'None', 'None', price, 'None', 'None'))
 
             db.clearDailyMenu()
@@ -280,6 +280,11 @@ def buy():
 
         if not (item and price):
             return {'success': False, 'message': 'Error: product not found'}
+
+        try:
+            price = int(price)
+        except ValueError:
+            return {'success': False, 'message': 'Error: price is not a number'}
 
         if Type == 'complex':
 
