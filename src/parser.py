@@ -6,20 +6,20 @@ import threading
 
 namnyamURL = "https://www.nam-nyam.ru/catering/"
 
+class foodItem:
+
+    def __init__(self, title, weight, calories, price, link, image_link):
+        self.title = title
+        self.weight = weight
+        self.calories = calories
+        self.price = price
+        self.link = link
+        self.image_link = image_link
+
+    def __str__(self):
+        return f"\n{self.title}\n{self.weight}\n{self.calories}\n{self.price}\n{self.link}\n"
+
 class namnyamParser(threading.Thread):
-
-    class foodItem:
-
-        def __init__(self, title, weight, calories, price, link, image_link):
-            self.title = title
-            self.weight = weight
-            self.calories = calories
-            self.price = price
-            self.link = link
-            self.image_link = image_link
-
-        def __str__(self):
-            return f"\n{self.title}\n{self.weight}\n{self.calories}\n{self.price}\n{self.link}\n"
 
     def __init__(self):
         threading.Thread.__init__(self)
@@ -67,7 +67,7 @@ class namnyamParser(threading.Thread):
                 title = item.find('div', class_="catering_item_name _showtooltip").text.strip()
                 weight = ' '.join(item.find('div', class_="catering_item_weight").text.split(' ')[1:])
 
-            items_dict[typeLabel].append(self.foodItem(title, weight, calories, price, foodPageLink, image_link))
+            items_dict[typeLabel].append(foodItem(title, weight, calories, price, foodPageLink, image_link))
             return items_dict
 
         if title.startswith('.'):
@@ -83,7 +83,7 @@ class namnyamParser(threading.Thread):
 
         price = ' '.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:])
 
-        items_dict[typeLabel].append(self.foodItem(title, weight, calories, price, foodPageLink, image_link))
+        items_dict[typeLabel].append(foodItem(title, weight, calories, price, foodPageLink, image_link))
         return items_dict
 
     def getDailyMenu(self, url: str):
