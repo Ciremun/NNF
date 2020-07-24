@@ -30,7 +30,49 @@ class Database(threading.Thread):
         self.createUsersTable()
         self.createSessionsTable()
         self.createDailyMenuTable()
-        self.createComplexProductTable()
+        self.createCartTable()
+        self.createCartProductTable()
+        self.createTriggers()
+
+    @acquireLock
+    def createTriggers(self):
+        """
+        Create cart on user signup.
+        Delete cart on user delete.
+        """
+        sql = """\
+CREATE OR REPLACE FUNCTION createCart()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        INSERT INTO cart(user_id)
+        VALUES ((SELECT id FROM users WHERE username = NEW.username));
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION deleteCart()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        DELETE FROM cart
+        WHERE user_id = (SELECT id FROM users WHERE username = OLD.username);
+        RETURN OLD;
+    END;
+    $$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS addCartTrigger on users;
+DROP TRIGGER IF EXISTS deleteCartTrigger on users;
+
+CREATE TRIGGER addCartTrigger
+    AFTER INSERT ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION createCart();
+
+CREATE TRIGGER deleteCartTrigger
+    BEFORE DELETE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION deleteCart();\
+"""
+        self.cursor.execute(sql)
 
     @acquireLock
     def createUsersTable(self):
@@ -58,10 +100,27 @@ link text, image_link text, section text, type text, date date)\
         self.cursor.execute(sql)
 
     @acquireLock
-    def createComplexProductTable(self):
+    def createCartTable(self):
         sql = """\
 CREATE TABLE IF NOT EXISTS \
-complexproduct(id serial primary key, title text, price text)\
+cart(user_id integer references users(id), id serial primary key)\
+"""
+        self.cursor.execute(sql)
+
+    @acquireLock
+    def createCartProductTable(self):
+        sql = """\
+CREATE TABLE IF NOT EXISTS \
+cartproduct(cart_id integer references cart(id), \
+product_id integer references dailymenu(id), id serial primary key)\
+"""
+        self.cursor.execute(sql)
+
+    @acquireLock
+    def addCart(self, user_id: int):
+        sql = f"""\
+INSERT INTO \
+cart(user_id) VALUES ({user_id})\
 """
         self.cursor.execute(sql)
 
@@ -89,24 +148,6 @@ dailymenu(title, weight, calories, price, link, image_link, section, type, date)
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
 """
         self.cursor.executemany(sql, menu)
-
-    @acquireLock
-    def addComplexProducts(self, products: list):
-        sql = f"""\
-INSERT INTO \
-complexproduct(title, price) VALUES (%s, %s)\
-"""
-        self.cursor.executemany(sql, products)
-
-    @acquireLock
-    def getComplexProduct(self, title, price):
-        sql = f"""\
-SELECT \
-title, price FROM complexproduct \
-WHERE title = '{title}' and price = '{price}'\
-"""
-        self.cursor.execute(sql)
-        return self.cursor.fetchone()
 
     @acquireLock
     def getDailyMenuBySection(self, section):
@@ -156,6 +197,26 @@ WHERE type = '{Type}'\
         return self.cursor.fetchall()
 
     @acquireLock
+    def getDailyMenuByTitlePriceType(self, title, price, Type):
+        sql = f"""\
+SELECT \
+title, price FROM dailymenu \
+WHERE title = '{title}' AND price = '{price}' AND type = '{Type}'\
+"""
+        self.cursor.execute(sql)
+        return self.cursor.fetchone()
+
+    @acquireLock
+    def getDailyMenuBySectionAndType(self, section, Type):
+        sql = f"""\
+SELECT \
+id, FROM dailymenu \
+WHERE section = '{section}' AND type = '{Type}'\
+"""
+        self.cursor.execute(sql)
+        return self.cursor.fetchall()
+
+    @acquireLock
     def updateSessionDate(self, sid, newdate):
         sql = f"""\
 UPDATE \
@@ -187,8 +248,5 @@ DELETE FROM dailymenu\
         self.cursor.execute(sql)
 
     @acquireLock
-    def clearComplexProducts(self):
-        sql = """\
-DELETE FROM complexproduct\
-"""
-        self.cursor.execute(sql)
+    def vacuum(self):
+        self.cursor.execute("VACUUM")
