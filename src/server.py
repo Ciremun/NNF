@@ -2,9 +2,10 @@ from flask import Flask, render_template
 from flask import request, redirect
 from logging.handlers import RotatingFileHandler
 from gevent.pywsgi import WSGIServer
+from pathlib import Path
 from src.salt import hash_password, verify_password
 from src.config import config, keys
-from pathlib import Path
+from src.parser import namnyamParser, foodItem
 import threading
 import json
 import time
@@ -14,7 +15,7 @@ import traceback
 import datetime
 import requests
 import src.database
-import src.parser
+
 
 
 logger = logging.getLogger(__name__)
@@ -36,10 +37,12 @@ sys.excepthook = uncaughtExceptionHandler
 def monthlyClearSessions():
     """
     Clear old sessions monthly.
+    Do database vacuum.
     """
     global sessions
     while True:
         sessions = getStoredSessions()
+        db.vacuum()
         for _ in range(200):
             time.sleep(1315)
 
@@ -86,23 +89,26 @@ def dailyUpdateMenu():
 
         if not dailyMenuDate or dailyMenuDate[0] < datetime.date.today():
 
-            db.clearDailyMenu()
-            db.clearComplexProducts()
-
-            date = datetime.date.today()
-            date = f'{date.year}-{date.month}-{date.day}'
-            dailycomplex, dailymenu = src.parser.namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
+            dailycomplex, dailymenu = namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
 
             complexProducts = []
             for section in dailycomplex.keys():
                 section = section.split(' ')
-                complexProducts.append((' '.join(section[:-2]), ' '.join(section[-2:])))
+                title = ' '.join(section[:-2])
+                price = ' '.join(section[-2:])
+                complexProducts.append(foodItem(title, 'None', 'None', price, 'None', 'None'))
 
-            db.addDailyMenu([(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'complex', date) \
+            db.clearDailyMenu()
+
+            date = datetime.date.today()
+            date = f'{date.year}-{date.month}-{date.day}'
+
+            db.addDailyMenu([(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'complexItem', date) \
                                 for k, foods in dailycomplex.items() for v in foods] + \
                                     [(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'menu', date) \
-                                        for k, foods in dailymenu.items() for v in foods])
-            db.addComplexProducts(complexProducts)
+                                        for k, foods in dailymenu.items() for v in foods] + \
+                                            [(p.title, p.weight, p.calories, p.price, p.link, p.image_link, 'None', 'complex', date) \
+                                                for p in complexProducts])
 
         now = datetime.datetime.today()
         end = datetime.datetime(now.year, now.month, now.day, 23, 59, 59, 0)
@@ -121,14 +127,14 @@ if keys['DEBUG']:
     dailymenu = {}
     it = None
 
-    for k, v in {'complex': dailycomplex, 'menu': dailymenu}.items():
+    for k, v in {'complexItem': dailycomplex, 'menu': dailymenu}.items():
         for i in db.getDailyMenuByType(k):
             if i[6] != it:
                 v[i[6]] = []
-                v[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
+                v[i[6]].append(foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
                 it = i[6]
                 continue
-            v[i[6]].append(src.parser.namnyamParser.foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
+            v[i[6]].append(foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
 
     monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
     monthlyClearSessionsThread.start()
@@ -258,29 +264,37 @@ def buy():
     session = sessions.get(SID)
     if session:
 
-        if session['usertype'] == 'admin':
-            username = message['username']
-        else:
-            username = session['username']
-
         Type = message.get('type')
         if not Type:
             return {'success': False, 'message': 'Error: no item type'}
 
-        product = None
+        if session['usertype'] == 'admin':
+            username = message.get('username')
+            if not username:
+                return {'success': False, 'message': 'Error: no username'}
+        else:
+            username = session['username']
 
-        if Type == 'complex':
-            title, price = db.getComplexProduct(message["item"], message["price"])
-            product = db.getDailyMenuBySection(' '.join((title, price)))
-            # product class?
-        elif Type == 'menu':
-            # get product
-            pass
+        item = message.get("item")
+        price = message.get("price")
 
-        if not product:
+        if not (item and price):
             return {'success': False, 'message': 'Error: product not found'}
 
-        return {'success': True, 'message': f'Add item {message["item"]}\nprice: {message["price"]}\nusername: {username}'}
+        if Type == 'complex':
+
+            item = db.getDailyMenuByTitlePriceType(item, price, 'complex')
+            if not item:
+                return {'success': False, 'message': 'Error: product not found'}
+
+            # title, price = item
+            # complexItems = db.getDailyMenuBySectionAndType(' '.join((title, price)), 'complexItem')
+            # add complex item to cart
+            return {'success': True}
+        elif Type == 'menu':
+            # add menu item to cart
+            pass
+
     return {'success': False, 'message': 'Unauthorized'}
 
 
