@@ -66,7 +66,8 @@ def getStoredSessions():
 
 def dailyUpdateMenu():
     """
-    Update nam-nyam menu daily.
+    Check nam-nyam menu every hour,
+    update if changes.
     """
 
     # DEBUG
@@ -77,6 +78,8 @@ def dailyUpdateMenu():
         json.dump(keys, o, indent=4)
 
     global dailycomplex, dailymenu
+
+    old_catering = requests.get('https://www.nam-nyam.ru/catering/').text
     while True:
 
         # DEBUG
@@ -85,10 +88,13 @@ def dailyUpdateMenu():
         with open('keys.json', 'w') as o:
             json.dump(keys, o, indent=4)
 
-        dailyMenuDate = db.getDailyMenuDate()
+        catering = requests.get('https://www.nam-nyam.ru/catering/').text
 
-        if not dailyMenuDate or dailyMenuDate[0] < datetime.date.today():
+        dailyMenuID = db.getDailyMenuID()
 
+        if not dailyMenuID or catering != old_catering:
+
+            logger.info('update menu')
             dailycomplex, dailymenu = namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
 
             complexProducts = []
@@ -110,10 +116,7 @@ def dailyUpdateMenu():
                                             [(p.title, p.weight, p.calories, p.price, p.link, p.image_link, 'None', 'complex', date) \
                                                 for p in complexProducts])
 
-        now = datetime.datetime.today()
-        end = datetime.datetime(now.year, now.month, now.day, 23, 59, 59, 0)
-        sleep_for = (end - now).total_seconds()
-        time.sleep(sleep_for)
+        time.sleep(3600)
 
 
 db = src.database.Database()
@@ -149,14 +152,9 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     """
-    Index page checks for a session cookie,
-    redirect to userprofile (if cookie found) or login page.
+    Redirect to menu page.
     """
-    SID = request.cookies.get("SID")
-    session = sessions.get(SID)
-    if session:
-        return redirect(f'/u/{session["username"]}', code=302)
-    return redirect('/login', code=302)
+    return redirect('/menu', code=302)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -168,7 +166,7 @@ def login():
     send error message if wrong password.
     Or register user: hash password, create new session,
     add user to database.
-    Create cookie and redirect to profile.
+    Create cookie and redirect to menu.
     """
     if request.method == 'POST':
         message = request.get_json()
@@ -200,7 +198,7 @@ def login():
                 sessions[SID] = {'username': username, 'usertype': usertype, 'date': date}
                 db.addSession(SID, username, usertype, f'{date.year}-{date.month}-{date.day}')
                 logger.info(f'login user {username}')
-                return {'success': True, 'username': username, 'SID': SID}
+                return {'success': True, 'SID': SID}
             else:
                 logger.info(f'failed login user {username}')
                 return {'success': False, 'message': 'password did not match'}
@@ -212,7 +210,7 @@ def login():
             db.addUser(username, message["displayname"], hashed_pwd, 'user')
             db.addSession(SID, username, 'user', f'{date.year}-{date.month}-{date.day}')
             logger.info(f'register user {username}')
-            return {'success': True, 'username': username, 'SID': SID}
+            return {'success': True, 'SID': SID}
     return render_template('login.html')
 
 
@@ -232,8 +230,8 @@ def linkprofile(username):
         newdate = datetime.date.today()
         db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
         sessions[SID]['date'] = newdate
-        return render_template('userprofile.html', username=username, displayname=userinfo[0],
-                                dailymenu=dailymenu, dailycomplex=dailycomplex)
+        logger.info(f'update session {username}')
+        return render_template('userprofile.html', displayname=userinfo[0])
     return "401 Unauthorized"
 
 
@@ -302,6 +300,19 @@ def buy():
 
     return {'success': False, 'message': 'Unauthorized'}
 
+@app.route('/menu')
+def menu():
+    SID = request.cookies.get("SID")
+    session = sessions.get(SID)
+    auth = False
+    userinfo = None
+
+    if session:
+        auth = True
+        userinfo = db.getUserDisplayName(session['username'])
+        userinfo = {'username': session['username'], 'displayname': userinfo[0]}
+
+    return render_template('menu.html', auth=auth, userinfo=userinfo, dailymenu=dailymenu, dailycomplex=dailycomplex)
 
 # Production
 # requestLogs = 'default' if config['flaskLogging'] else None

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='panel.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='menu.css') }}">
+    <title>Menu</title>
+</head>
+<body>
+    <header>
+        <ul>
+            {% if auth %}
+                <li><span class="top_panel" onclick="logout()">Выйти</span></li>
+                <li><span class="top_panel" onclick="window.location.href=`${location.protocol}//${window.location.host}/u/{{ userinfo['username'] }}`;">Профиль</span></li>
+                <li><span class="top_panel" style="cursor: default;">Ку, <span id="displayname">{{ userinfo['displayname'] }}</span>!</span></li>
+            {% else %}
+                <li><span class="top_panel" onclick="window.location.href=`${location.protocol}//${window.location.host}/login`;">Вход/Регистрация</span></li>
+            {% endif %}
+        </ul>
+    </header>
+    <section class="orders_section">
+        {% for category, items in dailycomplex.items() %}
+            <div class="category_head">
+                <div class="category_label">{{ category }}</div>
+                <div class="complex_buy" onclick="addToCart('complex')"><span>Купить</span></div>
+            </div>
+            <div class="category">
+                {% for item in items %}
+                    <div class="item">
+                        <img src="{{ item.image_link }}" alt="{{ item.title }}">
+                        <div class="item_title">
+                            <div class="item_tooltip_hover">
+                                {{ item.title }}
+                                <div class="item_tooltip_hover_content">
+                                    Вес: {{ item.weight }}<br>
+                                    Калорийность: {{ item.calories }}<br>
+                                    Цена: {{ item.price }} руб.<br>
+                                    <a target="_blank" rel="noopener noreferrer" href="{{ item.link }}">Ссылка</a>
+                                </div>
+                            </div>
+                            <div class="favorite_button">
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <br><br>
+        {% endfor %}
+        {% for category, items in dailymenu.items() %}
+            <div class="category_label">{{ category }}</div>
+            <div class="category">
+                {% for item in items %}
+                    <div class="item">
+                        <img src="{{ item.image_link }}" alt="{{ item.title }}">
+                        <div class="item_title">
+                            <div class="item_tooltip_hover">
+                                {{ item.title }}
+                                <div class="item_tooltip_hover_content">
+                                    Вес: {{ item.weight }}<br>
+                                    Калорийность: {{ item.calories }}<br>
+                                    Цена: {{ item.price }} руб.<br>
+                                    <a target="_blank" rel="noopener noreferrer" href="{{ item.link }}">Ссылка</a>
+                                </div>
+                            </div>
+                            <div class="favorite_button">
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <br><br>
+        {% endfor %}
+    </section>
+    <script>window.displayname = "{{ userinfo['username'] }}"</script>
+    <script src="{{ url_for('static',filename='utils.js') }}"></script>
+    <script src="{{ url_for('static',filename='index.js') }}"></script>
+</body>
+</html>

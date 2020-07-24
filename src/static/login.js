@@ -18,7 +18,7 @@ async function login() {
         if (SID) postData('/logout', {SID: SID});
         now.setMonth(now.getMonth() + 1);
         document.cookie = `SID=${login_response.SID}; expires=${now.toUTCString()}; path=/;`;
-        window.location.href = `${location.protocol}//${window.location.host}/u/${login_response.username}`;
+        window.location.href = `${location.protocol}//${window.location.host}/menu`;
     } else {
         alert(login_response.message);
         passwordField.value = "";

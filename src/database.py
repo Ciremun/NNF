@@ -185,6 +185,15 @@ displayname, password, usertype FROM users WHERE username = %s\
         return self.cursor.fetchone()
 
     @acquireLock
+    def getUserDisplayName(self, username):
+        sql = """\
+SELECT \
+displayname FROM users WHERE username = %s\
+"""
+        self.cursor.execute(sql, (username,))
+        return self.cursor.fetchone()
+
+    @acquireLock
     def getSessions(self):
         sql = """\
 SELECT \
@@ -194,10 +203,10 @@ sid, username, usertype, date FROM sessions\
         return self.cursor.fetchall()
 
     @acquireLock
-    def getDailyMenuDate(self):
+    def getDailyMenuID(self):
         sql = """\
 SELECT \
-date FROM dailymenu\
+id FROM dailymenu\
 """
         self.cursor.execute(sql)
         return self.cursor.fetchone()
