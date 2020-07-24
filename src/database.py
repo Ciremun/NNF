@@ -94,7 +94,7 @@ sessions(id serial primary key, sid text, username text, usertype text, date dat
     def createDailyMenuTable(self):
         sql = """\
 CREATE TABLE IF NOT EXISTS \
-dailymenu(id serial primary key, title text, weight text, calories text, price text, \
+dailymenu(id serial primary key, title text, weight text, calories text, price integer, \
 link text, image_link text, section text, type text, date date)\
 """
         self.cursor.execute(sql)
@@ -125,7 +125,23 @@ cart(user_id) VALUES ({user_id})\
         self.cursor.execute(sql)
 
     @acquireLock
-    def addUser(self, username, displayname, password, usertype):
+    def addCartProduct(self, cart_id: int, product_id: int):
+        sql = f"""\
+INSERT INTO \
+cartproduct(cart_id, product_id) VALUES ({cart_id}, {product_id})\
+"""
+        self.cursor.execute(sql)
+
+    @acquireLock
+    def addCartProducts(self, ids: list):
+        sql = f"""\
+INSERT INTO \
+cartproduct(cart_id, product_id) VALUES (%s, %s)\
+"""
+        self.cursor.executemany(sql, ids)
+
+    @acquireLock
+    def addUser(self, username: str, displayname: str, password: str, usertype: str):
         sql = f"""\
 INSERT INTO \
 users(username, displayname, password, usertype) VALUES ('{username}', '{displayname}', '{password}', '{usertype}')\
@@ -133,7 +149,7 @@ users(username, displayname, password, usertype) VALUES ('{username}', '{display
         self.cursor.execute(sql)
 
     @acquireLock
-    def addSession(self, sid, username, usertype, date):
+    def addSession(self, sid: str, username: str, usertype: str, date: str):
         sql = f"""\
 INSERT INTO \
 sessions(sid, username, usertype, date) VALUES ('{sid}', '{username}', '{usertype}', '{date}')\
@@ -150,7 +166,7 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
         self.cursor.executemany(sql, menu)
 
     @acquireLock
-    def getDailyMenuBySection(self, section):
+    def getDailyMenuBySection(self, section: str):
         sql = f"""\
 SELECT \
 title, weight, calories, price, link, image_link FROM dailymenu \
@@ -187,7 +203,7 @@ date FROM dailymenu\
         return self.cursor.fetchone()
 
     @acquireLock
-    def getDailyMenuByType(self, Type):
+    def getDailyMenuByType(self, Type: str):
         sql = f"""\
 SELECT \
 title, weight, calories, price, link, image_link, section FROM dailymenu \
@@ -197,7 +213,7 @@ WHERE type = '{Type}'\
         return self.cursor.fetchall()
 
     @acquireLock
-    def getDailyMenuByTitlePriceType(self, title, price, Type):
+    def getDailyMenuByTitlePriceType(self, title: str, price: int, Type: str):
         sql = f"""\
 SELECT \
 title, price FROM dailymenu \
@@ -207,7 +223,7 @@ WHERE title = '{title}' AND price = '{price}' AND type = '{Type}'\
         return self.cursor.fetchone()
 
     @acquireLock
-    def getDailyMenuBySectionAndType(self, section, Type):
+    def getDailyMenuBySectionAndType(self, section: str, Type: str):
         sql = f"""\
 SELECT \
 id, FROM dailymenu \
@@ -217,7 +233,7 @@ WHERE section = '{section}' AND type = '{Type}'\
         return self.cursor.fetchall()
 
     @acquireLock
-    def updateSessionDate(self, sid, newdate):
+    def updateSessionDate(self, sid: str, newdate: str):
         sql = f"""\
 UPDATE \
 sessions SET date = '{newdate}' WHERE sid = '{sid}'\
