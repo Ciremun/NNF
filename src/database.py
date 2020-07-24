@@ -118,23 +118,23 @@ product_id integer references dailymenu(id), id serial primary key)\
 
     @acquireLock
     def addCart(self, user_id: int):
-        sql = f"""\
+        sql = """\
 INSERT INTO \
-cart(user_id) VALUES ({user_id})\
+cart(user_id) VALUES (%s)\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (user_id,))
 
     @acquireLock
     def addCartProduct(self, cart_id: int, product_id: int):
-        sql = f"""\
+        sql = """\
 INSERT INTO \
-cartproduct(cart_id, product_id) VALUES ({cart_id}, {product_id})\
+cartproduct(cart_id, product_id) VALUES (%s, %s)\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (cart_id, product_id))
 
     @acquireLock
     def addCartProducts(self, ids: list):
-        sql = f"""\
+        sql = """\
 INSERT INTO \
 cartproduct(cart_id, product_id) VALUES (%s, %s)\
 """
@@ -142,23 +142,23 @@ cartproduct(cart_id, product_id) VALUES (%s, %s)\
 
     @acquireLock
     def addUser(self, username: str, displayname: str, password: str, usertype: str):
-        sql = f"""\
+        sql = """\
 INSERT INTO \
-users(username, displayname, password, usertype) VALUES ('{username}', '{displayname}', '{password}', '{usertype}')\
+users(username, displayname, password, usertype) VALUES (%s, %s, %s, %s)\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (username, displayname, password, usertype))
 
     @acquireLock
     def addSession(self, sid: str, username: str, usertype: str, date: str):
-        sql = f"""\
+        sql = """\
 INSERT INTO \
-sessions(sid, username, usertype, date) VALUES ('{sid}', '{username}', '{usertype}', '{date}')\
+sessions(sid, username, usertype, date) VALUES (%s, %s, %s, %s)\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (sid, username, usertype, date))
 
     @acquireLock
     def addDailyMenu(self, menu: list):
-        sql = f"""\
+        sql = """\
 INSERT INTO \
 dailymenu(title, weight, calories, price, link, image_link, section, type, date) \
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
@@ -167,21 +167,21 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
 
     @acquireLock
     def getDailyMenuBySection(self, section: str):
-        sql = f"""\
+        sql = """\
 SELECT \
 title, weight, calories, price, link, image_link FROM dailymenu \
-WHERE section = '{section}'\
+WHERE section = %s\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (section,))
         return self.cursor.fetchall()
 
     @acquireLock
     def getUser(self, username):
-        sql = f"""\
+        sql = """\
 SELECT \
-displayname, password, usertype FROM users WHERE username = '{username}'\
+displayname, password, usertype FROM users WHERE username = %s\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (username,))
         return self.cursor.fetchone()
 
     @acquireLock
@@ -204,49 +204,49 @@ date FROM dailymenu\
 
     @acquireLock
     def getDailyMenuByType(self, Type: str):
-        sql = f"""\
+        sql = """\
 SELECT \
 title, weight, calories, price, link, image_link, section FROM dailymenu \
-WHERE type = '{Type}'\
+WHERE type = %s\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (Type,))
         return self.cursor.fetchall()
 
     @acquireLock
     def getDailyMenuByTitlePriceType(self, title: str, price: int, Type: str):
-        sql = f"""\
+        sql = """\
 SELECT \
 title, price FROM dailymenu \
-WHERE title = '{title}' AND price = '{price}' AND type = '{Type}'\
+WHERE title = %s AND price = %s AND type = %s\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (title, price, Type))
         return self.cursor.fetchone()
 
     @acquireLock
     def getDailyMenuBySectionAndType(self, section: str, Type: str):
-        sql = f"""\
+        sql = """\
 SELECT \
 id, FROM dailymenu \
-WHERE section = '{section}' AND type = '{Type}'\
+WHERE section = %s AND type = %s\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (section, Type))
         return self.cursor.fetchall()
 
     @acquireLock
     def updateSessionDate(self, sid: str, newdate: str):
-        sql = f"""\
+        sql = """\
 UPDATE \
-sessions SET date = '{newdate}' WHERE sid = '{sid}'\
+sessions SET date = %s WHERE sid = %s\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (newdate, sid))
 
     @acquireLock
     def deleteSession(self, sid: str):
-        sql = f"""\
+        sql = """\
 DELETE FROM \
-sessions WHERE sid = '{sid}'\
+sessions WHERE sid = %s\
 """
-        self.cursor.execute(sql)
+        self.cursor.execute(sql, (sid,))
 
     @acquireLock
     def deleteSessions(self, sids: list):
