@@ -112,7 +112,7 @@ cart(user_id integer references users(id), id serial primary key)\
         sql = """\
 CREATE TABLE IF NOT EXISTS \
 cartproduct(cart_id integer references cart(id), \
-product_id integer references dailymenu(id), id serial primary key)\
+product_id integer references dailymenu(id), confirm boolean, id serial primary key)\
 """
         self.cursor.execute(sql)
 
@@ -128,7 +128,7 @@ cart(user_id) VALUES (%s)\
     def addCartProduct(self, cart_id: int, product_id: int):
         sql = """\
 INSERT INTO \
-cartproduct(cart_id, product_id) VALUES (%s, %s)\
+cartproduct(cart_id, product_id, confirm) VALUES (%s, %s, FALSE)\
 """
         self.cursor.execute(sql, (cart_id, product_id))
 
@@ -136,7 +136,7 @@ cartproduct(cart_id, product_id) VALUES (%s, %s)\
     def addCartProducts(self, ids: list):
         sql = """\
 INSERT INTO \
-cartproduct(cart_id, product_id) VALUES (%s, %s)\
+cartproduct(cart_id, product_id, confirm) VALUES (%s, %s, FALSE)\
 """
         self.cursor.executemany(sql, ids)
 
@@ -176,7 +176,15 @@ WHERE section = %s\
         return self.cursor.fetchall()
 
     @acquireLock
-    def getUser(self, username):
+    def getUserCartID(self, username: str):
+        sql = """\
+SELECT user_id FROM cart WHERE user_id = (SELECT id FROM users WHERE username = %s)\
+"""
+        self.cursor.execute(sql, (username,))
+        return self.cursor.fetchone()
+
+    @acquireLock
+    def getUser(self, username: str):
         sql = """\
 SELECT \
 displayname, password, usertype FROM users WHERE username = %s\
@@ -185,7 +193,7 @@ displayname, password, usertype FROM users WHERE username = %s\
         return self.cursor.fetchone()
 
     @acquireLock
-    def getUserDisplayName(self, username):
+    def getUserDisplayName(self, username: str):
         sql = """\
 SELECT \
 displayname FROM users WHERE username = %s\
@@ -222,17 +230,17 @@ WHERE type = %s\
         return self.cursor.fetchall()
 
     @acquireLock
-    def getDailyMenuByTitlePriceType(self, title: str, price: int, Type: str):
+    def getProductID(self, title: str, price: int, Type: str):
         sql = """\
 SELECT \
-title, price FROM dailymenu \
+id FROM dailymenu \
 WHERE title = %s AND price = %s AND type = %s\
 """
         self.cursor.execute(sql, (title, price, Type))
         return self.cursor.fetchone()
 
     @acquireLock
-    def getDailyMenuBySectionAndType(self, section: str, Type: str):
+    def getComplexItems(self, section: str, Type: str):
         sql = """\
 SELECT \
 id, FROM dailymenu \

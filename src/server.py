@@ -170,10 +170,10 @@ def login():
     """
     if request.method == 'POST':
         message = request.get_json()
-        username = message['username']
-        password = message['password']
+        username = message.get('username')
+        password = message.get('password')
 
-        if not (username and password):
+        if not (isinstance(username, str) and isinstance(password, str)):
             return {'success': False, 'message': 'enter username and password'}
 
         if any(len(x) > 25 for x in [username, password]):
@@ -203,11 +203,14 @@ def login():
                 logger.info(f'failed login user {username}')
                 return {'success': False, 'message': 'password did not match'}
         else:
+            displayname = message.get('displayname')
+            if not isinstance(displayname, str):
+                return {'success': False, 'message': 'invalid displayname'}
             hashed_pwd = hash_password(password)
             SID = hash_password(sessionSecret)
             date = datetime.date.today()
             sessions[SID] = {'username': username, 'usertype': 'user', 'date': date}
-            db.addUser(username, message["displayname"], hashed_pwd, 'user')
+            db.addUser(username, displayname, hashed_pwd, 'user')
             db.addSession(SID, username, 'user', f'{date.year}-{date.month}-{date.day}')
             logger.info(f'register user {username}')
             return {'success': True, 'SID': SID}
@@ -247,8 +250,11 @@ def logout():
     """
     try:
         message = request.get_json()
-        del sessions[message['SID']]
-        db.deleteSession(message['SID'])
+        SID = message.get('SID')
+        if not isinstance(SID, str):
+            return {'success': False}
+        del sessions[SID]
+        db.deleteSession(SID)
         return {'success': True}
     except KeyError:
         return {'success': False}
@@ -265,12 +271,12 @@ def buy():
     if session:
 
         Type = message.get('type')
-        if not Type:
+        if not isinstance(Type, str):
             return {'success': False, 'message': 'Error: no item type'}
 
         if session['usertype'] == 'admin':
             username = message.get('username')
-            if not username:
+            if not isinstance(username, str):
                 return {'success': False, 'message': 'Error: no username'}
         else:
             username = session['username']
@@ -278,7 +284,7 @@ def buy():
         item = message.get("item")
         price = message.get("price")
 
-        if not (item and price):
+        if not (isinstance(item, str) and isinstance(price, str)):
             return {'success': False, 'message': 'Error: product not found'}
 
         try:
@@ -286,19 +292,21 @@ def buy():
         except ValueError:
             return {'success': False, 'message': 'Error: price is not a number'}
 
-        if Type == 'complex':
+        if any(x == Type for x in ['menu', 'complex']):
 
-            item = db.getDailyMenuByTitlePriceType(item, price, 'complex')
-            if not item:
+            cart_id = db.getUserCartID(username)
+            if not cart_id:
+                return {'success': False, 'message': 'Error: cart not found'}
+
+            product_id = db.getProductID(item, price, Type)
+            if not product_id:
                 return {'success': False, 'message': 'Error: product not found'}
 
-            # title, price = item
-            # complexItems = db.getDailyMenuBySectionAndType(' '.join((title, price)), 'complexItem')
-            # add complex item to cart
+            db.addCartProduct(cart_id[0], product_id[0])
+
             return {'success': True}
-        elif Type == 'menu':
-            # add menu item to cart
-            pass
+        else:
+            return {'success': False, 'message': 'Error: unknown item type'}
 
     return {'success': False, 'message': 'Unauthorized'}
 
