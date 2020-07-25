@@ -34,6 +34,38 @@ def uncaughtExceptionHandler(etype, value, tb):
 sys.excepthook = uncaughtExceptionHandler
 
 
+def getUserCart(username) -> dict:
+    cartItems = db.getUserCartItems(username)
+    if not cartItems:
+        return False
+
+    cartSum = db.getUserCartSum(username)
+
+    cart = {'complex': {}, 'menu': []}
+    for item in cartItems:
+        title = item[0]
+        price = item[3]
+        Type = item[6]
+        count = item[7]
+
+        if Type == 'complex':
+            cart['complex'][title] = {'foods': [foodItem(x[0], x[1], x[2], x[3], x[4], x[5]) 
+                                                for x in db.getComplexItems(' '.join((title, f'{price} руб.')), 'complexItem')],
+                                        'count': count}
+        elif Type == 'menu':
+            cart['menu'].append(foodItem(title, item[1], item[2], price, item[4], item[5], count=count))
+
+        cart['_SUM'] = cartSum[0]
+
+    return cart
+
+
+def updateUserSession(SID: str):
+    newdate = datetime.date.today()
+    db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
+    sessions[SID]['date'] = newdate
+
+
 def monthlyClearSessions():
     """
     Clear old sessions monthly.
@@ -93,6 +125,8 @@ def dailyUpdateMenu():
         dailyMenuID = db.getDailyMenuID()
 
         if not dailyMenuID or catering != old_catering:
+
+            old_catering = catering
 
             logger.info('update menu')
             dailycomplex, dailymenu = namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
@@ -224,19 +258,25 @@ def linkprofile(username):
     updates session and loads profile if session is valid.
     """
     username = username.lower()
+
     userinfo = db.getUser(username)
     if not userinfo:
         return "User not found"
+
     SID = request.cookies.get("SID")
     session = sessions.get(SID)
     if session and (session['username'] == username or session['usertype'] == 'admin'):
-        newdate = datetime.date.today()
-        db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
-        sessions[SID]['date'] = newdate
+
+        userinfo = {'username': username, 'displayname': userinfo[0]}
+
+        updateUserSession(SID)
         logger.info(f'update session {username}')
-        return render_template('userprofile.html',
-                                userinfo={'username': username,
-                                          'displayname': userinfo[0]}, auth=True)
+
+        cart = getUserCart(username)
+        if not cart:
+            return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=None)
+
+        return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=cart)
     return "401 Unauthorized"
 
 
@@ -310,6 +350,7 @@ def buy():
 
     return {'success': False, 'message': 'Unauthorized'}
 
+
 @app.route('/menu')
 def menu():
     SID = request.cookies.get("SID")
@@ -319,10 +360,34 @@ def menu():
 
     if session:
         auth = True
-        userinfo = db.getUserDisplayName(session['username'])
-        userinfo = {'username': session['username'], 'displayname': userinfo[0]}
+        username = session['username']
+        userinfo = {'username': username, 'displayname': db.getUserDisplayName(username)[0]}
+        updateUserSession(SID)
 
     return render_template('menu.html', auth=auth, userinfo=userinfo, dailymenu=dailymenu, dailycomplex=dailycomplex)
+
+
+@app.route('/cart')
+def cart():
+    """
+    Currently mimics userprofile.
+    """
+    SID = request.cookies.get("SID")
+    session = sessions.get(SID)
+    if session:
+
+        username = session['username']
+        userinfo = {'username': username, 'displayname': db.getUserDisplayName(username)[0]}
+
+        updateUserSession(SID)
+        logger.info(f'update session {username}')
+
+        cart = getUserCart(username)
+        if not cart:
+            return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=None)
+
+        return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=cart)
+    return "401 Unauthorized"
 
 # Production
 # requestLogs = 'default' if config['flaskLogging'] else None

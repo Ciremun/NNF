@@ -9,5 +9,31 @@
 {% endblock %}
 
 {% block content %}
+    {% if cart %}
+        {% for title, complexInfo in cart['complex'].items() %}
+            <div class="complexProduct">
+                <div class="complexProductTitle">
+                    {{ title }}  -  {{ complexInfo['count'] }} шт.
+                </div>
+                <div class="complexProductItems">
+                    {% for food in complexInfo['foods'] %}
+                        <div class="complexProductItem">
+                            &emsp;&emsp;&emsp;{{ food.title }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+        {% for food in cart['menu'] %}
+            <div class="product">
+                {{ food.title }}  -  {{ food.count }} шт.
+            </div>
+        {% endfor %}
+        <div class="cartSum">
+            Сумма заказа - {{ cart['_SUM'] }} руб.
+        </div>
+    {% else %}
+        Корзина пуста
+    {% endif %}
     <script src="{{ url_for('static',filename='login.js') }}"></script>
 {% endblock %}

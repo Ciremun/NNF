@@ -166,6 +166,33 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
         self.cursor.executemany(sql, menu)
 
     @acquireLock
+    def getUserCartItems(self, username: str):
+        sql = """\
+SELECT p.title, p.weight, p.calories, p.price, p.link, p.image_link, p.type, COUNT(p.title) \
+FROM users u LEFT JOIN cart ON cart.user_id=u.id \
+LEFT JOIN cartproduct cp ON cp.cart_id=cart.id \
+LEFT JOIN dailymenu p ON p.id=cp.product_id \
+WHERE u.username = %s \
+GROUP by p.title, p.weight, p.calories, p.price, p.link, p.image_link, p.type \
+HAVING COUNT(p.title) > 0\
+"""
+        self.cursor.execute(sql, (username,))
+        return self.cursor.fetchall()
+
+    @acquireLock
+    def getUserCartSum(self, username: str):
+        sql = """\
+SELECT sum(p.price) \
+FROM users u \
+LEFT JOIN cart ON cart.user_id=u.id \
+LEFT JOIN cartproduct cp ON cp.cart_id=cart.id \
+LEFT JOIN dailymenu p ON p.id=cp.product_id \
+WHERE u.username = %s\
+"""
+        self.cursor.execute(sql, (username,))
+        return self.cursor.fetchone()
+
+    @acquireLock
     def getDailyMenuBySection(self, section: str):
         sql = """\
 SELECT \
@@ -243,7 +270,7 @@ WHERE title = %s AND price = %s AND type = %s\
     def getComplexItems(self, section: str, Type: str):
         sql = """\
 SELECT \
-id, FROM dailymenu \
+title, weight, calories, price, link, image_link FROM dailymenu \
 WHERE section = %s AND type = %s\
 """
         self.cursor.execute(sql, (section, Type))
