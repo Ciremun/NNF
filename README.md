@@ -19,6 +19,7 @@ Tested on Python 3.7.8
 ### config.json
 
 `flaskLogging` (boolean): server logs to console  
+`dailyMenuUpdateInterval` (numeric): menu update interval in seconds  
 
 ### keys.json
 

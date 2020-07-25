@@ -96,7 +96,7 @@ def getStoredSessions():
     return sessions
 
 
-def dailyUpdateMenu():
+def dailyMenuUpdate():
     """
     Check nam-nyam menu every hour,
     update if changes.
@@ -150,7 +150,7 @@ def dailyUpdateMenu():
                                             [(p.title, p.weight, p.calories, p.price, p.link, p.image_link, 'None', 'complex', date) \
                                                 for p in complexProducts])
 
-        time.sleep(3600)
+        time.sleep(config['dailyMenuUpdateInterval'])
 
 
 db = src.database.Database()
@@ -176,8 +176,8 @@ if keys['DEBUG']:
     monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
     monthlyClearSessionsThread.start()
 
-dailyUpdateMenuThread = threading.Thread(target=dailyUpdateMenu)
-dailyUpdateMenuThread.start()
+dailyMenuUpdateThread = threading.Thread(target=dailyMenuUpdate)
+dailyMenuUpdateThread.start()
 
 
 app = Flask(__name__)
