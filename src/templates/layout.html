@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='panel.css') }}">
+    <script src="{{ url_for('static',filename='utils.js') }}"></script>
+    {% block head %}{% endblock %}
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <ul>
+            {% if auth %}
+                <li class="left"><span class="top_panel" onclick="window.location.href=`${location.protocol}//${window.location.host}/menu`;">Меню</span></li>
+                <li class="right"><span class="top_panel" onclick="logout()">Выйти</span></li>
+                <li class="right"><span class="top_panel" onclick="window.location.href=`${location.protocol}//${window.location.host}/u/{{ userinfo.get('username') }}`;">{{ userinfo.get('displayname') }}</span></li>
+            {% else %}
+                <li class="right"><span class="top_panel" onclick="window.location.href=`${location.protocol}//${window.location.host}/login`;">Вход/Регистрация</span></li>
+            {% endif %}
+        </ul>
+    </header>
+    {% block content %}{% endblock %}
+</body>
+</html>

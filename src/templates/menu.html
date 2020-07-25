@@ -1,23 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='panel.css') }}">
+{% extends "layout.html" %}
+
+{% block head %}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='menu.css') }}">
-    <title>Menu</title>
-</head>
-<body>
-    <header>
-        <ul>
-            {% if auth %}
-                <li><span class="top_panel" onclick="logout()">Выйти</span></li>
-                <li><span class="top_panel" onclick="window.location.href=`${location.protocol}//${window.location.host}/u/{{ userinfo['username'] }}`;">Профиль</span></li>
-                <li><span class="top_panel" style="cursor: default;">Ку, <span id="displayname">{{ userinfo['displayname'] }}</span>!</span></li>
-            {% else %}
-                <li><span class="top_panel" onclick="window.location.href=`${location.protocol}//${window.location.host}/login`;">Вход/Регистрация</span></li>
-            {% endif %}
-        </ul>
-    </header>
+{% endblock %}
+
+{% block title %}
+    Menu
+{% endblock %}
+
+{% block content %}
     <section class="orders_section">
         {% for category, items in dailycomplex.items() %}
             <div class="category_head">
@@ -73,8 +64,7 @@
             <br><br>
         {% endfor %}
     </section>
-    <script>window.displayname = "{{ userinfo['username'] }}"</script>
-    <script src="{{ url_for('static',filename='utils.js') }}"></script>
-    <script src="{{ url_for('static',filename='index.js') }}"></script>
-</body>
-</html>
+    <script>window.username = "{{ userinfo.get('username') }}"</script>
+    <script src="{{ url_for('static',filename='cart.js') }}"></script>
+    <script src="{{ url_for('static',filename='login.js') }}"></script>
+{% endblock %}

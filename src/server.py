@@ -89,7 +89,7 @@ def dailyUpdateMenu():
             json.dump(keys, o, indent=4)
 
         catering = requests.get('https://www.nam-nyam.ru/catering/').text
-
+        logger.info('check catering')
         dailyMenuID = db.getDailyMenuID()
 
         if not dailyMenuID or catering != old_catering:
@@ -231,7 +231,9 @@ def linkprofile(username):
         db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
         sessions[SID]['date'] = newdate
         logger.info(f'update session {username}')
-        return render_template('userprofile.html', displayname=userinfo[0])
+        return render_template('userprofile.html',
+                                userinfo={'username': username,
+                                          'displayname': userinfo[0]}, auth=True)
     return "401 Unauthorized"
 
 
@@ -305,7 +307,7 @@ def menu():
     SID = request.cookies.get("SID")
     session = sessions.get(SID)
     auth = False
-    userinfo = None
+    userinfo = {}
 
     if session:
         auth = True

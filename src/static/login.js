@@ -13,7 +13,7 @@ async function login() {
     login_response = await postData('/login', {username: username.toLowerCase(), displayname: username, password: password});
     
     if (login_response.success) {
-        let SID = window.getCookie('SID'),
+        let SID = getCookie('SID'),
             now = new Date();
         if (SID) postData('/logout', {SID: SID});
         now.setMonth(now.getMonth() + 1);
@@ -22,5 +22,15 @@ async function login() {
     } else {
         alert(login_response.message);
         passwordField.value = "";
+    }
+}
+
+async function logout() {
+    let response = await postData('/logout', {SID: getCookie('SID')});
+    if (response.success) {
+        document.cookie = "SID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        window.location.href = `${location.protocol}//${window.location.host}`;
+    } else {
+        window.location.reload(true);
     }
 }
