@@ -126,7 +126,7 @@ cart(user_id integer references users(id), id serial primary key)\
         sql = """\
 CREATE TABLE IF NOT EXISTS \
 cartproduct(cart_id integer references cart(id), \
-product_id integer references dailymenu(id), confirm boolean, id serial primary key)\
+product_id integer references dailymenu(id), id serial primary key)\
 """
         self.cursor.execute(sql)
 
@@ -142,7 +142,7 @@ cart(user_id) VALUES (%s)\
     def addCartProduct(self, cart_id: int, product_id: int):
         sql = """\
 INSERT INTO \
-cartproduct(cart_id, product_id, confirm) VALUES (%s, %s, FALSE)\
+cartproduct(cart_id, product_id) VALUES (%s, %s)\
 """
         self.cursor.execute(sql, (cart_id, product_id))
 
@@ -150,7 +150,7 @@ cartproduct(cart_id, product_id, confirm) VALUES (%s, %s, FALSE)\
     def addCartProducts(self, ids: list):
         sql = """\
 INSERT INTO \
-cartproduct(cart_id, product_id, confirm) VALUES (%s, %s, FALSE)\
+cartproduct(cart_id, product_id) VALUES (%s, %s)\
 """
         self.cursor.executemany(sql, ids)
 
