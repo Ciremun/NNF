@@ -59,8 +59,17 @@ CREATE OR REPLACE FUNCTION deleteCart()
     END;
     $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION deleteCartProduct()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        DELETE FROM cartproduct WHERE product_id = OLD.id;
+        RETURN OLD;
+    END;
+    $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS addCartTrigger on users;
 DROP TRIGGER IF EXISTS deleteCartTrigger on users;
+DROP TRIGGER IF EXISTS deleteCartProductTrigger on dailymenu;
 
 CREATE TRIGGER addCartTrigger
     AFTER INSERT ON users
@@ -70,7 +79,12 @@ CREATE TRIGGER addCartTrigger
 CREATE TRIGGER deleteCartTrigger
     BEFORE DELETE ON users
     FOR EACH ROW
-    EXECUTE FUNCTION deleteCart();\
+    EXECUTE FUNCTION deleteCart();
+
+CREATE TRIGGER deleteCartProductTrigger
+    BEFORE DELETE ON dailymenu
+    FOR EACH ROW
+    EXECUTE FUNCTION deleteCartProduct();\
 """
         self.cursor.execute(sql)
 
