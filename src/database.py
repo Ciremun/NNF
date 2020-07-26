@@ -46,8 +46,7 @@ class Database(threading.Thread):
 CREATE OR REPLACE FUNCTION createCart()
     RETURNS TRIGGER AS $$
     BEGIN
-        INSERT INTO cart(user_id)
-        VALUES ((SELECT id FROM users WHERE username = NEW.username));
+        INSERT INTO cart(user_id) VALUES (NEW.id);
         RETURN NEW;
     END;
     $$ LANGUAGE plpgsql;
