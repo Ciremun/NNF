@@ -47,14 +47,13 @@ def getUserCart(username) -> dict:
         price = item[1]
         link = item[2]
         Type = item[3]
-        count = item[4]
 
         if Type == 'complex':
             cart['complex'][title] = {'foods': [shortFoodItem(x[0], x[1], x[2]) 
                                                 for x in db.getComplexItems(' '.join((title, f'{price} руб.')), 'complexItem')],
-                                      'count': count, 'price': price}
+                                      'price': price}
         elif Type == 'menu':
-            cart['menu'].append(shortFoodItem(title, price, link, count=count))
+            cart['menu'].append(shortFoodItem(title, price, link))
 
         cart['_SUM'] = cartSum[0]
 
@@ -80,7 +79,7 @@ def monthlyClearSessions():
             time.sleep(1315)
 
 
-def getStoredSessions():
+def getStoredSessions() -> dict:
     """
     Pull stored sessions from database, delete sessions older than a month.
     return: sessions dictionary
@@ -112,7 +111,6 @@ def dailyMenuUpdate():
 
     global dailycomplex, dailymenu
 
-    old_catering = requests.get('https://www.nam-nyam.ru/catering/').text
     while True:
 
         # DEBUG
@@ -121,13 +119,10 @@ def dailyMenuUpdate():
         with open('keys.json', 'w') as o:
             json.dump(keys, o, indent=4)
 
-        catering = requests.get('https://www.nam-nyam.ru/catering/').text
         logger.info('check catering')
-        dailyMenuID = db.getDailyMenuID()
+        boolDailyMenu = db.checkDailyMenu()
 
-        if not dailyMenuID or catering != old_catering:
-
-            old_catering = catering
+        if not boolDailyMenu:
 
             logger.info('update menu')
             dailycomplex, dailymenu = namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)

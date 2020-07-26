@@ -20,11 +20,10 @@ class foodItem:
 
 class shortFoodItem:
 
-    def __init__(self, title, price, link, count=None):
+    def __init__(self, title, price, link):
         self.title = title
         self.price = price
         self.link = link
-        self.count = count
 
 
 class namnyamParser(threading.Thread):

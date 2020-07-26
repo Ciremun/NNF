@@ -185,11 +185,16 @@ orderproduct(order_id, title, price, link) VALUES (%s, %s, %s, %s)\
 
     @acquireLock
     def addCartProduct(self, cart_id: int, product_id: int):
+        """
+        Add product to cart if not there.
+        """
         sql = """\
 INSERT INTO \
-cartproduct(cart_id, product_id) VALUES (%s, %s)\
+cartproduct(cart_id, product_id) \
+SELECT %(cart_id)s, %(product_id)s \
+WHERE NOT EXISTS (SELECT 1 FROM cartproduct WHERE cart_id = %(cart_id)s AND product_id = %(product_id)s)\
 """
-        self.cursor.execute(sql, (cart_id, product_id))
+        self.cursor.execute(sql, {'cart_id': cart_id, 'product_id': product_id})
 
     @acquireLock
     def addCartProducts(self, ids: list):
@@ -227,13 +232,11 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
     @acquireLock
     def getUserCartItems(self, username: str):
         sql = """\
-SELECT p.title, p.price, p.link, p.type, COUNT(p.title) \
-FROM users u LEFT JOIN cart ON cart.user_id=u.id \
+SELECT p.title, p.price, p.link, p.type \
+FROM users u \
+LEFT JOIN cart ON cart.user_id=u.id \
 LEFT JOIN cartproduct cp ON cp.cart_id=cart.id \
-LEFT JOIN dailymenu p ON p.id=cp.product_id \
-WHERE u.username = %s \
-GROUP by p.title, p.price, p.link, p.type \
-HAVING COUNT(p.title) > 0\
+INNER JOIN dailymenu p ON p.id=cp.product_id WHERE u.username = %s\
 """
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchall()
@@ -241,12 +244,13 @@ HAVING COUNT(p.title) > 0\
     @acquireLock
     def getUserCartSum(self, username: str):
         sql = """\
-SELECT sum(p.price) \
+SELECT SUM(p.price) \
 FROM users u \
 LEFT JOIN cart ON cart.user_id=u.id \
 LEFT JOIN cartproduct cp ON cp.cart_id=cart.id \
 LEFT JOIN dailymenu p ON p.id=cp.product_id \
-WHERE u.username = %s\
+WHERE u.username = %s \
+HAVING SUM(p.price)>0 limit 1\
 """
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchone()
@@ -255,7 +259,8 @@ WHERE u.username = %s\
     def getDailyMenuBySection(self, section: str):
         sql = """\
 SELECT \
-title, weight, calories, price, link, image_link FROM dailymenu \
+title, weight, calories, price, link, image_link \
+FROM dailymenu \
 WHERE section = %s\
 """
         self.cursor.execute(sql, (section,))
@@ -264,7 +269,8 @@ WHERE section = %s\
     @acquireLock
     def getUserCartID(self, username: str):
         sql = """\
-SELECT user_id FROM cart WHERE user_id = (SELECT id FROM users WHERE username = %s)\
+SELECT user_id FROM cart \
+WHERE user_id = (SELECT id FROM users WHERE username = %s) limit 1\
 """
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchone()
@@ -272,8 +278,8 @@ SELECT user_id FROM cart WHERE user_id = (SELECT id FROM users WHERE username = 
     @acquireLock
     def getUser(self, username: str):
         sql = """\
-SELECT \
-displayname, password, usertype FROM users WHERE username = %s\
+SELECT displayname, password, usertype FROM users \
+WHERE username = %s limit 1\
 """
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchone()
@@ -282,7 +288,7 @@ displayname, password, usertype FROM users WHERE username = %s\
     def getUserDisplayName(self, username: str):
         sql = """\
 SELECT \
-displayname FROM users WHERE username = %s\
+displayname FROM users WHERE username = %s limit 1\
 """
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchone()
@@ -295,15 +301,6 @@ sid, username, usertype, date FROM sessions\
 """
         self.cursor.execute(sql)
         return self.cursor.fetchall()
-
-    @acquireLock
-    def getDailyMenuID(self):
-        sql = """\
-SELECT \
-id FROM dailymenu\
-"""
-        self.cursor.execute(sql)
-        return self.cursor.fetchone()
 
     @acquireLock
     def getDailyMenuByType(self, Type: str):
@@ -320,7 +317,7 @@ WHERE type = %s\
         sql = """\
 SELECT \
 id FROM dailymenu \
-WHERE title = %s AND price = %s AND type = %s\
+WHERE title = %s AND price = %s AND type = %s limit 1\
 """
         self.cursor.execute(sql, (title, price, Type))
         return self.cursor.fetchone()
@@ -369,3 +366,11 @@ DELETE FROM dailymenu\
     @acquireLock
     def vacuum(self):
         self.cursor.execute("VACUUM")
+
+    @acquireLock
+    def checkDailyMenu(self):
+        sql = """\
+SELECT 1 FROM dailymenu limit 1\
+"""
+        self.cursor.execute(sql)
+        return self.cursor.fetchone()
