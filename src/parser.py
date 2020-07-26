@@ -6,19 +6,26 @@ import threading
 
 namnyamURL = "https://www.nam-nyam.ru/catering/"
 
+
 class foodItem:
 
-    def __init__(self, title, weight, calories, price, link, image_link, count=None):
+    def __init__(self, title, weight, calories, price, link, image_link):
         self.title = title
         self.weight = weight
         self.calories = calories
         self.price = price
         self.link = link
         self.image_link = image_link
+
+
+class shortFoodItem:
+
+    def __init__(self, title, price, link, count=None):
+        self.title = title
+        self.price = price
+        self.link = link
         self.count = count
 
-    def __str__(self):
-        return f"\n{self.title}\n{self.weight}\n{self.calories}\n{self.price}\n{self.link}\n"
 
 class namnyamParser(threading.Thread):
 

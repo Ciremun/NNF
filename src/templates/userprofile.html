@@ -13,12 +13,12 @@
         {% for title, complexInfo in cart['complex'].items() %}
             <div class="complexProduct">
                 <div class="complexProductTitle">
-                    {{ title }}  -  {{ complexInfo['count'] }} шт.
+                    {{ title }}  -  {{ complexInfo['count'] }} шт.  -  {{ complexInfo['price'] }} руб.
                 </div>
                 <div class="complexProductItems">
                     {% for food in complexInfo['foods'] %}
                         <div class="complexProductItem">
-                            &emsp;&emsp;&emsp;{{ food.title }}
+                            &emsp;&emsp;&emsp;<a href="{{ food.link }}">{{ food.title }}  -  {{ food.price }} руб.</a>
                         </div>
                     {% endfor %}
                 </div>

@@ -5,7 +5,7 @@ from gevent.pywsgi import WSGIServer
 from pathlib import Path
 from src.salt import hash_password, verify_password
 from src.config import config, keys
-from src.parser import namnyamParser, foodItem
+from src.parser import namnyamParser, foodItem, shortFoodItem
 import threading
 import json
 import time
@@ -44,16 +44,17 @@ def getUserCart(username) -> dict:
     cart = {'complex': {}, 'menu': []}
     for item in cartItems:
         title = item[0]
-        price = item[3]
-        Type = item[6]
-        count = item[7]
+        price = item[1]
+        link = item[2]
+        Type = item[3]
+        count = item[4]
 
         if Type == 'complex':
-            cart['complex'][title] = {'foods': [foodItem(x[0], x[1], x[2], x[3], x[4], x[5]) 
+            cart['complex'][title] = {'foods': [shortFoodItem(x[0], x[1], x[2]) 
                                                 for x in db.getComplexItems(' '.join((title, f'{price} руб.')), 'complexItem')],
-                                        'count': count}
+                                      'count': count, 'price': price}
         elif Type == 'menu':
-            cart['menu'].append(foodItem(title, item[1], item[2], price, item[4], item[5], count=count))
+            cart['menu'].append(shortFoodItem(title, price, link, count=count))
 
         cart['_SUM'] = cartSum[0]
 
@@ -136,7 +137,7 @@ def dailyMenuUpdate():
                 section = section.split(' ')
                 title = ' '.join(section[:-2])
                 price = int(section[-2:-1][0])
-                complexProducts.append(foodItem(title, 'None', 'None', price, 'None', 'None'))
+                complexProducts.append(shortFoodItem(title, price, 'None'))
 
             db.clearDailyMenu()
 
@@ -147,7 +148,7 @@ def dailyMenuUpdate():
                                 for k, foods in dailycomplex.items() for v in foods] + \
                                     [(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'menu', date) \
                                         for k, foods in dailymenu.items() for v in foods] + \
-                                            [(p.title, p.weight, p.calories, p.price, p.link, p.image_link, 'None', 'complex', date) \
+                                            [(p.title, 'None', 'None', p.price, 'None', 'None', 'None', 'complex', date) \
                                                 for p in complexProducts])
 
         time.sleep(config['dailyMenuUpdateInterval'])

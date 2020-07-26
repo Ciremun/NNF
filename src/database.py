@@ -182,12 +182,12 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
     @acquireLock
     def getUserCartItems(self, username: str):
         sql = """\
-SELECT p.title, p.weight, p.calories, p.price, p.link, p.image_link, p.type, COUNT(p.title) \
+SELECT p.title, p.price, p.link, p.type, COUNT(p.title) \
 FROM users u LEFT JOIN cart ON cart.user_id=u.id \
 LEFT JOIN cartproduct cp ON cp.cart_id=cart.id \
 LEFT JOIN dailymenu p ON p.id=cp.product_id \
 WHERE u.username = %s \
-GROUP by p.title, p.weight, p.calories, p.price, p.link, p.image_link, p.type \
+GROUP by p.title, p.price, p.link, p.type \
 HAVING COUNT(p.title) > 0\
 """
         self.cursor.execute(sql, (username,))
@@ -284,7 +284,7 @@ WHERE title = %s AND price = %s AND type = %s\
     def getComplexItems(self, section: str, Type: str):
         sql = """\
 SELECT \
-title, weight, calories, price, link, image_link FROM dailymenu \
+title, price, link FROM dailymenu \
 WHERE section = %s AND type = %s\
 """
         self.cursor.execute(sql, (section, Type))
