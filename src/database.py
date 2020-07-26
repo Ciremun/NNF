@@ -32,6 +32,8 @@ class Database(threading.Thread):
         self.createDailyMenuTable()
         self.createCartTable()
         self.createCartProductTable()
+        self.createOrdersTable()
+        self.createOrderProductTable()
         self.createTriggers()
 
     @acquireLock
@@ -53,8 +55,10 @@ CREATE OR REPLACE FUNCTION createCart()
 CREATE OR REPLACE FUNCTION deleteCart()
     RETURNS TRIGGER AS $$
     BEGIN
+        DELETE FROM cartproduct
+        WHERE cart_id = (SELECT id FROM cart WHERE user_id = OLD.id);
         DELETE FROM cart
-        WHERE user_id = (SELECT id FROM users WHERE username = OLD.username);
+        WHERE user_id = OLD.id;
         RETURN OLD;
     END;
     $$ LANGUAGE plpgsql;
@@ -67,9 +71,21 @@ CREATE OR REPLACE FUNCTION deleteCartProduct()
     END;
     $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION deleteOrders()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        DELETE FROM orderproduct
+        WHERE order_id = (SELECT id FROM orders WHERE user_id = OLD.id);
+        DELETE FROM orders
+        WHERE user_id = OLD.id;
+        RETURN OLD;
+    END;
+    $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS addCartTrigger on users;
 DROP TRIGGER IF EXISTS deleteCartTrigger on users;
 DROP TRIGGER IF EXISTS deleteCartProductTrigger on dailymenu;
+DROP TRIGGER IF EXISTS deleteOrdersTrigger on users;
 
 CREATE TRIGGER addCartTrigger
     AFTER INSERT ON users
@@ -84,7 +100,12 @@ CREATE TRIGGER deleteCartTrigger
 CREATE TRIGGER deleteCartProductTrigger
     BEFORE DELETE ON dailymenu
     FOR EACH ROW
-    EXECUTE FUNCTION deleteCartProduct();\
+    EXECUTE FUNCTION deleteCartProduct();
+
+CREATE TRIGGER deleteOrdersTrigger
+    BEFORE DELETE ON users
+    FOR EACH ROW
+    EXECUTE FUNCTION deleteOrders();\
 """
         self.cursor.execute(sql)
 
@@ -92,7 +113,7 @@ CREATE TRIGGER deleteCartProductTrigger
     def createUsersTable(self):
         sql = """\
 CREATE TABLE IF NOT EXISTS \
-users(id serial primary key, username text, displayname text, password text, usertype text)\
+users(id serial primary key, username text, displayname text, password text, usertype text, date date)\
 """
         self.cursor.execute(sql)
 
@@ -131,12 +152,37 @@ product_id integer references dailymenu(id), id serial primary key)\
         self.cursor.execute(sql)
 
     @acquireLock
-    def addCart(self, user_id: int):
+    def createOrdersTable(self):
+        sql = """\
+CREATE TABLE IF NOT EXISTS \
+orders(user_id integer references users(id), id serial primary key)\
+"""
+        self.cursor.execute(sql)
+
+    @acquireLock
+    def createOrderProductTable(self):
+        sql = """\
+CREATE TABLE IF NOT EXISTS \
+orderproduct(order_id integer references orders(id), \
+title text, price integer, link text, id serial primary key)\
+"""
+        self.cursor.execute(sql)
+
+    @acquireLock
+    def addOrder(self, user_id: int, date: str):
         sql = """\
 INSERT INTO \
-cart(user_id) VALUES (%s)\
+orders(user_id, date) VALUES (%s)\
 """
         self.cursor.execute(sql, (user_id,))
+
+    @acquireLock
+    def addOrderProduct(self, order_id: int, title: str, price: int, link: str):
+        sql = """\
+INSERT INTO \
+orderproduct(order_id, title, price, link) VALUES (%s, %s, %s, %s)\
+"""
+        self.cursor.execute(sql, (order_id, title, price, link))
 
     @acquireLock
     def addCartProduct(self, cart_id: int, product_id: int):
@@ -155,12 +201,12 @@ cartproduct(cart_id, product_id) VALUES (%s, %s)\
         self.cursor.executemany(sql, ids)
 
     @acquireLock
-    def addUser(self, username: str, displayname: str, password: str, usertype: str):
+    def addUser(self, username: str, displayname: str, password: str, usertype: str, date: str):
         sql = """\
 INSERT INTO \
-users(username, displayname, password, usertype) VALUES (%s, %s, %s, %s)\
+users(username, displayname, password, usertype, date) VALUES (%s, %s, %s, %s, %s)\
 """
-        self.cursor.execute(sql, (username, displayname, password, usertype))
+        self.cursor.execute(sql, (username, displayname, password, usertype, date))
 
     @acquireLock
     def addSession(self, sid: str, username: str, usertype: str, date: str):
