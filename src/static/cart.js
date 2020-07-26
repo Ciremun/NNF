@@ -9,6 +9,7 @@ async function addToCart(type) {
                 alert('success');
             } else {
                 alert(response.message);
+                window.location.reload(true);
             }
     } else if (type === 'menu') {
         alert('wip');
