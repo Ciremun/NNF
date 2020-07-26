@@ -245,8 +245,9 @@ def login():
             SID = hash_password(sessionSecret)
             date = datetime.date.today()
             sessions[SID] = {'username': username, 'usertype': 'user', 'date': date}
-            db.addUser(username, displayname, hashed_pwd, 'user')
-            db.addSession(SID, username, 'user', f'{date.year}-{date.month}-{date.day}')
+            date = f'{date.year}-{date.month}-{date.day}'
+            db.addUser(username, displayname, hashed_pwd, 'user', date)
+            db.addSession(SID, username, 'user', date)
             logger.info(f'register user {username}')
             return {'success': True, 'SID': SID}
     return render_template('login.html')
@@ -360,9 +361,14 @@ def menu():
     userinfo = {}
 
     if session:
-        auth = True
         username = session['username']
-        userinfo = {'username': username, 'displayname': db.getUserDisplayName(username)[0]}
+
+        displayname = db.getUserDisplayName(username)
+        if not displayname:
+            return render_template('menu.html', auth=auth, userinfo=userinfo, dailymenu=dailymenu, dailycomplex=dailycomplex)
+
+        auth = True
+        userinfo = {'username': username, 'displayname': displayname[0]}
         updateUserSession(SID)
 
     return render_template('menu.html', auth=auth, userinfo=userinfo, dailymenu=dailymenu, dailycomplex=dailycomplex)
@@ -378,7 +384,12 @@ def cart():
     if session:
 
         username = session['username']
-        userinfo = {'username': username, 'displayname': db.getUserDisplayName(username)[0]}
+
+        displayname = db.getUserDisplayName(username)
+        if not displayname:
+            return render_template('menu.html', auth=False, userinfo={}, dailymenu=dailymenu, dailycomplex=dailycomplex)
+
+        userinfo = {'username': username, 'displayname': displayname[0]}
 
         updateUserSession(SID)
         logger.info(f'update session {username}')
