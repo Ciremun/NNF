@@ -47,13 +47,14 @@ def getUserCart(username) -> dict:
         price = item[1]
         link = item[2]
         Type = item[3]
+        itemID = item[4]
 
         if Type == 'complex':
-            cart['complex'][title] = {'foods': [shortFoodItem(x[0], x[1], x[2]) 
+            cart['complex'][title] = {'foods': [shortFoodItem(x[0], x[1], x[2], ID=x[3]) 
                                                 for x in db.getComplexItems(' '.join((title, f'{price} руб.')), 'complexItem')],
-                                      'price': price}
+                                      'price': price, 'ID': itemID}
         elif Type == 'menu':
-            cart['menu'].append(shortFoodItem(title, price, link))
+            cart['menu'].append(shortFoodItem(title, price, link, ID=itemID))
 
         cart['_SUM'] = cartSum[0]
 
@@ -158,16 +159,29 @@ if keys['DEBUG']:
 
     dailycomplex = {}
     dailymenu = {}
-    it = None
+    old_section = None
 
     for k, v in {'complexItem': dailycomplex, 'menu': dailymenu}.items():
         for i in db.getDailyMenuByType(k):
-            if i[6] != it:
-                v[i[6]] = []
-                v[i[6]].append(foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
-                it = i[6]
+            section = i[6]
+            food_item = foodItem(i[0], i[1], i[2], i[3], i[4], i[5], ID=i[7])
+            if section != old_section:
+                if k == 'complexItem':
+                    v[section] = {}
+                    v[section]['foods'] = []
+                    v[section]['foods'].append(food_item)
+                    split_ = section.split(' ')
+                    product_id = db.getProductID(' '.join(split_[:-2]), int(split_[-2:-1][0]), 'complex')
+                    v[section]['ID'] = product_id[0]
+                else:
+                    v[section] = []
+                    v[section].append(food_item)
+                old_section = section
                 continue
-            v[i[6]].append(foodItem(i[0], i[1], i[2], i[3], i[4], i[5]))
+            if k == 'complexItem':
+                v[section]['foods'].append(food_item)
+            else:
+                v[section].append(food_item)
 
     monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
     monthlyClearSessionsThread.start()
@@ -258,7 +272,7 @@ def linkprofile(username):
 
     userinfo = db.getUser(username)
     if not userinfo:
-        return "User not found"
+        return redirect('/menu', code=302)
 
     SID = request.cookies.get("SID")
     session = sessions.get(SID)
@@ -274,7 +288,7 @@ def linkprofile(username):
             return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=None)
 
         return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=cart)
-    return "401 Unauthorized"
+    return redirect('/menu', code=302)
 
 
 @app.route('/logout', methods=['POST'])
@@ -382,7 +396,7 @@ def cart():
 
         displayname = db.getUserDisplayName(username)
         if not displayname:
-            return render_template('menu.html', auth=False, userinfo={}, dailymenu=dailymenu, dailycomplex=dailycomplex)
+            return redirect('/menu', code=302)
 
         userinfo = {'username': username, 'displayname': displayname[0]}
 
@@ -394,7 +408,7 @@ def cart():
             return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=None)
 
         return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=cart)
-    return "401 Unauthorized"
+    return redirect('/menu', code=302)
 
 # Production
 # requestLogs = 'default' if config['flaskLogging'] else None

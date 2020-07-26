@@ -163,7 +163,7 @@ orders(user_id integer references users(id), id serial primary key)\
         sql = """\
 CREATE TABLE IF NOT EXISTS \
 orderproduct(order_id integer references orders(id), \
-title text, price integer, link text, id serial primary key)\
+title text, price integer, link text, quantity integer, id serial primary key)\
 """
         self.cursor.execute(sql)
 
@@ -176,12 +176,12 @@ orders(user_id, date) VALUES (%s)\
         self.cursor.execute(sql, (user_id,))
 
     @acquireLock
-    def addOrderProduct(self, order_id: int, title: str, price: int, link: str):
+    def addOrderProduct(self, order_id: int, title: str, price: int, link: str, quantity: int):
         sql = """\
 INSERT INTO \
-orderproduct(order_id, title, price, link) VALUES (%s, %s, %s, %s)\
+orderproduct(order_id, title, price, link, quantity) VALUES (%s, %s, %s, %s, %s)\
 """
-        self.cursor.execute(sql, (order_id, title, price, link))
+        self.cursor.execute(sql, (order_id, title, price, link, quantity))
 
     @acquireLock
     def addCartProduct(self, cart_id: int, product_id: int):
@@ -232,7 +232,7 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
     @acquireLock
     def getUserCartItems(self, username: str):
         sql = """\
-SELECT p.title, p.price, p.link, p.type \
+SELECT p.title, p.price, p.link, p.type, p.id \
 FROM users u \
 LEFT JOIN cart ON cart.user_id=u.id \
 LEFT JOIN cartproduct cp ON cp.cart_id=cart.id \
@@ -306,7 +306,7 @@ sid, username, usertype, date FROM sessions\
     def getDailyMenuByType(self, Type: str):
         sql = """\
 SELECT \
-title, weight, calories, price, link, image_link, section FROM dailymenu \
+title, weight, calories, price, link, image_link, section, id FROM dailymenu \
 WHERE type = %s\
 """
         self.cursor.execute(sql, (Type,))
@@ -326,7 +326,7 @@ WHERE title = %s AND price = %s AND type = %s limit 1\
     def getComplexItems(self, section: str, Type: str):
         sql = """\
 SELECT \
-title, price, link FROM dailymenu \
+title, price, link, id FROM dailymenu \
 WHERE section = %s AND type = %s\
 """
         self.cursor.execute(sql, (section, Type))

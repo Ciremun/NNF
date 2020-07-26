@@ -9,21 +9,23 @@ namnyamURL = "https://www.nam-nyam.ru/catering/"
 
 class foodItem:
 
-    def __init__(self, title, weight, calories, price, link, image_link):
+    def __init__(self, title, weight, calories, price, link, image_link, ID=None):
         self.title = title
         self.weight = weight
         self.calories = calories
         self.price = price
         self.link = link
         self.image_link = image_link
+        self.ID = ID
 
 
 class shortFoodItem:
 
-    def __init__(self, title, price, link):
+    def __init__(self, title, price, link, ID=None):
         self.title = title
         self.price = price
         self.link = link
+        self.ID = ID
 
 
 class namnyamParser(threading.Thread):

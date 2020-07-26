@@ -13,10 +13,10 @@
         {% for category, items in dailycomplex.items() %}
             <div class="category_head">
                 <div class="category_label">{{ category }}</div>
-                <div class="complex_buy" onclick="addToCart('complex')"><span>Купить</span></div>
+                <div class="complex_buy" data-itemid="{{ items['ID'] }}" onclick="addToCart('complex')"><span>Купить</span></div>
             </div>
             <div class="category">
-                {% for item in items %}
+                {% for item in items['foods'] %}
                     <div class="item">
                         <img src="{{ item.image_link }}" alt="{{ item.title }}">
                         <div class="item_title">
