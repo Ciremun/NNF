@@ -321,10 +321,6 @@ def buy():
     session = sessions.get(SID)
     if session:
 
-        Type = message.get('type')
-        if not isinstance(Type, str):
-            return {'success': False, 'message': 'Error: no item type'}
-
         if session['usertype'] == 'admin':
             username = message.get('username')
             if not isinstance(username, str):
@@ -332,32 +328,25 @@ def buy():
         else:
             username = session['username']
 
-        item = message.get("item")
-        price = message.get("price")
+        cart_id = db.getUserCartID(username)
+        if not cart_id:
+            return {'success': False, 'message': 'Error: cart not found'}
 
-        if not (isinstance(item, str) and isinstance(price, str)):
+        product_id = message.get('productID')
+        try:
+            product_id = int(product_id)
+        except (TypeError, ValueError):
+            logger.info(f'invalid productID {product_id}')
+            return {'success': False, 'message': 'Error: invalid product id.'}
+
+        product_id = db.getProductByID(product_id)
+        if not product_id:
+            logger.info(f'invalid productID not found {product_id}')
             return {'success': False, 'message': 'Error: product not found'}
 
-        try:
-            price = int(price)
-        except ValueError:
-            return {'success': False, 'message': 'Error: price is not a number'}
+        db.addCartProduct(cart_id[0], product_id[0])
 
-        if any(x == Type for x in ['menu', 'complex']):
-
-            cart_id = db.getUserCartID(username)
-            if not cart_id:
-                return {'success': False, 'message': 'Error: cart not found'}
-
-            product_id = db.getProductID(item, price, Type)
-            if not product_id:
-                return {'success': False, 'message': 'Error: product not found'}
-
-            db.addCartProduct(cart_id[0], product_id[0])
-
-            return {'success': True}
-        else:
-            return {'success': False, 'message': 'Error: unknown item type'}
+        return {'success': True}
 
     return {'success': False, 'message': 'Unauthorized'}
 

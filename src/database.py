@@ -323,6 +323,15 @@ WHERE title = %s AND price = %s AND type = %s limit 1\
         return self.cursor.fetchone()
 
     @acquireLock
+    def getProductByID(self, product_id: int):
+        sql = """\
+SELECT id FROM dailymenu \
+WHERE id = %s AND (type = 'complex' or type = 'menu')\
+"""
+        self.cursor.execute(sql, (product_id,))
+        return self.cursor.fetchone()
+
+    @acquireLock
     def getComplexItems(self, section: str, Type: str):
         sql = """\
 SELECT \
