@@ -220,8 +220,8 @@ def login():
         if not (isinstance(username, str) and isinstance(password, str)):
             return {'success': False, 'message': 'enter username and password'}
 
-        if any(len(x) > 25 for x in [username, password]):
-            return {'success': False, 'message': 'max username/password length = 25!'}
+        if not all(0 < len(x) <= 25 for x in [username, password]):
+            return {'success': False, 'message': 'username/password length = 1-25 chars!'}
 
         for i in username, password:
             for letter in i:
