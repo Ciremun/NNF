@@ -37,9 +37,7 @@ sys.excepthook = uncaughtExceptionHandler
 def getUserCart(username) -> dict:
     cartItems = db.getUserCartItems(username)
     if not cartItems:
-        return False
-
-    cartSum = db.getUserCartSum(username)
+        return None
 
     cart = {'complex': {}, 'menu': []}
     for item in cartItems:
@@ -55,8 +53,6 @@ def getUserCart(username) -> dict:
                                       'price': price, 'ID': itemID}
         elif Type == 'menu':
             cart['menu'].append(shortFoodItem(title, price, link, ID=itemID))
-
-        cart['_SUM'] = cartSum[0]
 
     return cart
 
@@ -276,7 +272,7 @@ def linkprofile(username):
 
     SID = request.cookies.get("SID")
     session = sessions.get(SID)
-    if session and (session['username'] == username or session['usertype'] == 'admin'):
+    if session and session['username'] == username:
 
         userinfo = {'username': username, 'displayname': userinfo[0]}
 
@@ -284,8 +280,10 @@ def linkprofile(username):
         logger.info(f'update session {username}')
 
         cart = getUserCart(username)
-        if not cart:
-            return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=None)
+        
+        if cart:
+            cartSum = db.getUserCartSum(username)
+            cart['_SUM'] = cartSum[0]
 
         return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=cart)
     return redirect('/menu', code=302)
@@ -355,49 +353,23 @@ def buy():
 def menu():
     SID = request.cookies.get("SID")
     session = sessions.get(SID)
-    auth = False
-    userinfo = {}
 
     if session:
         username = session['username']
 
         displayname = db.getUserDisplayName(username)
         if not displayname:
-            return render_template('menu.html', auth=auth, userinfo=userinfo, dailymenu=dailymenu, dailycomplex=dailycomplex)
-
-        auth = True
-        userinfo = {'username': username, 'displayname': displayname[0]}
-        updateUserSession(SID)
-
-    return render_template('menu.html', auth=auth, userinfo=userinfo, dailymenu=dailymenu, dailycomplex=dailycomplex)
-
-
-@app.route('/cart')
-def cart():
-    """
-    Currently mimics userprofile.
-    """
-    SID = request.cookies.get("SID")
-    session = sessions.get(SID)
-    if session:
-
-        username = session['username']
-
-        displayname = db.getUserDisplayName(username)
-        if not displayname:
-            return redirect('/menu', code=302)
-
-        userinfo = {'username': username, 'displayname': displayname[0]}
+            return render_template('menu.html', auth=False, userinfo={}, dailymenu=dailymenu, dailycomplex=dailycomplex)
 
         updateUserSession(SID)
-        logger.info(f'update session {username}')
 
         cart = getUserCart(username)
-        if not cart:
-            return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=None)
 
-        return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=cart)
-    return redirect('/menu', code=302)
+        return render_template('menu.html', auth=True, userinfo={'username': username, 'displayname': displayname[0]},
+                                            dailymenu=dailymenu, dailycomplex=dailycomplex, cart=cart)
+    return render_template('menu.html', auth=False, userinfo={},
+                                        dailymenu=dailymenu, dailycomplex=dailycomplex)
+
 
 # Production
 # requestLogs = 'default' if config['flaskLogging'] else None

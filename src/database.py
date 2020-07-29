@@ -41,6 +41,8 @@ class Database(threading.Thread):
         """
         Create cart on user signup.
         Delete cart on user delete.
+        Delete cart item on menu delete.
+        Delete orders on user delete.
         """
         sql = """\
 CREATE OR REPLACE FUNCTION createCart()
@@ -146,7 +148,7 @@ cart(user_id integer references users(id), id serial primary key)\
         sql = """\
 CREATE TABLE IF NOT EXISTS \
 cartproduct(cart_id integer references cart(id), \
-product_id integer references dailymenu(id), id serial primary key)\
+product_id integer references dailymenu(id), amount integer, id serial primary key)\
 """
         self.cursor.execute(sql)
 
@@ -163,7 +165,7 @@ orders(user_id integer references users(id), id serial primary key)\
         sql = """\
 CREATE TABLE IF NOT EXISTS \
 orderproduct(order_id integer references orders(id), \
-title text, price integer, link text, quantity integer, id serial primary key)\
+title text, price integer, link text, amount integer, id serial primary key)\
 """
         self.cursor.execute(sql)
 
@@ -176,12 +178,12 @@ orders(user_id, date) VALUES (%s)\
         self.cursor.execute(sql, (user_id,))
 
     @acquireLock
-    def addOrderProduct(self, order_id: int, title: str, price: int, link: str, quantity: int):
+    def addOrderProduct(self, order_id: int, title: str, price: int, link: str, amount: int):
         sql = """\
 INSERT INTO \
-orderproduct(order_id, title, price, link, quantity) VALUES (%s, %s, %s, %s, %s)\
+orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
 """
-        self.cursor.execute(sql, (order_id, title, price, link, quantity))
+        self.cursor.execute(sql, (order_id, title, price, link, amount))
 
     @acquireLock
     def addCartProduct(self, cart_id: int, product_id: int):
