@@ -13,11 +13,7 @@
         {% for category, items in dailycomplex.items() %}
             <div class="category_head">
                 <div class="category_label">{{ category }}</div>
-                {% if cart and cart['complex'].get(' '.join(category.split(' ')[:-2]))%}
-                    <div class="addToCart" data-itemid="{{ items['ID'] }}" onclick="addToCart()"></div>
-                {% else %}
-                    <div class="complex_buy itemNotFound" data-itemid="{{ items['ID'] }}" onclick="addToCart()"></div>
-                {% endif %}
+                <div class="circle" data-itemid="{{ items['ID'] }}" onclick="addToCart()">+</div>
             </div>
             <div class="complex_category">
                 {% for item in items['foods'] %}

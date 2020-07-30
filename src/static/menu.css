@@ -97,25 +97,17 @@ header, .orders_section {
     margin: auto;
 }
 
-.addToCart {
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    background-color: rgb(44,108,128);
-
-    margin-left: 0.8em;
-    cursor: pointer;
-}
-
-.addToCart::before {
-    content: "+";
-    height: 30px;
-    width: 30px;
-    font-size: 35px;
+.circle {
     display: flex;
-    flex-direction: row;
+    background-color: rgb(44,108,128);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
     align-items: center;
     justify-content: center;
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 35px;
     font-weight: bold;
     font-family: Courier;
     color: white;

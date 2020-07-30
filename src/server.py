@@ -342,7 +342,7 @@ def buy():
             logger.info(f'invalid productID not found {product_id}')
             return {'success': False, 'message': 'Error: product not found'}
 
-        db.addCartProduct(cart_id[0], product_id[0])
+        db.addCartProduct(cart_id[0], product_id[0], 1)
 
         return {'success': True}
 

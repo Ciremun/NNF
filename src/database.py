@@ -186,25 +186,25 @@ orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
         self.cursor.execute(sql, (order_id, title, price, link, amount))
 
     @acquireLock
-    def addCartProduct(self, cart_id: int, product_id: int):
-        """
-        Add product to cart if not there.
-        """
+    def addCartProduct(self, cart_id: int, product_id: int, amount: int):
         sql = """\
-INSERT INTO \
-cartproduct(cart_id, product_id) \
-SELECT %(cart_id)s, %(product_id)s \
-WHERE NOT EXISTS (SELECT 1 FROM cartproduct WHERE cart_id = %(cart_id)s AND product_id = %(product_id)s)\
+SELECT 1 FROM cartproduct WHERE cart_id = %s AND product_id = %s\
 """
-        self.cursor.execute(sql, {'cart_id': cart_id, 'product_id': product_id})
-
-    @acquireLock
-    def addCartProducts(self, ids: list):
-        sql = """\
-INSERT INTO \
-cartproduct(cart_id, product_id) VALUES (%s, %s)\
+        self.cursor.execute(sql, (cart_id, product_id))
+        if self.cursor.fetchone():
+            sql = """\
+UPDATE cartproduct \
+SET amount = amount + %s\
+WHERE cart_id = %s AND product_id = %s\
 """
-        self.cursor.executemany(sql, ids)
+            self.cursor.execute(sql, (amount, cart_id, product_id))
+        else:
+            sql = """\
+INSERT INTO \
+cartproduct(cart_id, product_id, amount) \
+VALUES (%s, %s, %s)\
+"""
+            self.cursor.execute(sql, (cart_id, product_id, amount))
 
     @acquireLock
     def addUser(self, username: str, displayname: str, password: str, usertype: str, date: str):
