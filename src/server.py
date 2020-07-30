@@ -377,5 +377,5 @@ def menu():
 # wsgi = WSGIServer(('0.0.0.0', keys['flaskPort']), app, log=requestLogs, error_log=logger)
 # wsgi.serve_forever()
 
-# Debug
+# Debug.
 app.run(debug=True, host='0.0.0.0', port=keys['flaskPort'])
