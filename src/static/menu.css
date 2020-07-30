@@ -111,6 +111,11 @@ header, .orders_section {
     font-weight: bold;
     font-family: Courier;
     color: white;
+    transition: transform .8s;
+}
+
+.circle:hover {
+    transform: rotate(360deg);
 }
 
 @media (max-width: 1300px) {
