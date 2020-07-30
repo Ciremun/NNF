@@ -26,25 +26,35 @@ class Database(threading.Thread):
         self.conn.autocommit = True
         self.cursor = self.conn.cursor()
         self.lock = threading.Lock()
-
-        self.createUsersTable()
-        self.createSessionsTable()
-        self.createDailyMenuTable()
-        self.createCartTable()
-        self.createCartProductTable()
-        self.createOrdersTable()
-        self.createOrderProductTable()
-        self.createTriggers()
+        self.postgreInit()
 
     @acquireLock
-    def createTriggers(self):
-        """
-        Create cart on user signup.
-        Delete cart on user delete.
-        Delete cart item on menu delete.
-        Delete orders on user delete.
-        """
+    def postgreInit(self):
         sql = """\
+CREATE TABLE IF NOT EXISTS 
+users(id serial primary key, username text, displayname text, password text, usertype text, date date);
+
+CREATE TABLE IF NOT EXISTS 
+sessions(id serial primary key, sid text, username text, usertype text, date date);
+
+CREATE TABLE IF NOT EXISTS 
+dailymenu(id serial primary key, title text, weight text, calories text, price integer, 
+link text, image_link text, section text, type text, date date);
+
+CREATE TABLE IF NOT EXISTS 
+cart(user_id integer references users(id), id serial primary key);
+
+CREATE TABLE IF NOT EXISTS 
+cartproduct(cart_id integer references cart(id), 
+product_id integer references dailymenu(id), amount integer, id serial primary key);
+
+CREATE TABLE IF NOT EXISTS 
+orders(user_id integer references users(id), id serial primary key);
+
+CREATE TABLE IF NOT EXISTS 
+orderproduct(order_id integer references orders(id), 
+title text, price integer, link text, amount integer, id serial primary key);
+
 CREATE OR REPLACE FUNCTION createCart()
     RETURNS TRIGGER AS $$
     BEGIN
@@ -83,6 +93,17 @@ CREATE OR REPLACE FUNCTION deleteOrders()
     END;
     $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION addCartProduct(int, int, int)
+    RETURNS VOID AS $$
+    BEGIN
+        IF (SELECT EXISTS(SELECT 1 FROM cartproduct WHERE cart_id = $1 AND product_id = $2)) THEN
+            UPDATE cartproduct SET amount = amount + $3 WHERE cart_id = $1 AND product_id = $2;
+        ELSE
+            INSERT INTO cartproduct(cart_id, product_id, amount) VALUES ($1, $2, $3);
+        END IF;
+    END;
+    $$ LANGUAGE plpgsql;
+
 DROP TRIGGER IF EXISTS addCartTrigger on users;
 DROP TRIGGER IF EXISTS deleteCartTrigger on users;
 DROP TRIGGER IF EXISTS deleteCartProductTrigger on dailymenu;
@@ -111,65 +132,6 @@ CREATE TRIGGER deleteOrdersTrigger
         self.cursor.execute(sql)
 
     @acquireLock
-    def createUsersTable(self):
-        sql = """\
-CREATE TABLE IF NOT EXISTS \
-users(id serial primary key, username text, displayname text, password text, usertype text, date date)\
-"""
-        self.cursor.execute(sql)
-
-    @acquireLock
-    def createSessionsTable(self):
-        sql = """\
-CREATE TABLE IF NOT EXISTS \
-sessions(id serial primary key, sid text, username text, usertype text, date date)\
-"""
-        self.cursor.execute(sql)
-
-    @acquireLock
-    def createDailyMenuTable(self):
-        sql = """\
-CREATE TABLE IF NOT EXISTS \
-dailymenu(id serial primary key, title text, weight text, calories text, price integer, \
-link text, image_link text, section text, type text, date date)\
-"""
-        self.cursor.execute(sql)
-
-    @acquireLock
-    def createCartTable(self):
-        sql = """\
-CREATE TABLE IF NOT EXISTS \
-cart(user_id integer references users(id), id serial primary key)\
-"""
-        self.cursor.execute(sql)
-
-    @acquireLock
-    def createCartProductTable(self):
-        sql = """\
-CREATE TABLE IF NOT EXISTS \
-cartproduct(cart_id integer references cart(id), \
-product_id integer references dailymenu(id), amount integer, id serial primary key)\
-"""
-        self.cursor.execute(sql)
-
-    @acquireLock
-    def createOrdersTable(self):
-        sql = """\
-CREATE TABLE IF NOT EXISTS \
-orders(user_id integer references users(id), id serial primary key)\
-"""
-        self.cursor.execute(sql)
-
-    @acquireLock
-    def createOrderProductTable(self):
-        sql = """\
-CREATE TABLE IF NOT EXISTS \
-orderproduct(order_id integer references orders(id), \
-title text, price integer, link text, amount integer, id serial primary key)\
-"""
-        self.cursor.execute(sql)
-
-    @acquireLock
     def addOrder(self, user_id: int, date: str):
         sql = """\
 INSERT INTO \
@@ -188,23 +150,9 @@ orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
     @acquireLock
     def addCartProduct(self, cart_id: int, product_id: int, amount: int):
         sql = """\
-SELECT 1 FROM cartproduct WHERE cart_id = %s AND product_id = %s\
+SELECT addCartProduct(%s, %s, %s)
 """
-        self.cursor.execute(sql, (cart_id, product_id))
-        if self.cursor.fetchone():
-            sql = """\
-UPDATE cartproduct \
-SET amount = amount + %s\
-WHERE cart_id = %s AND product_id = %s\
-"""
-            self.cursor.execute(sql, (amount, cart_id, product_id))
-        else:
-            sql = """\
-INSERT INTO \
-cartproduct(cart_id, product_id, amount) \
-VALUES (%s, %s, %s)\
-"""
-            self.cursor.execute(sql, (cart_id, product_id, amount))
+        self.cursor.execute(sql, (cart_id, product_id, amount))
 
     @acquireLock
     def addUser(self, username: str, displayname: str, password: str, usertype: str, date: str):
