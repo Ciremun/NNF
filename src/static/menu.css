@@ -135,16 +135,18 @@ header, .orders_section {
 }
 
 .hidden {
-    display: none;
+    display: flex;
     position: absolute;
     top: 50%;
     left: -5%;
     transform: translateY(-50%);
     z-index: 2;
+    opacity: 0;
+    transition: all .2s ease-out;
 }
 
 .menu_item_img:hover > .hidden {
-    display: flex;
+    opacity: 1;
 }
 
 @media (max-width: 1300px) {
@@ -158,6 +160,7 @@ header, .orders_section {
     }
  }
 
+ /* Mobile */
  @media (max-width: 1000px) {
 
     ul, li, .top_panel {
