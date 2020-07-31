@@ -4,14 +4,7 @@ function loginEnterKey() {
 }
 
 async function login() {
-
-    let usernameField = document.getElementById('userfield'),
-        passwordField = document.getElementById('passfield'),
-        username = usernameField.value,
-        password = passwordField.value;
-
-    login_response = await postData('/login', {username: username.toLowerCase(), displayname: username, password: password});
-    
+    login_response = await postData('/login', {username: userfield.value.toLowerCase(), displayname: userfield.value, password: passfield.value});
     if (login_response.success) {
         let SID = getCookie('SID'),
             now = new Date();
@@ -21,7 +14,7 @@ async function login() {
         window.location.href = `${location.protocol}//${window.location.host}/menu`;
     } else {
         alert(login_response.message);
-        passwordField.value = "";
+        passfield.value = "";
     }
 }
 
@@ -32,5 +25,26 @@ async function logout() {
         window.location.href = `${location.protocol}//${window.location.host}`;
     } else {
         window.location.reload(true);
+    }
+}
+
+let modal = document.getElementById("DivModal"),
+    btn = document.getElementById("LoginButton"),
+    span = document.getElementsByClassName("CloseModal")[0],
+    userfield = document.getElementById('userfield'),
+    passfield = document.getElementById('passfield');
+
+btn.onclick = function() {
+    modal.style.display = "block";
+    userfield.focus();
+}
+
+span.onclick = function() {
+    modal.style.display = "none";
+}
+
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = "none";
     }
 }

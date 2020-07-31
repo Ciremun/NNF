@@ -197,7 +197,7 @@ def index():
     return redirect('/menu', code=302)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
     """
     Login page does signup and login (username+password),
@@ -255,7 +255,6 @@ def login():
             db.addSession(SID, username, 'user', date)
             logger.info(f'register user {username}')
             return {'success': True, 'SID': SID}
-    return render_template('login.html')
 
 
 @app.route('/u/<username>')

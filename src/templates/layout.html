@@ -15,10 +15,24 @@
                 <li class="left"><a href="/menu" class="top_panel">Меню</a></li>
                 <li class="right"><a href="/u/{{ userinfo.get('username') }}" class="top_panel">{{ userinfo.get('displayname') }}</a></li>
             {% else %}
-                <li class="right"><a href="/login" class="top_panel">Вход/Регистрация</a></li>
+                <li class="right"><a href="#" id="LoginButton" class="top_panel">Вход/Регистрация</a></li>
             {% endif %}
         </ul>
+        <div id="DivModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="CloseModal">&times;</span>
+                    <h2>hi!</h2>
+                </div>
+                <div class="modal-body">
+                    <div class="userbox"><input type="text" id="userfield" spellcheck="false" maxlength="25" onkeydown="loginEnterKey()" placeholder="Username"><br><br></div>
+                    <div class="passbox"><input type="password" id="passfield" spellcheck="false" maxlength="25" onkeydown="loginEnterKey()" placeholder="Password"><br><br></div>
+                    <div class="loginbutton"><input type="submit" value="login" onclick="login()"></div>
+                </div>
+            </div>
+        </div>
     </header>
     {% block content %}{% endblock %}
+    <script src="{{ url_for('static',filename='login.js') }}"></script>
 </body>
 </html>

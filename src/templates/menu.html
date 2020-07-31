@@ -9,6 +9,7 @@
 {% endblock %}
 
 {% block content %}
+
     <section class="orders_section">
         {% for category, items in dailycomplex.items() %}
             <div class="category_head">
@@ -67,5 +68,4 @@
     </section>
     <script>window.username = "{{ userinfo.get('username') }}"</script>
     <script src="{{ url_for('static',filename='cart.js') }}"></script>
-    <script src="{{ url_for('static',filename='login.js') }}"></script>
 {% endblock %}
