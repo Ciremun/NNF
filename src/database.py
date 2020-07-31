@@ -194,7 +194,7 @@ INNER JOIN dailymenu p ON p.id=cp.product_id WHERE u.username = %s\
     @acquireLock
     def getUserCartSum(self, username: str):
         sql = """\
-SELECT SUM(p.price) \
+SELECT SUM(p.price * cp.amount) \
 FROM users u \
 LEFT JOIN cart ON cart.user_id=u.id \
 LEFT JOIN cartproduct cp ON cp.cart_id=cart.id \
