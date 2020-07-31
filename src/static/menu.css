@@ -10,6 +10,7 @@ header, .orders_section {
     display: flex;
     flex-wrap: wrap;
     padding: 0.5em;
+    width: 1200px;
 }
 
 .complex_category {
@@ -137,6 +138,7 @@ header, .orders_section {
     display: none;
     position: absolute;
     top: 50%;
+    left: -5%;
     transform: translateY(-50%);
     z-index: 2;
 }
@@ -150,4 +152,59 @@ header, .orders_section {
         width: auto;
         margin: 0;
     }
+
+    .complex_category, .menu_category {
+        width: 950px;
+    }
+ }
+
+ @media (max-width: 1000px) {
+
+    ul, li, .top_panel {
+        width: 100vw;
+        font-size: 1.5em;
+    }
+
+    .category_label {
+        font-size: 5em;
+    }
+
+    .item, .complexitem {
+        width: 95vw;
+        padding: 40px;
+    }
+
+    .item img, .complexitem img {
+        width: 300px;
+        height: 300px;
+    }
+
+    .item_title {
+        font-size: 3em;
+    }
+
+    .menu_item_img {
+        width: 300px;
+        height: 300px;
+        position: relative;
+        border-radius: 50%;
+        margin: 10px auto;
+    }
+
+    .complex_category, .menu_category {
+        margin: auto;
+    }
+
+    .category_head {
+        width: 95vw;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .circle {
+        width: 60px;
+        height: 60px;
+        margin: auto 0 auto 20px;
+        font-size: 60px;
+    } 
  }

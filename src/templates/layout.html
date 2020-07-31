@@ -11,8 +11,8 @@
     <header>
         <ul>
             {% if auth %}
-                <li class="left"><a href="/menu" class="top_panel">Меню</a></li>
                 <li class="right"><a href="#" class="top_panel" onclick="logout()">Выйти</a></li>
+                <li class="left"><a href="/menu" class="top_panel">Меню</a></li>
                 <li class="right"><a href="/u/{{ userinfo.get('username') }}" class="top_panel">{{ userinfo.get('displayname') }}</a></li>
             {% else %}
                 <li class="right"><a href="/login" class="top_panel">Вход/Регистрация</a></li>
