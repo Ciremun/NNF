@@ -13,7 +13,8 @@
         {% for category, items in dailycomplex.items() %}
             <div class="category_head">
                 <div class="category_label">{{ category }}</div>
-                <div class="circle" data-itemid="{{ items['ID'] }}" onclick="addToCart()">+</div>
+                <div class="circle rotate360" data-itemid="{{ items['ID'] }}" onclick="addToCart()">+</div>
+                <div class="circle heart" data-itemid="{{ items['ID'] }}" onclick="addToFavorites()"><span>&#x2764;</span></div>
             </div>
             <div class="complex_category">
                 {% for item in items['foods'] %}
@@ -45,7 +46,8 @@
                         <div class="menu_item_img">
                             <img src="{{ item.image_link }}" alt="{{ item.title }}">
                             <div class="hidden">
-                                <div class="circle" data-itemid="{{ item.ID }}" onclick="addToCart()">+</div>
+                                <div class="circle rotate360" data-itemid="{{ item.ID }}" onclick="addToCart()">+</div>
+                                <div class="circle heart" data-itemid="{{ items['ID'] }}" onclick="addToFavorites()"><span>&#x2764;</span></div>
                             </div>
                         </div>
                         <div class="item_title">

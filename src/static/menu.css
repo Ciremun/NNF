@@ -108,12 +108,29 @@ header, .orders_section {
     font-weight: bold;
     font-family: Courier;
     color: white;
-    transition: transform .8s;
+    
     user-select: none;
 }
 
-.circle:hover {
+.rotate360 {
+    transition: transform .8s;
+}
+
+.rotate360:hover {
     transform: rotate(360deg);
+}
+
+.heart {
+    font-size: 20px;
+    color: #ff0040;
+}
+
+.heart:hover {
+    transform: rotate(-45deg);
+}
+
+.heart:hover span {
+    animation: animateHeart 1.2s infinite;
 }
 
 .menu_item_img img {
@@ -149,6 +166,27 @@ header, .orders_section {
 .menu_item_img:hover > .hidden {
     opacity: 1;
 }
+
+@keyframes animateHeart {
+    0% {
+      transform: rotate(45deg) scale(1.05);
+    }
+    5% {
+      transform: rotate(45deg) scale(1.35);
+    }
+    10% {
+      transform: rotate(45deg) scale(1.2);
+    }
+    15% {
+      transform: rotate(45deg) scale(1.5);
+    }
+    50% {
+      transform: rotate(45deg) scale(1.2);
+    }
+    100% {
+      transform: rotate(45deg) scale(1.2);
+    }
+  }
 
 @media (max-width: 1400px) {
     .orders_section {
@@ -209,6 +247,13 @@ header, .orders_section {
         width: 60px;
         height: 60px;
         margin: auto 0 auto 20px;
+    }
+
+    .rotate360 {
         font-size: 70px;
-    } 
+    }
+
+    .heart {
+        font-size: 45px;
+    }
  }
