@@ -4,7 +4,7 @@ function loginEnterKey() {
 }
 
 async function login() {
-    login_response = await postData('/login', {username: userfield.value.toLowerCase(), displayname: userfield.value, password: passfield.value});
+    login_response = await postData('/login', {displayname: userfield.value, password: passfield.value});
     if (login_response.success) {
         let SID = getCookie('SID'),
             now = new Date();

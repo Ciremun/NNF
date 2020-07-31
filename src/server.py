@@ -210,16 +210,16 @@ def login():
     """
     if request.method == 'POST':
         message = request.get_json()
-        username = message.get('username')
+        displayname = message.get('displayname')
         password = message.get('password')
 
-        if not (isinstance(username, str) and isinstance(password, str)):
+        if not (isinstance(displayname, str) and isinstance(password, str)):
             return {'success': False, 'message': 'enter username and password'}
 
-        if not all(0 < len(x) <= 25 for x in [username, password]):
+        if not all(0 < len(x) <= 25 for x in [displayname, password]):
             return {'success': False, 'message': 'username/password length = 1-25 chars!'}
 
-        for i in username, password:
+        for i in displayname, password:
             for letter in i:
                 code = ord(letter)
                 if(code == 32):
@@ -228,6 +228,7 @@ def login():
                     continue
                 return {'success': False, 'message': 'only english characters and numbers'}
 
+        username = displayname.lower()
         userinfo = db.getUser(username)
         if userinfo:
             hashed_pwd = userinfo[1]
@@ -243,9 +244,6 @@ def login():
                 logger.info(f'failed login user {username}')
                 return {'success': False, 'message': 'password did not match'}
         else:
-            displayname = message.get('displayname')
-            if not isinstance(displayname, str):
-                return {'success': False, 'message': 'invalid displayname'}
             hashed_pwd = hash_password(password)
             SID = hash_password(sessionSecret)
             date = datetime.date.today()
