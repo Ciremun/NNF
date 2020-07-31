@@ -43,11 +43,7 @@ header, .orders_section {
 .complexitem img {
     width: 110px;
     height: 110px;
-}
-
-.item img {
-    width: 120px;
-    height: 120px;
+    border-radius: 50%;
 }
 
 .item_tooltip_hover {
@@ -116,6 +112,37 @@ header, .orders_section {
 
 .circle:hover {
     transform: rotate(360deg);
+}
+
+.menu_item_img img {
+    width: inherit;
+    height: inherit;
+    border-radius: 50%;
+    transition: filter .2s ease-out;
+}
+
+.menu_item_img {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    border-radius: 50%;
+    margin: 10px auto;
+}
+
+.menu_item_img:hover img {
+    filter: brightness(50%);
+}
+
+.hidden {
+    display: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+}
+
+.menu_item_img:hover > .hidden {
+    display: flex;
 }
 
 @media (max-width: 1300px) {
