@@ -120,6 +120,43 @@ input {
     width: 30%;
 }
 
+.alert {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 400px;
+    overflow-wrap: break-word;
+    border-radius: 5px;
+    padding: 10px 15px;
+    background-color: rgba(255, 0, 106, 0.5);
+    z-index: 2;
+    margin: 0 50%;
+    transform: translateX(-50%);
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    color: #f3f3f3;
+    cursor: default;
+    opacity: 0;
+}
+
+.alert_content {
+    position: relative;
+}
+
+.alert_animation {
+    animation: alert 2s forwards;
+}
+
+@keyframes alert {
+    from {transform: translate(-50%,-100px)}
+    10% {transform: translate(-50%,20px)}
+    12% {transform: translate(-50%,22px)}
+    16% {transform: translate(-50%,20px)}
+    80% {transform: translate(-50%,20px)}
+    85% {transform: translate(-50%,25px)}
+    to {transform: translate(-50%,-100px)}
+}
+
 @keyframes animatetop {
     from {top: -300px; opacity: 0}
     to {top: 0; opacity: 1}

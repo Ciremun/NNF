@@ -109,6 +109,7 @@ header, .orders_section {
     font-family: Courier;
     color: white;
     transition: transform .8s;
+    user-select: none;
 }
 
 .circle:hover {
@@ -149,7 +150,7 @@ header, .orders_section {
     opacity: 1;
 }
 
-@media (max-width: 1300px) {
+@media (max-width: 1400px) {
     .orders_section {
         width: auto;
         margin: 0;
@@ -161,7 +162,7 @@ header, .orders_section {
  }
 
  /* Mobile */
- @media (max-width: 1000px) {
+ @media (max-width: 1100px) {
 
     ul, li, .top_panel {
         width: 100vw;
@@ -208,6 +209,6 @@ header, .orders_section {
         width: 60px;
         height: 60px;
         margin: auto 0 auto 20px;
-        font-size: 60px;
+        font-size: 70px;
     } 
  }

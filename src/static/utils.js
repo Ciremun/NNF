@@ -16,3 +16,23 @@ async function postData(url = '', data = {}) {
   });
   return response.json();
 }
+
+let notify = document.getElementById("alert");
+
+notify.addEventListener('animationstart', () => {
+  notify.style.opacity = 1;
+});
+
+notify.addEventListener('animationend', () => {
+  notify.style.opacity = 0;
+});
+
+notify.addEventListener('animationcancel', () => {
+  notify.style.opacity = 0;
+  notify.classList.toggle('alert_animation');
+});
+
+function showAlert(msg) {
+  notify.innerText = msg;
+  notify.classList.toggle('alert_animation');
+}

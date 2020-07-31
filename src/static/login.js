@@ -13,7 +13,7 @@ async function login() {
         document.cookie = `SID=${login_response.SID}; expires=${now.toUTCString()}; path=/;`;
         window.location.href = `${location.protocol}//${window.location.host}/menu`;
     } else {
-        alert(login_response.message);
+        showAlert(login_response.message);
         passfield.value = "";
     }
 }
