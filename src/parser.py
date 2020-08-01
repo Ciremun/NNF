@@ -21,11 +21,12 @@ class foodItem:
 
 class shortFoodItem:
 
-    def __init__(self, title, price, link, ID=None):
+    def __init__(self, title, price, link, amount=None, ID=None):
         self.title = title
         self.price = price
         self.link = link
         self.ID = ID
+        self.amount = amount
 
 
 class namnyamParser(threading.Thread):

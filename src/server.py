@@ -45,14 +45,15 @@ def getUserCart(username) -> dict:
         price = item[1]
         link = item[2]
         Type = item[3]
-        itemID = item[4]
+        amount = item[4]
+        itemID = item[5]
 
         if Type == 'complex':
             cart['complex'][title] = {'foods': [shortFoodItem(x[0], x[1], x[2], ID=x[3]) 
                                                 for x in db.getComplexItems(' '.join((title, f'{price} руб.')), 'complexItem')],
-                                      'price': price, 'ID': itemID}
+                                      'price': price, 'ID': itemID, 'amount': amount}
         elif Type == 'menu':
-            cart['menu'].append(shortFoodItem(title, price, link, ID=itemID))
+            cart['menu'].append(shortFoodItem(title, price, link, amount=amount, ID=itemID))
 
     return cart
 

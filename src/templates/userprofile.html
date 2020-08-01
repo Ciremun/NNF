@@ -10,26 +10,43 @@
 
 {% block content %}
     {% if cart %}
-        {% for title, complexInfo in cart['complex'].items() %}
-            <div class="complexProduct">
-                <div class="complexProductTitle">
-                    {{ title }}  -  {{ complexInfo['price'] }} руб.
-                </div>
-                <div class="complexProductItems">
-                    {% for food in complexInfo['foods'] %}
-                        <div class="complexProductItem">
-                            &emsp;&emsp;&emsp;<a href="{{ food.link }}">{{ food.title }}  -  {{ food.price }} руб.</a>
+        <table>
+            <tr>
+                <th>Товар</th>
+                <th>Количество</th>
+                <th>Цена</th>
+            </tr>
+            {% for title, complexInfo in cart['complex'].items() %}
+                <tr>
+                    <td>
+                        <div class="complexProduct">
+                            <div class="complexProductTitle">{{ title }}</div>
+                            <div class="complexProductItems">
+                                {% for food in complexInfo['foods'] %}
+                                    <div class="complexProductItem">
+                                        &emsp;&emsp;&emsp;<a href="{{ food.link }}">{{ food.title }}  -  {{ food.price }} руб.</a>
+                                    </div>
+                                {% endfor %}
+                            </div>
                         </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endfor %}
-        <br><br>
-        {% for food in cart['menu'] %}
-            <div class="product">
-                {{ food.title }}
-            </div>
-        {% endfor %}
+                    </td>
+                    <td>{{ complexInfo['amount'] }}</td>
+                    <td>{{ complexInfo['price'] *  complexInfo['amount']  }} руб.</td>
+                </tr>
+            {% endfor %}
+            {% for food in cart['menu'] %}
+                <tr>
+                    <td>
+                        <div class="product">
+                            {{ food.title }}
+                        </div>
+                    </td>
+                    <td>{{ food.amount }}</td>
+                    <td>{{ food.price * food.amount }} руб.</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <br>
         <div class="cartSum">
             Сумма заказа - {{ cart['_SUM'] }} руб.
         </div>

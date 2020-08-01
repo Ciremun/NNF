@@ -182,7 +182,7 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
     @acquireLock
     def getUserCartItems(self, username: str):
         sql = """\
-SELECT p.title, p.price, p.link, p.type, p.id \
+SELECT p.title, p.price, p.link, p.type, cp.amount, p.id \
 FROM users u \
 LEFT JOIN cart ON cart.user_id=u.id \
 LEFT JOIN cartproduct cp ON cp.cart_id=cart.id \
