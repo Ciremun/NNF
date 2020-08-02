@@ -1,9 +1,9 @@
-CREATE OR REPLACE FUNCTION addUser(text, text, text, text, date)
+CREATE OR REPLACE FUNCTION addUser(username text, displayname text, password text, usertype text, date date)
     RETURNS VOID AS $$
     DECLARE newid users.id%TYPE;
     BEGIN
         INSERT INTO users(username, displayname, password, usertype, date)
-            VALUES ($1, $2, $3, $4, $5) RETURNING id INTO newid;
+            VALUES (username, displayname, password, usertype, date) RETURNING id INTO newid;
         INSERT INTO cart(user_id) VALUES (newid);
 
     END;
