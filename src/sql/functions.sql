@@ -1,9 +1,9 @@
-CREATE OR REPLACE FUNCTION addUser(username text, displayname text, password text, usertype text, date date)
+CREATE OR REPLACE FUNCTION addUser(uName text, dName text, pass text, uType text, regDate date)
     RETURNS VOID AS $$
     DECLARE newid users.id%TYPE;
     BEGIN
         INSERT INTO users(username, displayname, password, usertype, date)
-            VALUES (username, displayname, password, usertype, date) RETURNING id INTO newid;
+            VALUES (uName, dName, pass, uType, regDate) RETURNING id INTO newid;
         INSERT INTO cart(user_id) VALUES (newid);
 
     END;
@@ -40,13 +40,13 @@ CREATE OR REPLACE FUNCTION deleteOrders()
     END;
     $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION addCartProduct(int, int, int)
+CREATE OR REPLACE FUNCTION addCartProduct(cID int, pID int, pAmount int)
     RETURNS VOID AS $$
     BEGIN
-        IF (SELECT EXISTS(SELECT 1 FROM cartproduct WHERE cart_id = $1 AND product_id = $2)) THEN
-            UPDATE cartproduct SET amount = amount + $3 WHERE cart_id = $1 AND product_id = $2;
+        IF (SELECT EXISTS(SELECT 1 FROM cartproduct WHERE cart_id = cID AND product_id = pID)) THEN
+            UPDATE cartproduct SET amount = amount + pAmount WHERE cart_id = cID AND product_id = pID;
         ELSE
-            INSERT INTO cartproduct(cart_id, product_id, amount) VALUES ($1, $2, $3);
+            INSERT INTO cartproduct(cart_id, product_id, amount) VALUES (cID, pID, pAmount);
         END IF;
     END;
     $$ LANGUAGE plpgsql;
