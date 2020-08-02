@@ -55,11 +55,14 @@ CREATE TABLE IF NOT EXISTS
 orderproduct(order_id integer references orders(id), 
 title text, price integer, link text, amount integer, id serial primary key);
 
-CREATE OR REPLACE FUNCTION createCart()
-    RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION addUser(text, text, text, text, date)
+    RETURNS VOID AS $$
+    DECLARE newid users.id%TYPE;
     BEGIN
-        INSERT INTO cart(user_id) VALUES (NEW.id);
-        RETURN NEW;
+        INSERT INTO users(username, displayname, password, usertype, date)
+            VALUES ($1, $2, $3, $4, $5) RETURNING id INTO newid;
+        INSERT INTO cart(user_id) VALUES (newid);
+
     END;
     $$ LANGUAGE plpgsql;
 
@@ -67,9 +70,9 @@ CREATE OR REPLACE FUNCTION deleteCart()
     RETURNS TRIGGER AS $$
     BEGIN
         DELETE FROM cartproduct
-        WHERE cart_id = (SELECT id FROM cart WHERE user_id = OLD.id);
+            WHERE cart_id = (SELECT id FROM cart WHERE user_id = OLD.id);
         DELETE FROM cart
-        WHERE user_id = OLD.id;
+            WHERE user_id = OLD.id;
         RETURN OLD;
     END;
     $$ LANGUAGE plpgsql;
@@ -77,7 +80,8 @@ CREATE OR REPLACE FUNCTION deleteCart()
 CREATE OR REPLACE FUNCTION deleteCartProduct()
     RETURNS TRIGGER AS $$
     BEGIN
-        DELETE FROM cartproduct WHERE product_id = OLD.id;
+        DELETE FROM cartproduct
+            WHERE product_id = OLD.id;
         RETURN OLD;
     END;
     $$ LANGUAGE plpgsql;
@@ -86,9 +90,9 @@ CREATE OR REPLACE FUNCTION deleteOrders()
     RETURNS TRIGGER AS $$
     BEGIN
         DELETE FROM orderproduct
-        WHERE order_id = (SELECT id FROM orders WHERE user_id = OLD.id);
+            WHERE order_id = (SELECT id FROM orders WHERE user_id = OLD.id);
         DELETE FROM orders
-        WHERE user_id = OLD.id;
+            WHERE user_id = OLD.id;
         RETURN OLD;
     END;
     $$ LANGUAGE plpgsql;
@@ -109,11 +113,6 @@ DROP TRIGGER IF EXISTS deleteCartTrigger on users;
 DROP TRIGGER IF EXISTS deleteCartProductTrigger on dailymenu;
 DROP TRIGGER IF EXISTS deleteOrdersTrigger on users;
 
-CREATE TRIGGER addCartTrigger
-    AFTER INSERT ON users
-    FOR EACH ROW
-    EXECUTE FUNCTION createCart();
-
 CREATE TRIGGER deleteCartTrigger
     BEFORE DELETE ON users
     FOR EACH ROW
@@ -133,10 +132,7 @@ CREATE TRIGGER deleteOrdersTrigger
 
     @acquireLock
     def addOrder(self, user_id: int, date: str):
-        sql = """\
-INSERT INTO \
-orders(user_id, date) VALUES (%s)\
-"""
+        sql = "INSERT INTO orders(user_id, date) VALUES (%s)"
         self.cursor.execute(sql, (user_id,))
 
     @acquireLock
@@ -149,25 +145,17 @@ orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
 
     @acquireLock
     def addCartProduct(self, cart_id: int, product_id: int, amount: int):
-        sql = """\
-SELECT addCartProduct(%s, %s, %s)
-"""
+        sql = "SELECT addCartProduct(%s, %s, %s)"
         self.cursor.execute(sql, (cart_id, product_id, amount))
 
     @acquireLock
     def addUser(self, username: str, displayname: str, password: str, usertype: str, date: str):
-        sql = """\
-INSERT INTO \
-users(username, displayname, password, usertype, date) VALUES (%s, %s, %s, %s, %s)\
-"""
+        sql = "SELECT addUser(%s, %s, %s, %s, %s)"
         self.cursor.execute(sql, (username, displayname, password, usertype, date))
 
     @acquireLock
     def addSession(self, sid: str, username: str, usertype: str, date: str):
-        sql = """\
-INSERT INTO \
-sessions(sid, username, usertype, date) VALUES (%s, %s, %s, %s)\
-"""
+        sql = "INSERT INTO sessions(sid, username, usertype, date) VALUES (%s, %s, %s, %s)"
         self.cursor.execute(sql, (sid, username, usertype, date))
 
     @acquireLock
@@ -227,28 +215,19 @@ WHERE user_id = (SELECT id FROM users WHERE username = %s) limit 1\
 
     @acquireLock
     def getUser(self, username: str):
-        sql = """\
-SELECT displayname, password, usertype FROM users \
-WHERE username = %s limit 1\
-"""
+        sql = "SELECT displayname, password, usertype FROM users WHERE username = %s limit 1"
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchone()
 
     @acquireLock
     def getUserDisplayName(self, username: str):
-        sql = """\
-SELECT \
-displayname FROM users WHERE username = %s limit 1\
-"""
+        sql = "SELECT displayname FROM users WHERE username = %s limit 1"
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchone()
 
     @acquireLock
     def getSessions(self):
-        sql = """\
-SELECT \
-sid, username, usertype, date FROM sessions\
-"""
+        sql = "SELECT sid, username, usertype, date FROM sessions"
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
@@ -265,8 +244,7 @@ WHERE type = %s\
     @acquireLock
     def getProductID(self, title: str, price: int, Type: str):
         sql = """\
-SELECT \
-id FROM dailymenu \
+SELECT id FROM dailymenu \
 WHERE title = %s AND price = %s AND type = %s limit 1\
 """
         self.cursor.execute(sql, (title, price, Type))
@@ -284,8 +262,7 @@ WHERE id = %s AND (type = 'complex' or type = 'menu')\
     @acquireLock
     def getComplexItems(self, section: str, Type: str):
         sql = """\
-SELECT \
-title, price, link, id FROM dailymenu \
+SELECT title, price, link, id FROM dailymenu \
 WHERE section = %s AND type = %s\
 """
         self.cursor.execute(sql, (section, Type))
@@ -293,33 +270,22 @@ WHERE section = %s AND type = %s\
 
     @acquireLock
     def updateSessionDate(self, sid: str, newdate: str):
-        sql = """\
-UPDATE \
-sessions SET date = %s WHERE sid = %s\
-"""
+        sql = "UPDATE sessions SET date = %s WHERE sid = %s"
         self.cursor.execute(sql, (newdate, sid))
 
     @acquireLock
     def deleteSession(self, sid: str):
-        sql = """\
-DELETE FROM \
-sessions WHERE sid = %s\
-"""
+        sql = "DELETE FROM sessions WHERE sid = %s"
         self.cursor.execute(sql, (sid,))
 
     @acquireLock
     def deleteSessions(self, sids: list):
-        sql = """\
-DELETE FROM \
-sessions WHERE sid = %s\
-"""
+        sql = "DELETE FROM sessions WHERE sid = %s"
         self.cursor.executemany(sql, sids)
 
     @acquireLock
     def clearDailyMenu(self):
-        sql = """\
-DELETE FROM dailymenu\
-"""
+        sql = "DELETE FROM dailymenu"
         self.cursor.execute(sql)
 
     @acquireLock
@@ -328,8 +294,6 @@ DELETE FROM dailymenu\
 
     @acquireLock
     def checkDailyMenu(self):
-        sql = """\
-SELECT 1 FROM dailymenu limit 1\
-"""
+        sql = "SELECT 1 FROM dailymenu limit 1"
         self.cursor.execute(sql)
         return self.cursor.fetchone()
