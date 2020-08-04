@@ -34,17 +34,19 @@ let modal = document.getElementById("DivModal"),
     userfield = document.getElementById('userfield'),
     passfield = document.getElementById('passfield');
 
-btn.onclick = function() {
-    modal.style.display = "block";
-    userfield.focus();
-}
+if (btn !== null) {
+    btn.onclick = function() {
+        modal.style.display = "block";
+        userfield.focus();
+    }
 
-span.onclick = function() {
-    modal.style.display = "none";
-}
-
-window.onclick = function(event) {
-    if (event.target == modal) {
+    span.onclick = function() {
         modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
     }
 }
