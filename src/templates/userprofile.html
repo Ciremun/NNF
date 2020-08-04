@@ -24,14 +24,14 @@
                             <div class="complexProductItems">
                                 {% for food in complexInfo['foods'] %}
                                     <div class="complexProductItem">
-                                        &emsp;&emsp;&emsp;<a href="{{ food.link }}">{{ food.title }}  -  {{ food.price }} руб.</a>
+                                        &emsp;&emsp;&emsp;<a href="{{ food.link }}">{{ food.title }}  -  {{ food.price }} &#x20BD;</a>
                                     </div>
                                 {% endfor %}
                             </div>
                         </div>
                     </td>
-                    <td>{{ complexInfo['amount'] }}</td>
-                    <td>{{ complexInfo['price'] *  complexInfo['amount']  }} руб.</td>
+                    <td class="cartItemAmount">{{ complexInfo['amount'] }}</td>
+                    <td class="cartItemPrice">{{ complexInfo['price'] *  complexInfo['amount']  }} &#x20BD;</td>
                 </tr>
             {% endfor %}
             {% for food in cart['menu'] %}
@@ -41,17 +41,14 @@
                             {{ food.title }}
                         </div>
                     </td>
-                    <td>{{ food.amount }}</td>
-                    <td>{{ food.price * food.amount }} руб.</td>
+                    <td class="cartItemAmount">{{ food.amount }}</td>
+                    <td class="cartItemPrice">{{ food.price * food.amount }} &#x20BD;</td>
                 </tr>
             {% endfor %}
         </table>
         <br>
-        <div class="cartSum">
-            Сумма заказа - {{ cart['_SUM'] }} руб.
-        </div>
+        <div class="dfdfdf">Сумма заказа - {{ cart['_SUM'] }} &#x20BD;</div>
     {% else %}
-        Корзина пуста
+    <div class="dfdfdf">Корзина пуста</div>
     {% endif %}
-    <script src="{{ url_for('static',filename='login.js') }}"></script>
 {% endblock %}
