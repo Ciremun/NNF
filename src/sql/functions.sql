@@ -9,31 +9,6 @@ CREATE OR REPLACE FUNCTION addUser(uName text, dName text, pass text, uType text
     END;
     $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION deleteUser(userID integer)
-    RETURNS VOID AS $$
-    BEGIN
-        DELETE FROM cartproduct
-            WHERE cart_id = (SELECT id FROM cart WHERE user_id = userID);
-        DELETE FROM cart
-            WHERE user_id = userID;
-        DELETE FROM orderproduct
-            WHERE order_id = (SELECT id FROM orders WHERE user_id = userID);
-        DELETE FROM orders
-            WHERE user_id = userID;
-        DELETE FROM users
-            WHERE id = userID;
-    END;
-    $$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION deleteCartProduct()
-    RETURNS TRIGGER AS $$
-    BEGIN
-        DELETE FROM cartproduct
-            WHERE product_id = OLD.id;
-        RETURN OLD;
-    END;
-    $$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION addCartProduct(cID int, pID int, pAmount int)
     RETURNS VOID AS $$
     BEGIN
@@ -44,10 +19,3 @@ CREATE OR REPLACE FUNCTION addCartProduct(cID int, pID int, pAmount int)
         END IF;
     END;
     $$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS deleteCartProductTrigger on dailymenu;
-
-CREATE TRIGGER deleteCartProductTrigger
-    BEFORE DELETE ON dailymenu
-    FOR EACH ROW
-    EXECUTE FUNCTION deleteCartProduct();
