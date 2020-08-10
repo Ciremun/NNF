@@ -10,11 +10,11 @@
     <header>
         <ul>
             {% if auth %}
-                <li class="right"><a href="#" class="top_panel" onclick="logout()">Выйти</a></li>
+                <li class="right"><a class="top_panel" onclick="logout()">Выйти</a></li>
                 <li class="left"><a href="/menu" class="top_panel">Меню</a></li>
                 <li class="right"><a href="/u/{{ userinfo.get('username') }}" class="top_panel">{{ userinfo.get('displayname') }}</a></li>
             {% else %}
-                <li class="right"><a href="#" id="LoginButton" class="top_panel">Вход/Регистрация</a></li>
+                <li class="right"><a id="LoginButton" class="top_panel">Вход/Регистрация</a></li>
             {% endif %}
         </ul>
         <div id="alert" class="alert"><div class="alert_content"></div></div>
