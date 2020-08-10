@@ -13,7 +13,7 @@ cart(user_id integer references users(id) on delete cascade, id serial primary k
 
 CREATE TABLE IF NOT EXISTS 
 cartproduct(cart_id integer references cart(id) on delete cascade, 
-product_id integer references dailymenu(id) on delete cascade, amount integer, id serial primary key);
+product_id integer references dailymenu(id) on delete cascade, amount integer, date float, id serial primary key);
 
 CREATE TABLE IF NOT EXISTS 
 orders(user_id integer references users(id) on delete cascade, id serial primary key);

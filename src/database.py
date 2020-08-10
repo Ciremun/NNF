@@ -47,9 +47,9 @@ orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
         self.cursor.execute(sql, (order_id, title, price, link, amount))
 
     @acquireLock
-    def addCartProduct(self, cart_id: int, product_id: int, amount: int):
-        sql = "SELECT addCartProduct(%s, %s, %s)"
-        self.cursor.execute(sql, (cart_id, product_id, amount))
+    def addCartProduct(self, cart_id: int, product_id: int, amount: int, date: float):
+        sql = "SELECT addCartProduct(%s, %s, %s, %s)"
+        self.cursor.execute(sql, (cart_id, product_id, amount, date))
 
     @acquireLock
     def addUser(self, username: str, displayname: str, password: str, usertype: str, date: str):
@@ -78,6 +78,7 @@ FROM users u \
 LEFT JOIN cart ON cart.user_id=u.id \
 LEFT JOIN cartproduct cp ON cp.cart_id=cart.id \
 INNER JOIN dailymenu p ON p.id=cp.product_id WHERE u.username = %s\
+ORDER BY cp.date\
 """
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchall()

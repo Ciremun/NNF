@@ -9,13 +9,13 @@ CREATE OR REPLACE FUNCTION addUser(uName text, dName text, pass text, uType text
     END;
     $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION addCartProduct(cID int, pID int, pAmount int)
+CREATE OR REPLACE FUNCTION addCartProduct(cID int, pID int, pAmount int, dateAdded float)
     RETURNS VOID AS $$
     BEGIN
         IF (SELECT EXISTS(SELECT 1 FROM cartproduct WHERE cart_id = cID AND product_id = pID)) THEN
             UPDATE cartproduct SET amount = amount + pAmount WHERE cart_id = cID AND product_id = pID;
         ELSE
-            INSERT INTO cartproduct(cart_id, product_id, amount) VALUES (cID, pID, pAmount);
+            INSERT INTO cartproduct(cart_id, product_id, amount, date) VALUES (cID, pID, pAmount, dateAdded);
         END IF;
     END;
     $$ LANGUAGE plpgsql;
