@@ -370,10 +370,9 @@ def menu():
 
 
 # Production
-# requestLogs = 'default' if config['flaskLogging'] else None
 
 # wsgi = WSGIServer(('0.0.0.0', keys['flaskPort']), app, log=requestLogs, error_log=logger)
 # wsgi.serve_forever()
 
 # Debug.
-app.run(debug=True, host='0.0.0.0', port=keys['flaskPort'])
+app.run(debug=True, host='127.0.0.1', port=keys['flaskPort'])
