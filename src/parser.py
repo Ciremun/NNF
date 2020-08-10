@@ -63,6 +63,8 @@ class namnyamParser(threading.Thread):
         calories = '?'
         price = 0
 
+        print(foodPageLink)
+
         foodPage = requests.get(foodPageLink).text
         foodPageSoup = BeautifulSoup(foodPage, 'lxml')
 
@@ -85,6 +87,10 @@ class namnyamParser(threading.Thread):
             title = title[1:]
 
         item_desc = foodPageSoup.find('td', itemprop="offers")
+
+        if not item_desc:
+            items_dict[typeLabel].append(foodItem('?', weight, calories, price, foodPageLink, image_link))
+            return items_dict
 
         for line in item_desc.find_all('p'):
             if line.text.startswith("Вес: "):
