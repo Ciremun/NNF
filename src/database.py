@@ -136,6 +136,12 @@ WHERE user_id = (SELECT id FROM users WHERE username = %s) limit 1\
         return self.cursor.fetchall()
 
     @acquireLock
+    def getSession(self, SID: str):
+        sql = "SELECT username, usertype, date FROM sessions WHERE sid = %s"
+        self.cursor.execute(sql, (SID,))
+        return self.cursor.fetchone()
+
+    @acquireLock
     def getDailyMenuByType(self, Type: str):
         sql = """\
 SELECT \

@@ -11,6 +11,7 @@ import datetime
 import requests
 import src.database
 from src.log import logger
+from src.typing import Session
 
 
 def getUserCart(username) -> dict:
@@ -37,10 +38,11 @@ def getUserCart(username) -> dict:
     return cart
 
 
-def updateUserSession(SID: str):
-    newdate = datetime.date.today()
-    db.updateSessionDate(SID, f'{newdate.year}-{newdate.month}-{newdate.day}')
-    sessions[SID]['date'] = newdate
+def updateUserSession(session: Session):
+    today = datetime.date.today()
+    if session.date < today:
+        db.updateSessionDate(session.SID, f'{today.year}-{today.month}-{today.day}')
+        logger.info(f'update session {session.username}')
 
 
 def monthlyClearSessions():
@@ -48,30 +50,31 @@ def monthlyClearSessions():
     Clear old sessions monthly.
     Do database vacuum.
     """
-    global sessions
     while True:
-        sessions = getStoredSessions()
+        clearOldSessions()
         db.vacuum()
         for _ in range(200):
             time.sleep(1315)
 
 
-def getStoredSessions() -> dict:
+def clearOldSessions():
     """
-    Pull stored sessions from database, delete sessions older than a month.
-    return: sessions dictionary
+    Delete sessions older than a month.
     """
-    sessions = {}
     sessionsToDelete = []
     for s in db.getSessions():
         if s[3] + datetime.timedelta(days=30) < datetime.date.today():
             sessionsToDelete.append((s[0], ))
             continue
-        sessions[s[0]] = {'username': s[1], 'usertype': s[2], 'date': s[3]}
     if sessionsToDelete:
         db.deleteSessions(sessionsToDelete)
-    return sessions
 
+def getSession(SID: str):
+    if not SID:
+        return
+    s = db.getSession(SID)
+    if s:
+        return Session(SID, s[0], s[1], s[2])
 
 def dailyMenuUpdate():
     """
@@ -128,7 +131,6 @@ def dailyMenuUpdate():
 
 db = src.database.Database()
 sessionSecret = keys['sessionSecret']
-sessions = {}
 
 # DEBUG
 if keys['DEBUG']:
@@ -216,7 +218,6 @@ def login():
             if verify_password(hashed_pwd, password):
                 SID = hash_password(sessionSecret)
                 date = datetime.date.today()
-                sessions[SID] = {'username': username, 'usertype': usertype, 'date': date}
                 db.addSession(SID, username, usertype, f'{date.year}-{date.month}-{date.day}')
                 logger.info(f'login user {username}')
                 return {'success': True, 'SID': SID}
@@ -227,7 +228,6 @@ def login():
             hashed_pwd = hash_password(password)
             SID = hash_password(sessionSecret)
             date = datetime.date.today()
-            sessions[SID] = {'username': username, 'usertype': 'user', 'date': date}
             date = f'{date.year}-{date.month}-{date.day}'
             db.addUser(username, displayname, hashed_pwd, 'user', date)
             db.addSession(SID, username, 'user', date)
@@ -248,13 +248,12 @@ def linkprofile(username):
         return redirect('/menu', code=302)
 
     SID = request.cookies.get("SID")
-    session = sessions.get(SID)
-    if session and session['username'] == username:
+    session = getSession(SID)
+    if session and session.username == username:
 
         userinfo = {'username': username, 'displayname': userinfo[0]}
 
-        updateUserSession(SID)
-        logger.info(f'update session {username}')
+        updateUserSession(session)
 
         cart = getUserCart(username)
         
@@ -279,7 +278,6 @@ def logout():
         SID = message.get('SID')
         if not isinstance(SID, str):
             return {'success': False}
-        del sessions[SID]
         db.deleteSession(SID)
         return {'success': True}
     except KeyError:
@@ -293,15 +291,15 @@ def buy():
     """
     message = request.get_json()
     SID = request.cookies.get("SID")
-    session = sessions.get(SID)
+    session = getSession(SID)
     if session:
 
-        if session['usertype'] == 'admin':
+        if session.usertype == 'admin':
             username = message.get('username')
             if not isinstance(username, str):
                 return {'success': False, 'message': 'Error: no username'}
         else:
-            username = session['username']
+            username = session.username
 
         cart_id = db.getUserCartID(username)
         if not cart_id:
@@ -329,16 +327,16 @@ def buy():
 @app.route('/menu')
 def menu():
     SID = request.cookies.get("SID")
-    session = sessions.get(SID)
+    session = getSession(SID)
 
     if session:
-        username = session['username']
+        username = session.username
 
         displayname = db.getUserDisplayName(username)
         if not displayname:
             return render_template('menu.html', auth=False, userinfo={}, dailymenu=dailymenu, dailycomplex=dailycomplex)
 
-        updateUserSession(SID)
+        updateUserSession(session)
 
         cart = getUserCart(username)
 
