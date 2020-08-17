@@ -189,6 +189,17 @@ WHERE section = %s AND type = %s\
         self.cursor.execute(sql, (sid,))
 
     @acquireLock
+    def updateCartProduct(self, cart_id: int, product_id: int, amount: int):
+        sql = "SELECT updateCartProduct(%s, %s, %s)"
+        self.cursor.execute(sql, (cart_id, product_id, amount))
+        return self.cursor.fetchone()
+
+    @acquireLock
+    def clearUserCart(self, cart_id: int, product_id: int):
+        sql = "DELETE FROM cartproduct WHERE cart_id = %s AND product_id = %s"
+        self.cursor.execute(sql, (cart_id, product_id))
+
+    @acquireLock
     def deleteSessions(self, sids: list):
         sql = "DELETE FROM sessions WHERE sid = %s"
         self.cursor.executemany(sql, sids)

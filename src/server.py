@@ -301,23 +301,33 @@ def buy():
         else:
             username = session.username
 
+        product_id = message.get('productID')
+        if not isinstance(product_id, int):
+            return {'success': False, 'message': 'Error: invalid product id.'}
+
+        act = message.get('act')
+        if all(act != x for x in ['add', 'update', 'clear']):
+            return {'success': False, 'message': 'Error: invalid cart item action.'}
+
+        amount = message.get('amount')
+        if isinstance(amount, int) and amount < 0:
+            return {'success': False, 'message': 'Error: invalid cart item amount.'}
+
         cart_id = db.getUserCartID(username)
         if not cart_id:
             return {'success': False, 'message': 'Error: cart not found'}
-
-        product_id = message.get('productID')
-        try:
-            product_id = int(product_id)
-        except (TypeError, ValueError):
-            logger.info(f'invalid productID {product_id}')
-            return {'success': False, 'message': 'Error: invalid product id.'}
 
         product_id = db.getProductByID(product_id)
         if not product_id:
             logger.info(f'invalid productID not found {product_id}')
             return {'success': False, 'message': 'Error: product not found'}
 
-        db.addCartProduct(cart_id[0], product_id[0], 1, time.time())
+        if act == 'add':
+            db.addCartProduct(cart_id[0], product_id[0], 1, time.time())
+        elif act == 'update':
+            db.updateCartProduct(cart_id[0], product_id[0], amount)
+        elif act == 'clear':
+            pass
 
         return {'success': True}
 

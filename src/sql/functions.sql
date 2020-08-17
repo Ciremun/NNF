@@ -19,3 +19,14 @@ CREATE OR REPLACE FUNCTION addCartProduct(cID int, pID int, pAmount int, dateAdd
         END IF;
     END;
     $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION updateCartProduct(cID int, pID int, pAmount int)
+    RETURNS VOID as $$
+    BEGIN
+        IF (pAmount = 0) THEN
+            DELETE FROM cartproduct WHERE cart_id = cID AND product_id = pID;
+        ELSE
+            UPDATE cartproduct SET amount = pAmount WHERE cart_id = cID AND product_id = pID;
+        END IF;
+    END;
+    $$ LANGUAGE plpgsql;
