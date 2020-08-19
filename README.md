@@ -14,7 +14,7 @@ nam-nyam parser, office food management
     gevent==20.6.2
     psycopg2==2.8.5
 
-Tested on Python 3.7.8  
+Tested on Python 3.7, 3.8  
 
 ### config.json
 

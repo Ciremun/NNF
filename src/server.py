@@ -1,17 +1,17 @@
 from flask import Flask, render_template
 from flask import request, redirect
 from gevent.pywsgi import WSGIServer
-from src.salt import hash_password, verify_password
-from src.config import config, keys
-from src.parser import namnyamParser, foodItem, shortFoodItem
+from .salt import hash_password, verify_password
+from .config import config, keys
+from .parser import namnyamParser, foodItem, shortFoodItem
+from .database import Database
+from .log import logger
+from .structure import Session
 import threading
 import json
 import time
 import datetime
 import requests
-import src.database
-from src.log import logger
-from src.typing import Session
 
 
 def getUserCart(username) -> dict:
@@ -129,7 +129,7 @@ def dailyMenuUpdate():
         time.sleep(config['dailyMenuUpdateInterval'])
 
 
-db = src.database.Database()
+db = Database()
 sessionSecret = keys['sessionSecret']
 
 # DEBUG
@@ -309,10 +309,6 @@ def buy():
         if all(act != x for x in ['add', 'update', 'clear']):
             return {'success': False, 'message': 'Error: invalid cart item action.'}
 
-        amount = message.get('amount')
-        if isinstance(amount, int) and amount < 0:
-            return {'success': False, 'message': 'Error: invalid cart item amount.'}
-
         cart_id = db.getUserCartID(username)
         if not cart_id:
             return {'success': False, 'message': 'Error: cart not found'}
@@ -325,9 +321,14 @@ def buy():
         if act == 'add':
             db.addCartProduct(cart_id[0], product_id[0], 1, time.time())
         elif act == 'update':
+            amount = message.get('amount')
+
+            if not isinstance(amount, int) or amount < 0:
+                return {'success': False, 'message': 'Error: invalid cart item amount.'}
+
             db.updateCartProduct(cart_id[0], product_id[0], amount)
         elif act == 'clear':
-            pass
+            db.clearUserCart(cart_id[0])
 
         return {'success': True}
 

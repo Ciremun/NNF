@@ -1,6 +1,7 @@
 import psycopg2
 import threading
-from src.config import keys
+from .config import keys
+from typing import List
 
 
 def acquireLock(func):
@@ -62,7 +63,7 @@ orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
         self.cursor.execute(sql, (sid, username, usertype, date))
 
     @acquireLock
-    def addDailyMenu(self, menu: list):
+    def addDailyMenu(self, menu: List[tuple]):
         sql = """\
 INSERT INTO \
 dailymenu(title, weight, calories, price, link, image_link, section, type, date) \
@@ -195,12 +196,12 @@ WHERE section = %s AND type = %s\
         return self.cursor.fetchone()
 
     @acquireLock
-    def clearUserCart(self, cart_id: int, product_id: int):
-        sql = "DELETE FROM cartproduct WHERE cart_id = %s AND product_id = %s"
-        self.cursor.execute(sql, (cart_id, product_id))
+    def clearUserCart(self, cart_id: int):
+        sql = "DELETE FROM cartproduct WHERE cart_id = %s"
+        self.cursor.execute(sql, (cart_id,))
 
     @acquireLock
-    def deleteSessions(self, sids: list):
+    def deleteSessions(self, sids: List[str]):
         sql = "DELETE FROM sessions WHERE sid = %s"
         self.cursor.executemany(sql, sids)
 
