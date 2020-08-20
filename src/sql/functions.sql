@@ -1,11 +1,11 @@
 CREATE OR REPLACE FUNCTION addUser(uName text, dName text, pass text, uType text, regDate date)
-    RETURNS VOID AS $$
+    RETURNS users.id%TYPE AS $$
     DECLARE newid users.id%TYPE;
     BEGIN
         INSERT INTO users(username, displayname, password, usertype, date)
             VALUES (uName, dName, pass, uType, regDate) RETURNING id INTO newid;
         INSERT INTO cart(user_id) VALUES (newid);
-
+        RETURN newid;
     END;
     $$ LANGUAGE plpgsql;
 

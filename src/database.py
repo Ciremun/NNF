@@ -56,11 +56,15 @@ orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
     def addUser(self, username: str, displayname: str, password: str, usertype: str, date: str):
         sql = "SELECT addUser(%s, %s, %s, %s, %s)"
         self.cursor.execute(sql, (username, displayname, password, usertype, date))
+        return self.cursor.fetchone()
 
     @acquireLock
-    def addSession(self, sid: str, username: str, usertype: str, date: str):
-        sql = "INSERT INTO sessions(sid, username, usertype, date) VALUES (%s, %s, %s, %s)"
-        self.cursor.execute(sql, (sid, username, usertype, date))
+    def addSession(self, sid: str, username: str, usertype: str, date: str, user_id: int):
+        sql = """\
+INSERT INTO sessions(sid, username, usertype, date, user_id) \
+VALUES (%s, %s, %s, %s, %s)\
+"""
+        self.cursor.execute(sql, (sid, username, usertype, date, user_id))
 
     @acquireLock
     def addDailyMenu(self, menu: List[tuple]):
@@ -70,6 +74,14 @@ dailymenu(title, weight, calories, price, link, image_link, section, type, date)
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
 """
         self.cursor.executemany(sql, menu)
+
+    @acquireLock
+    def addAccountShare(self, user_id: int, target_user_id: int, duration: float, date: float):
+        sql = """\
+INSERT INTO account_share(user_id, target_user_id, duration, date) \
+VALUES (%s, %s, %s, %s)\
+"""
+        self.cursor.execute(sql, (user_id, target_user_id, duration, date))
 
     @acquireLock
     def getUserCartItems(self, username: str):
@@ -113,32 +125,32 @@ WHERE section = %s\
     def getUserCartID(self, username: str):
         sql = """\
 SELECT user_id FROM cart \
-WHERE user_id = (SELECT id FROM users WHERE username = %s) limit 1\
+WHERE user_id = (SELECT id FROM users WHERE username = %s)\
 """
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchone()
 
     @acquireLock
     def getUser(self, username: str):
-        sql = "SELECT displayname, password, usertype FROM users WHERE username = %s limit 1"
+        sql = "SELECT displayname, password, usertype, id FROM users WHERE username = %s"
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchone()
 
     @acquireLock
     def getUserDisplayName(self, username: str):
-        sql = "SELECT displayname FROM users WHERE username = %s limit 1"
+        sql = "SELECT displayname FROM users WHERE username = %s"
         self.cursor.execute(sql, (username,))
         return self.cursor.fetchone()
 
     @acquireLock
     def getSessions(self):
-        sql = "SELECT sid, username, usertype, date FROM sessions"
+        sql = "SELECT sid, date FROM sessions"
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
     @acquireLock
     def getSession(self, SID: str):
-        sql = "SELECT username, usertype, date FROM sessions WHERE sid = %s"
+        sql = "SELECT username, usertype, date, user_id FROM sessions WHERE sid = %s"
         self.cursor.execute(sql, (SID,))
         return self.cursor.fetchone()
 
@@ -156,7 +168,7 @@ WHERE type = %s\
     def getProductID(self, title: str, price: int, Type: str):
         sql = """\
 SELECT id FROM dailymenu \
-WHERE title = %s AND price = %s AND type = %s limit 1\
+WHERE title = %s AND price = %s AND type = %s\
 """
         self.cursor.execute(sql, (title, price, Type))
         return self.cursor.fetchone()
@@ -180,14 +192,18 @@ WHERE section = %s AND type = %s\
         return self.cursor.fetchall()
 
     @acquireLock
+    def getAccountShare(self, user_id: int):
+        sql = """\
+SELECT target_user_id, duration, date FROM account_share \
+WHERE user_id = %s\
+"""
+        self.cursor.execute(sql, (user_id))
+        return self.cursor.fetchall()
+
+    @acquireLock
     def updateSessionDate(self, sid: str, newdate: str):
         sql = "UPDATE sessions SET date = %s WHERE sid = %s"
         self.cursor.execute(sql, (newdate, sid))
-
-    @acquireLock
-    def deleteSession(self, sid: str):
-        sql = "DELETE FROM sessions WHERE sid = %s"
-        self.cursor.execute(sql, (sid,))
 
     @acquireLock
     def updateCartProduct(self, cart_id: int, product_id: int, amount: int):
@@ -200,6 +216,16 @@ WHERE section = %s AND type = %s\
         self.cursor.execute(sql, (cart_id,))
 
     @acquireLock
+    def deleteAccountShare(self, user_id: int, target_user_id: int):
+        sql = "DELETE FROM account_share WHERE user_id = %s AND target_user_id = %s"
+        self.cursor.execute(sql, (user_id, target_user_id))
+
+    @acquireLock
+    def deleteSession(self, sid: str):
+        sql = "DELETE FROM sessions WHERE sid = %s"
+        self.cursor.execute(sql, (sid,))
+
+    @acquireLock
     def deleteSessions(self, sids: List[str]):
         sql = "DELETE FROM sessions WHERE sid = %s"
         self.cursor.executemany(sql, sids)
@@ -210,11 +236,11 @@ WHERE section = %s AND type = %s\
         self.cursor.execute(sql)
 
     @acquireLock
-    def vacuum(self):
-        self.cursor.execute("VACUUM")
-
-    @acquireLock
     def checkDailyMenu(self):
         sql = "SELECT 1 FROM dailymenu limit 1"
         self.cursor.execute(sql)
         return self.cursor.fetchone()
+
+    @acquireLock
+    def vacuum(self):
+        self.cursor.execute("VACUUM")

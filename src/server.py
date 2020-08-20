@@ -60,7 +60,7 @@ def clearOldSessions():
     """
     sessionsToDelete = []
     for s in db.getSessions():
-        if s[3] + datetime.timedelta(days=30) < datetime.date.today():
+        if s[1] + datetime.timedelta(days=30) < datetime.date.today():
             sessionsToDelete.append((s[0], ))
             continue
     if sessionsToDelete:
@@ -71,7 +71,7 @@ def getSession(SID: str):
         return
     s = db.getSession(SID)
     if s:
-        return Session(SID, s[0], s[1], s[2])
+        return Session(SID, s[0], s[1], s[2], s[3])
 
 def dailyMenuUpdate():
     """
@@ -207,10 +207,11 @@ def login():
         if userinfo:
             hashed_pwd = userinfo[1]
             usertype = userinfo[2]
+            user_id = userinfo[3]
             if verify_password(hashed_pwd, password):
                 SID = hash_password(sessionSecret)
                 date = datetime.date.today()
-                db.addSession(SID, username, usertype, f'{date.year}-{date.month}-{date.day}')
+                db.addSession(SID, username, usertype, f'{date.year}-{date.month}-{date.day}', user_id)
                 logger.info(f'login user {username}')
                 return {'success': True, 'SID': SID}
             else:
@@ -221,8 +222,8 @@ def login():
             SID = hash_password(sessionSecret)
             date = datetime.date.today()
             date = f'{date.year}-{date.month}-{date.day}'
-            db.addUser(username, displayname, hashed_pwd, 'user', date)
-            db.addSession(SID, username, 'user', date)
+            user_id = db.addUser(username, displayname, hashed_pwd, 'user', date)
+            db.addSession(SID, username, 'user', date, user_id[0])
             logger.info(f'register user {username}')
             return {'success': True, 'SID': SID}
 

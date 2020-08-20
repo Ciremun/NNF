@@ -6,3 +6,4 @@ class Session(NamedTuple):
     username: str
     usertype: str
     date: datetime.date
+    user_id: int
