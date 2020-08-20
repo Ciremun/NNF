@@ -36,25 +36,23 @@ def getUserCart(username) -> dict:
 
     return cart
 
-
 def updateUserSession(session: Session):
     today = datetime.date.today()
     if session.date < today:
         db.updateSessionDate(session.SID, f'{today.year}-{today.month}-{today.day}')
         logger.info(f'update session {session.username}')
 
-
 def monthlyClearSessions():
-    """
-    Clear old sessions monthly.
-    Do database vacuum.
-    """
     while True:
         clearOldSessions()
-        db.vacuum()
         for _ in range(200):
             time.sleep(1315)
 
+def databaseVacuum():
+    while True:
+        db.vacuum()
+        logger.info('vacuum')
+        time.sleep(600)
 
 def clearOldSessions():
     """
@@ -98,7 +96,6 @@ def dailyMenuUpdate():
         with open('keys.json', 'w') as o:
             json.dump(keys, o, indent=4)
 
-        logger.info('check catering')
         boolDailyMenu = db.checkDailyMenu()
 
         if not boolDailyMenu:
@@ -126,7 +123,6 @@ def dailyMenuUpdate():
                                                 for p in complexProducts])
 
         time.sleep(config['dailyMenuUpdateInterval'])
-
 
 db = Database()
 sessionSecret = keys['sessionSecret']
@@ -165,9 +161,10 @@ if keys['DEBUG']:
 dailyMenuUpdateThread = threading.Thread(target=dailyMenuUpdate)
 dailyMenuUpdateThread.start()
 
+dbVacuumThread = threading.Thread(target=databaseVacuum)
+dbVacuumThread.start()
 
 app = Flask(__name__)
-
 
 @app.route('/')
 def index():
