@@ -11,7 +11,7 @@ async function login() {
         if (SID) postData('/logout', {SID: SID});
         now.setMonth(now.getMonth() + 1);
         document.cookie = `SID=${login_response.SID}; expires=${now.toUTCString()}; path=/;`;
-        window.location.href = `${location.protocol}//${window.location.host}/menu`;
+        window.location.pathname = '/menu';
     } else {
         showAlert(login_response.message);
         passfield.value = "";
@@ -22,7 +22,7 @@ async function logout() {
     let response = await postData('/logout', {SID: getCookie('SID')});
     if (response.success) {
         document.cookie = "SID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        window.location.href = `${location.protocol}//${window.location.host}`;
+        window.location.pathname = '/';
     } else {
         window.location.reload(true);
     }
