@@ -1,6 +1,6 @@
 
 async function addToCart() {
-    let response = await postData('/buy', {productID: Number(event.target.dataset.itemid),
+    let response = await postData('/cart', {productID: Number(event.target.dataset.itemid),
                                            username: window.username,
                                            act: 'add'});
     if (response.success) {

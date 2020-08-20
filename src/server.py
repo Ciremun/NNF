@@ -173,9 +173,6 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    """
-    Redirect to menu page.
-    """
     return redirect('/menu', code=302)
 
 
@@ -237,10 +234,6 @@ def login():
 
 @app.route('/u/<username>')
 def linkprofile(username):
-    """
-    User page checks if user exists,
-    updates session and loads profile if session is valid.
-    """
     username = username.lower()
 
     userinfo = db.getUser(username)
@@ -252,11 +245,9 @@ def linkprofile(username):
     if session and session.username == username:
 
         userinfo = {'username': username, 'displayname': userinfo[0]}
-
         updateUserSession(session)
 
         cart = getUserCart(username)
-        
         if cart:
             cartSum = db.getUserCartSum(username)
             cart['_SUM'] = cartSum[0]
@@ -267,28 +258,16 @@ def linkprofile(username):
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    """
-    Delete old session cookie or
-    delete session from memory and database,
-    delete cookie, redirect to index page,
-    reload page if session not found.
-    """
-    try:
-        message = request.get_json()
-        SID = message.get('SID')
-        if not isinstance(SID, str):
-            return {'success': False}
-        db.deleteSession(SID)
-        return {'success': True}
-    except KeyError:
+    message = request.get_json()
+    SID = message.get('SID')
+    if not isinstance(SID, str):
         return {'success': False}
+    db.deleteSession(SID)
+    return {'success': True}
 
 
-@app.route('/buy', methods=['POST'])
+@app.route('/cart', methods=['POST'])
 def buy():
-    """
-    Add items to cart.
-    """
     message = request.get_json()
     SID = request.cookies.get("SID")
     session = getSession(SID)
@@ -339,7 +318,6 @@ def buy():
 def menu():
     SID = request.cookies.get("SID")
     session = getSession(SID)
-
     if session:
         username = session.username
 
@@ -348,7 +326,6 @@ def menu():
             return render_template('menu.html', auth=False, userinfo={}, dailymenu=dailymenu, dailycomplex=dailycomplex)
 
         updateUserSession(session)
-
         cart = getUserCart(username)
 
         return render_template('menu.html', auth=True, userinfo={'username': username, 'displayname': displayname[0]},
