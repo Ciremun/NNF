@@ -9,14 +9,14 @@
 {% endblock %}
 
 {% block content %}
-    {% if cart %}
+    {% if userinfo.get('cart') %}
         <table>
             <tr>
                 <th>Товар</th>
                 <th>Количество</th>
                 <th>Цена</th>
             </tr>
-            {% for title, complexInfo in cart['complex'].items() %}
+            {% for title, complexInfo in userinfo['cart']['complex'].items() %}
                 <tr>
                     <td>
                         <div class="complexProduct">
@@ -34,7 +34,7 @@
                     <td class="cartItemPrice">{{ complexInfo['price'] *  complexInfo['amount']  }} &#x20BD;</td>
                 </tr>
             {% endfor %}
-            {% for food in cart['menu'] %}
+            {% for food in userinfo['cart']['menu'] %}
                 <tr>
                     <td>
                         <div class="product">
@@ -47,9 +47,8 @@
             {% endfor %}
         </table>
         <br>
-        <div class="dfdfdf">Сумма заказа - {{ cart['_SUM'] }} &#x20BD;</div>
+        <div class="dfdfdf">Сумма заказа - {{ userinfo['cart']['_SUM'] }} &#x20BD;</div>
     {% else %}
     <div class="dfdfdf">Корзина пуста</div>
     {% endif %}
-    <script src="{{ url_for('static',filename='cart.js') }}"></script>
 {% endblock %}

@@ -242,7 +242,6 @@ def linkprofile(username):
     session = getSession(SID)
     if session and session.username == username:
 
-        userinfo = {'auth': True, 'username': username, 'displayname': userinfo[0]}
         updateUserSession(session)
 
         cart = getUserCart(username)
@@ -250,7 +249,10 @@ def linkprofile(username):
             cartSum = db.getUserCartSum(username)
             cart['_SUM'] = cartSum[0]
 
-        return render_template('userprofile.html', userinfo=userinfo, cart=cart)
+        userinfo = {'auth': True, 'username': username, 
+                    'displayname': userinfo[0], 'cart': cart}
+        return render_template('userprofile.html', userinfo=userinfo)
+
     return redirect('/menu', code=302)
 
 
@@ -324,9 +326,8 @@ def menu():
             return render_template('menu.html', userinfo={'auth': False}, catering=catering)
 
         updateUserSession(session)
-        cart = getUserCart(username)
         userinfo = {'auth': True, 'username': username, 'displayname': displayname[0]}
-        return render_template('menu.html', userinfo=userinfo, catering=catering, cart=cart)
+        return render_template('menu.html', userinfo=userinfo, catering=catering)
 
     return render_template('menu.html', userinfo={'auth': False}, catering=catering)
 
