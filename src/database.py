@@ -193,7 +193,6 @@ WHERE section = %s AND type = %s\
     def updateCartProduct(self, cart_id: int, product_id: int, amount: int):
         sql = "SELECT updateCartProduct(%s, %s, %s)"
         self.cursor.execute(sql, (cart_id, product_id, amount))
-        return self.cursor.fetchone()
 
     @acquireLock
     def clearUserCart(self, cart_id: int):
