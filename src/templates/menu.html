@@ -10,7 +10,7 @@
 
 {% block content %}
     <section class="orders_section">
-        {% for category, items in dailycomplex.items() %}
+        {% for category, items in catering['complex'].items() %}
             <div class="category_head">
                 <div class="category_label">{{ category }}</div>
                 <div class="circle rotate360" data-itemid="{{ items['ID'] }}" onclick="addToCart()">+</div>
@@ -36,7 +36,7 @@
             </div>
             <br><br>
         {% endfor %}
-        {% for category, items in dailymenu.items() %}
+        {% for category, items in catering['items'].items() %}
             <div class="category_head">
                 <div class="category_label">{{ category }}</div>
             </div>

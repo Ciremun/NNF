@@ -35,26 +35,26 @@ class namnyamParser(threading.Thread):
         threading.Thread.__init__(self)
         self.start()
 
-    def createExcel(self):
-        try:
-            dailycomplex, dailyMenu = self.getDailyMenu(requests.get(namnyamURL).text)
-            dailyMenu = {k: [f'{x.title}, {x.weight}, {x.calories}, {x.price}' for x in v] for k, v in dailyMenu.items()}
+    # def createExcel(self):
+    #     try:
+    #         dailycomplex, dailyMenu = self.getDailyMenu(requests.get(namnyamURL).text)
+    #         dailyMenu = {k: [f'{x.title}, {x.weight}, {x.calories}, {x.price}' for x in v] for k, v in dailyMenu.items()}
 
-            columns = [pd.Series(foods, name=mealType) for mealType, foods in dailyMenu.items()]
+    #         columns = [pd.Series(foods, name=mealType) for mealType, foods in dailyMenu.items()]
 
-            writer = pd.ExcelWriter("result.xlsx", engine='xlsxwriter')
+    #         writer = pd.ExcelWriter("result.xlsx", engine='xlsxwriter')
 
-            result = pd.concat(columns, axis=1)
-            result.to_excel(writer, sheet_name='Main', index=False)
+    #         result = pd.concat(columns, axis=1)
+    #         result.to_excel(writer, sheet_name='Main', index=False)
 
-            worksheet = writer.sheets['Main']
-            worksheet.set_column('A:D', 55, None)
+    #         worksheet = writer.sheets['Main']
+    #         worksheet.set_column('A:D', 55, None)
 
-            writer.save()
+    #         writer.save()
 
-            print('.xlsx created')
-        except Exception:
-            logging.exception('e')
+    #         print('.xlsx created')
+    #     except Exception:
+    #         logging.exception('e')
 
     def parseFoodPage(self, item, foodPageLink, image_link, typeLabel, items_dict, itemGroup=None):
 
@@ -105,8 +105,7 @@ class namnyamParser(threading.Thread):
 
     def getDailyMenu(self, url: str):
 
-        dailyComplex = {}
-        dailyMenu = {}
+        catering = {'complex': {}, 'items': {}}
         dailyMenuSoup = BeautifulSoup(url, 'lxml')
         dailyMealTypes = dailyMenuSoup.find_all('div', class_='catering_item included_item')
 
@@ -116,7 +115,7 @@ class namnyamParser(threading.Thread):
 
             typeLabel+= f". {' '.join(mealType.find('div', class_='catering_item_price').text.split(' ')[1:])}"
 
-            dailyComplex[typeLabel] = []
+            catering['complex'][typeLabel] = []
 
             foods = mealType.find('ul', class_='list_included_item').find_all('li')
 
@@ -124,7 +123,7 @@ class namnyamParser(threading.Thread):
 
                 link = f"https://www.nam-nyam.ru{item.a['href']}"
                 image_link = f"https://www.nam-nyam.ru{item.find('div', class_='img')['data-src']}"
-                dailyComplex = self.parseFoodPage(item, link, image_link, typeLabel, dailyComplex, itemGroup='complex')
+                catering['complex'] = self.parseFoodPage(item, link, image_link, typeLabel, catering['complex'], itemGroup='complex')
 
         dailyMealsMenuGroups = [x.parent for x in dailyMenuSoup.find_all('div', class_="catering-sm-slider")]
 
@@ -133,7 +132,7 @@ class namnyamParser(threading.Thread):
             typeLabel = group.find('div', class_="h2").text.strip()
             groupFoods = group.find('div', class_="catering-sm-slider").find_all('div', class_="catering_item")
 
-            dailyMenu[typeLabel] = []
+            catering['items'][typeLabel] = []
 
             for item in groupFoods:
 
@@ -141,6 +140,6 @@ class namnyamParser(threading.Thread):
                 link = f"https://www.nam-nyam.ru{item.a['href']}"
                 image_link = f"https://www.nam-nyam.ru{item.a.find('img')['src']}"
 
-                dailyMenu = self.parseFoodPage(item, link, image_link, typeLabel, dailyMenu, itemGroup='menu')
+                catering['items'] = self.parseFoodPage(item, link, image_link, typeLabel, catering['items'], itemGroup='menu')
 
-        return dailyComplex, dailyMenu
+        return catering

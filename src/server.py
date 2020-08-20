@@ -1,5 +1,4 @@
-from flask import Flask, render_template
-from flask import request, redirect
+from flask import Flask, render_template, request, redirect
 from gevent.pywsgi import WSGIServer
 from .salt import hash_password, verify_password
 from .config import config, keys
@@ -89,7 +88,7 @@ def dailyMenuUpdate():
     with open('keys.json', 'w') as o:
         json.dump(keys, o, indent=4)
 
-    global dailycomplex, dailymenu
+    global catering
 
     while True:
 
@@ -105,10 +104,10 @@ def dailyMenuUpdate():
         if not boolDailyMenu:
 
             logger.info('update menu')
-            dailycomplex, dailymenu = namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
+            catering = namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
 
             complexProducts = []
-            for section in dailycomplex.keys():
+            for section in catering['complex'].keys():
                 section = section.split(' ')
                 title = ' '.join(section[:-2])
                 price = int(section[-2:-1][0])
@@ -120,9 +119,9 @@ def dailyMenuUpdate():
             date = f'{date.year}-{date.month}-{date.day}'
 
             db.addDailyMenu([(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'complexItem', date) \
-                                for k, foods in dailycomplex.items() for v in foods] + \
+                                for k, foods in catering['complex'].items() for v in foods] + \
                                     [(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'menu', date) \
-                                        for k, foods in dailymenu.items() for v in foods] + \
+                                        for k, foods in catering['items'].items() for v in foods] + \
                                             [(p.title, 'None', 'None', p.price, 'None', 'None', 'None', 'complex', date) \
                                                 for p in complexProducts])
 
@@ -135,11 +134,10 @@ sessionSecret = keys['sessionSecret']
 # DEBUG
 if keys['DEBUG']:
 
-    dailycomplex = {}
-    dailymenu = {}
+    catering = {'complex': {}, 'items': {}}
     old_section = None
 
-    for k, v in {'complexItem': dailycomplex, 'menu': dailymenu}.items():
+    for k, v in {'complexItem': catering['complex'], 'menu': catering['items']}.items():
         for i in db.getDailyMenuByType(k):
             section = i[6]
             food_item = foodItem(i[0], i[1], i[2], i[3], i[4], i[5], ID=i[7])
@@ -244,7 +242,7 @@ def linkprofile(username):
     session = getSession(SID)
     if session and session.username == username:
 
-        userinfo = {'username': username, 'displayname': userinfo[0]}
+        userinfo = {'auth': True, 'username': username, 'displayname': userinfo[0]}
         updateUserSession(session)
 
         cart = getUserCart(username)
@@ -252,7 +250,7 @@ def linkprofile(username):
             cartSum = db.getUserCartSum(username)
             cart['_SUM'] = cartSum[0]
 
-        return render_template('userprofile.html', auth=True, userinfo=userinfo, cart=cart)
+        return render_template('userprofile.html', userinfo=userinfo, cart=cart)
     return redirect('/menu', code=302)
 
 
@@ -323,15 +321,14 @@ def menu():
 
         displayname = db.getUserDisplayName(username)
         if not displayname:
-            return render_template('menu.html', auth=False, userinfo={}, dailymenu=dailymenu, dailycomplex=dailycomplex)
+            return render_template('menu.html', userinfo={'auth': False}, catering=catering)
 
         updateUserSession(session)
         cart = getUserCart(username)
+        userinfo = {'auth': True, 'username': username, 'displayname': displayname[0]}
+        return render_template('menu.html', userinfo=userinfo, catering=catering, cart=cart)
 
-        return render_template('menu.html', auth=True, userinfo={'username': username, 'displayname': displayname[0]},
-                                            dailymenu=dailymenu, dailycomplex=dailycomplex, cart=cart)
-    return render_template('menu.html', auth=False, userinfo={},
-                                        dailymenu=dailymenu, dailycomplex=dailycomplex)
+    return render_template('menu.html', userinfo={'auth': False}, catering=catering)
 
 
 # Production
