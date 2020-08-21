@@ -1,33 +1,12 @@
 from bs4 import BeautifulSoup
+from .structure import FoodItem, ShortFoodItem
 import requests
 import logging
 import pandas as pd
 import threading
 
+
 namnyamURL = "https://www.nam-nyam.ru/catering/"
-
-
-class foodItem:
-
-    def __init__(self, title, weight, calories, price, link, image_link, ID=None):
-        self.title = title
-        self.weight = weight
-        self.calories = calories
-        self.price = price
-        self.link = link
-        self.image_link = image_link
-        self.ID = ID
-
-
-class shortFoodItem:
-
-    def __init__(self, title, price, link, amount=None, ID=None):
-        self.title = title
-        self.price = price
-        self.link = link
-        self.ID = ID
-        self.amount = amount
-
 
 class namnyamParser(threading.Thread):
 
@@ -80,7 +59,7 @@ class namnyamParser(threading.Thread):
                 weight = ' '.join(item.find('div', class_="catering_item_weight").text.strip().split(' ')[1:])
                 price = ''.join(item.find('div', class_="catering_item_price").text.strip().split(' ')[1:-1])
 
-            items_dict[typeLabel].append(foodItem(title, weight, calories, price, foodPageLink, image_link))
+            items_dict[typeLabel].append(FoodItem(title, weight, calories, price, foodPageLink, image_link))
             return items_dict
 
         if title.startswith('.'):
@@ -89,7 +68,7 @@ class namnyamParser(threading.Thread):
         item_desc = foodPageSoup.find('td', itemprop="offers")
 
         if not item_desc:
-            items_dict[typeLabel].append(foodItem('?', weight, calories, price, foodPageLink, image_link))
+            items_dict[typeLabel].append(FoodItem('?', weight, calories, price, foodPageLink, image_link))
             return items_dict
 
         for line in item_desc.find_all('p'):
@@ -100,7 +79,7 @@ class namnyamParser(threading.Thread):
 
         price = ''.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:-1])
 
-        items_dict[typeLabel].append(foodItem(title, weight, calories, price, foodPageLink, image_link))
+        items_dict[typeLabel].append(FoodItem(title, weight, calories, price, foodPageLink, image_link))
         return items_dict
 
     def getDailyMenu(self, url: str):

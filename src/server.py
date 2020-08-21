@@ -2,10 +2,10 @@ from flask import Flask, render_template, request, redirect
 from gevent.pywsgi import WSGIServer
 from .salt import hash_password, verify_password
 from .config import config, keys
-from .parser import namnyamParser, foodItem, shortFoodItem
+from .parser import namnyamParser
 from .database import Database
 from .log import logger
-from .structure import Session
+from .structure import Session, FoodItem, ShortFoodItem
 import threading
 import json
 import time
@@ -28,11 +28,11 @@ def getUserCart(username) -> dict:
         itemID = item[5]
 
         if Type == 'complex':
-            cart['complex'][title] = {'foods': [shortFoodItem(x[0], x[1], x[2], ID=x[3]) 
+            cart['complex'][title] = {'foods': [ShortFoodItem(x[0], x[1], x[2], ID=x[3]) 
                                                 for x in db.getComplexItems(' '.join((title, f'{price} руб.')), 'complexItem')],
                                       'price': price, 'ID': itemID, 'amount': amount}
         elif Type == 'menu':
-            cart['menu'].append(shortFoodItem(title, price, link, amount=amount, ID=itemID))
+            cart['menu'].append(ShortFoodItem(title, price, link, amount=amount, ID=itemID))
 
     return cart
 
@@ -74,27 +74,10 @@ def getSession(SID: str):
         return Session(SID, s[0], s[1], s[2], s[3])
 
 def dailyMenuUpdate():
-    """
-    Check nam-nyam menu every hour,
-    update if changes.
-    """
-
-    # DEBUG
-    if keys['DEBUG']:
-        return
-    keys['DEBUG'] = True
-    with open('keys.json', 'w') as o:
-        json.dump(keys, o, indent=4)
-
     global catering
+    init_catering()
 
     while True:
-
-        # DEBUG
-        time.sleep(3)
-        keys['DEBUG'] = False
-        with open('keys.json', 'w') as o:
-            json.dump(keys, o, indent=4)
 
         boolDailyMenu = db.checkDailyMenu()
 
@@ -108,7 +91,7 @@ def dailyMenuUpdate():
                 section = section.split(' ')
                 title = ' '.join(section[:-2])
                 price = int(section[-2:-1][0])
-                complexProducts.append(shortFoodItem(title, price, 'None'))
+                complexProducts.append(ShortFoodItem(title, price, 'None'))
 
             db.clearDailyMenu()
 
@@ -127,16 +110,16 @@ def dailyMenuUpdate():
 db = Database()
 sessionSecret = keys['sessionSecret']
 
-# DEBUG
-if keys['DEBUG']:
+catering = {'complex': {}, 'items': {}}
 
-    catering = {'complex': {}, 'items': {}}
+def init_catering():
+    global catering
     old_section = None
 
     for k, v in {'complexItem': catering['complex'], 'menu': catering['items']}.items():
         for i in db.getDailyMenuByType(k):
             section = i[6]
-            food_item = foodItem(i[0], i[1], i[2], i[3], i[4], i[5], ID=i[7])
+            food_item = FoodItem(i[0], i[1], i[2], i[3], i[4], i[5], ID=i[7])
             if section != old_section:
                 if k == 'complexItem':
                     v[section] = {}
@@ -155,16 +138,18 @@ if keys['DEBUG']:
             else:
                 v[section].append(food_item)
 
-    monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
-    monthlyClearSessionsThread.start()
-
-dailyMenuUpdateThread = threading.Thread(target=dailyMenuUpdate)
-dailyMenuUpdateThread.start()
+monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
+monthlyClearSessionsThread.start()
 
 dbVacuumThread = threading.Thread(target=databaseVacuum)
 dbVacuumThread.start()
 
+dailyMenuUpdateThread = threading.Thread(target=dailyMenuUpdate)
+dailyMenuUpdateThread.start()
+
+
 app = Flask(__name__)
+
 
 @app.route('/')
 def index():
@@ -332,8 +317,10 @@ def menu():
 
 # Production
 
-# wsgi = WSGIServer(('0.0.0.0', keys['flaskPort']), app, log=requestLogs, error_log=logger)
-# wsgi.serve_forever()
+requestLogs = 'default' if config['flaskLogging'] else None
+
+wsgi = WSGIServer((keys['flaskHost'], keys['flaskPort']), app, log=requestLogs, error_log=logger)
+wsgi.serve_forever()
 
 # Debug.
-app.run(debug=True, host='127.0.0.1', port=keys['flaskPort'])
+# app.run(debug=True, host=keys['flaskHost'], port=keys['flaskPort'])
