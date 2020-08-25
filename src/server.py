@@ -169,6 +169,33 @@ def login():
     """
     if request.method == 'POST':
         message = request.get_json()
+
+        target_user_id = message.get('target')
+        if isinstance(target_user_id, int):
+            SID = request.cookies.get("SID")
+            session = getSession(SID)
+            if session:
+                target_userinfo = db.getUserByID(target_user_id)
+                if not target_userinfo:
+                    return {'success': False, 'message': 'target user not found'}
+                shareinfo = db.getAccountShare(target_user_id, session.user_id)
+                if not shareinfo:
+                    return {'success': False, 'message': 'account share not found'}
+                now = time.time()
+                share_duration = now - shareinfo[0]
+                share_date = now - shareinfo[1]
+                if share_duration > share_date:
+                    db.deleteAccountShare(target_user_id, session.user_id)
+                    return {'success': False, 'message': 'account share is outdated'}
+                username = target_userinfo[0]
+                usertype = target_userinfo[2]
+                SID = hash_password(sessionSecret)
+                date = datetime.date.today()
+                db.addSession(SID, username, usertype, f'{date.year}-{date.month}-{date.day}', target_user_id)
+                logger.info(f'login user {username}')
+                return {'success': True, 'SID': SID}
+            return {'success': False, 'message': 'Unauthorized'}
+
         displayname = message.get('displayname')
         password = message.get('password')
 
@@ -181,7 +208,7 @@ def login():
         for i in displayname, password:
             for letter in i:
                 code = ord(letter)
-                if(code == 32):
+                if code == 32:
                     return {'success': False, 'message': 'no spaces please'}
                 if (48 <= code <= 57) or (65 <= code <= 90) or (97 <= code <= 122):
                     continue
@@ -317,10 +344,10 @@ def menu():
 
 # Production
 
-requestLogs = 'default' if config['flaskLogging'] else None
+# requestLogs = 'default' if config['flaskLogging'] else None
 
-wsgi = WSGIServer((keys['flaskHost'], keys['flaskPort']), app, log=requestLogs, error_log=logger)
-wsgi.serve_forever()
+# wsgi = WSGIServer((keys['flaskHost'], keys['flaskPort']), app, log=requestLogs, error_log=logger)
+# wsgi.serve_forever()
 
 # Debug.
-# app.run(debug=True, host=keys['flaskHost'], port=keys['flaskPort'])
+app.run(debug=True, host=keys['flaskHost'], port=keys['flaskPort'])

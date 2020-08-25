@@ -137,6 +137,12 @@ WHERE user_id = (SELECT id FROM users WHERE username = %s)\
         return self.cursor.fetchone()
 
     @acquireLock
+    def getUserByID(self, user_id: int):
+        sql = "SELECT username, displayname, usertype FROM users WHERE id = %s"
+        self.cursor.execute(sql, (user_id,))
+        return self.cursor.fetchone()
+
+    @acquireLock
     def getUserDisplayName(self, username: str):
         sql = "SELECT displayname FROM users WHERE username = %s"
         self.cursor.execute(sql, (username,))
@@ -192,13 +198,10 @@ WHERE section = %s AND type = %s\
         return self.cursor.fetchall()
 
     @acquireLock
-    def getAccountShare(self, user_id: int):
-        sql = """\
-SELECT target_user_id, duration, date FROM account_share \
-WHERE user_id = %s\
-"""
-        self.cursor.execute(sql, (user_id))
-        return self.cursor.fetchall()
+    def getAccountShare(self, user_id: int, target_user_id: int):
+        sql = "SELECT duration, date FROM account_share WHERE user_id = %s AND target_user_id = %s"
+        self.cursor.execute(sql, (user_id, target_user_id))
+        return self.cursor.fetchone()
 
     @acquireLock
     def updateSessionDate(self, sid: str, newdate: str):
