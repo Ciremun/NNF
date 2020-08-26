@@ -3,122 +3,116 @@ from .structure import FoodItem, ShortFoodItem
 import requests
 import logging
 import pandas as pd
-import threading
 
 
 namnyamURL = "https://www.nam-nyam.ru/catering/"
 
-class namnyamParser(threading.Thread):
 
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.start()
+# def createExcel():
+#     try:
+#         dailycomplex, dailyMenu = getDailyMenu(requests.get(namnyamURL).text)
+#         dailyMenu = {k: [f'{x.title}, {x.weight}, {x.calories}, {x.price}' for x in v] for k, v in dailyMenu.items()}
 
-    # def createExcel(self):
-    #     try:
-    #         dailycomplex, dailyMenu = self.getDailyMenu(requests.get(namnyamURL).text)
-    #         dailyMenu = {k: [f'{x.title}, {x.weight}, {x.calories}, {x.price}' for x in v] for k, v in dailyMenu.items()}
+#         columns = [pd.Series(foods, name=mealType) for mealType, foods in dailyMenu.items()]
 
-    #         columns = [pd.Series(foods, name=mealType) for mealType, foods in dailyMenu.items()]
+#         writer = pd.ExcelWriter("result.xlsx", engine='xlsxwriter')
 
-    #         writer = pd.ExcelWriter("result.xlsx", engine='xlsxwriter')
+#         result = pd.concat(columns, axis=1)
+#         result.to_excel(writer, sheet_name='Main', index=False)
 
-    #         result = pd.concat(columns, axis=1)
-    #         result.to_excel(writer, sheet_name='Main', index=False)
+#         worksheet = writer.sheets['Main']
+#         worksheet.set_column('A:D', 55, None)
 
-    #         worksheet = writer.sheets['Main']
-    #         worksheet.set_column('A:D', 55, None)
+#         writer.save()
 
-    #         writer.save()
+#         print('.xlsx created')
+#     except Exception:
+#         logging.exception('e')
 
-    #         print('.xlsx created')
-    #     except Exception:
-    #         logging.exception('e')
+def getDailyMenu(url: str):
 
-    def parseFoodPage(self, item, foodPageLink, image_link, typeLabel, items_dict, itemGroup=None):
+    catering = {'complex': {}, 'items': {}}
+    dailyMenuSoup = BeautifulSoup(url, 'lxml')
+    dailyMealTypes = dailyMenuSoup.find_all('div', class_='catering_item included_item')
 
-        title = "Без имени"
-        weight = '?'
-        calories = '?'
-        price = 0
+    for mealType in dailyMealTypes:
 
-        print(foodPageLink)
+        typeLabel = mealType.find('div', class_='catering_item_name catering_item_name_complex').text.strip()
 
-        foodPage = requests.get(foodPageLink).text
-        foodPageSoup = BeautifulSoup(foodPage, 'lxml')
+        typeLabel+= f". {' '.join(mealType.find('div', class_='catering_item_price').text.split(' ')[1:])}"
 
-        match = foodPageSoup.find('div', class_='right_pos')
-        title = match.find('h1').text.strip()
+        catering['complex'][typeLabel] = []
 
-        if title == 'Страница не найдена':
-            if itemGroup == 'complex':
-                title = item.find('span', class_='complex_tooltip').text.strip()
-                weight = ' '.join(item.find('span', class_='catering_item_weight').text.split(' ')[1:])
-            elif itemGroup == 'menu':
-                title = item.find('div', class_="catering_item_name _showtooltip").text.strip()
-                weight = ' '.join(item.find('div', class_="catering_item_weight").text.strip().split(' ')[1:])
-                price = ''.join(item.find('div', class_="catering_item_price").text.strip().split(' ')[1:-1])
+        foods = mealType.find('ul', class_='list_included_item').find_all('li')
 
-            items_dict[typeLabel].append(FoodItem(title, weight, calories, price, foodPageLink, image_link))
-            return items_dict
+        for item in foods:
 
-        if title.startswith('.'):
-            title = title[1:]
+            link = f"https://www.nam-nyam.ru{item.a['href']}"
+            image_link = f"https://www.nam-nyam.ru{item.find('div', class_='img')['data-src']}"
+            catering['complex'] = parseFoodPage(item, link, image_link, typeLabel, catering['complex'], itemGroup='complex')
 
-        item_desc = foodPageSoup.find('td', itemprop="offers")
+    dailyMealsMenuGroups = [x.parent for x in dailyMenuSoup.find_all('div', class_="catering-sm-slider")]
 
-        if not item_desc:
-            items_dict[typeLabel].append(FoodItem('?', weight, calories, price, foodPageLink, image_link))
-            return items_dict
+    for group in dailyMealsMenuGroups:
 
-        for line in item_desc.find_all('p'):
-            if line.text.startswith("Вес: "):
-                weight = ' '.join(line.text.split(' ')[1:])
-            elif line.text.startswith("Калорийность: "):
-                calories = f"{' '.join(line.text.split(' ')[1:])} ккал"
+        typeLabel = group.find('div', class_="h2").text.strip()
+        groupFoods = group.find('div', class_="catering-sm-slider").find_all('div', class_="catering_item")
 
-        price = ''.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:-1])
+        catering['items'][typeLabel] = []
+
+        for item in groupFoods:
+
+            item = item.find('div', class_="catering_item_wrapper")
+            link = f"https://www.nam-nyam.ru{item.a['href']}"
+            image_link = f"https://www.nam-nyam.ru{item.a.find('img')['src']}"
+
+            catering['items'] = parseFoodPage(item, link, image_link, typeLabel, catering['items'], itemGroup='menu')
+
+    return catering
+
+def parseFoodPage(item, foodPageLink, image_link, typeLabel, items_dict, itemGroup=None):
+
+    title = "Без имени"
+    weight = '?'
+    calories = '?'
+    price = 0
+
+    print(foodPageLink)
+
+    foodPage = requests.get(foodPageLink).text
+    foodPageSoup = BeautifulSoup(foodPage, 'lxml')
+
+    match = foodPageSoup.find('div', class_='right_pos')
+    title = match.find('h1').text.strip()
+
+    if title == 'Страница не найдена':
+        if itemGroup == 'complex':
+            title = item.find('span', class_='complex_tooltip').text.strip()
+            weight = ' '.join(item.find('span', class_='catering_item_weight').text.split(' ')[1:])
+        elif itemGroup == 'menu':
+            title = item.find('div', class_="catering_item_name _showtooltip").text.strip()
+            weight = ' '.join(item.find('div', class_="catering_item_weight").text.strip().split(' ')[1:])
+            price = ''.join(item.find('div', class_="catering_item_price").text.strip().split(' ')[1:-1])
 
         items_dict[typeLabel].append(FoodItem(title, weight, calories, price, foodPageLink, image_link))
         return items_dict
 
-    def getDailyMenu(self, url: str):
+    if title.startswith('.'):
+        title = title[1:]
 
-        catering = {'complex': {}, 'items': {}}
-        dailyMenuSoup = BeautifulSoup(url, 'lxml')
-        dailyMealTypes = dailyMenuSoup.find_all('div', class_='catering_item included_item')
+    item_desc = foodPageSoup.find('td', itemprop="offers")
 
-        for mealType in dailyMealTypes:
+    if not item_desc:
+        items_dict[typeLabel].append(FoodItem('?', weight, calories, price, foodPageLink, image_link))
+        return items_dict
 
-            typeLabel = mealType.find('div', class_='catering_item_name catering_item_name_complex').text.strip()
+    for line in item_desc.find_all('p'):
+        if line.text.startswith("Вес: "):
+            weight = ' '.join(line.text.split(' ')[1:])
+        elif line.text.startswith("Калорийность: "):
+            calories = f"{' '.join(line.text.split(' ')[1:])} ккал"
 
-            typeLabel+= f". {' '.join(mealType.find('div', class_='catering_item_price').text.split(' ')[1:])}"
+    price = ''.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:-1])
 
-            catering['complex'][typeLabel] = []
-
-            foods = mealType.find('ul', class_='list_included_item').find_all('li')
-
-            for item in foods:
-
-                link = f"https://www.nam-nyam.ru{item.a['href']}"
-                image_link = f"https://www.nam-nyam.ru{item.find('div', class_='img')['data-src']}"
-                catering['complex'] = self.parseFoodPage(item, link, image_link, typeLabel, catering['complex'], itemGroup='complex')
-
-        dailyMealsMenuGroups = [x.parent for x in dailyMenuSoup.find_all('div', class_="catering-sm-slider")]
-
-        for group in dailyMealsMenuGroups:
-
-            typeLabel = group.find('div', class_="h2").text.strip()
-            groupFoods = group.find('div', class_="catering-sm-slider").find_all('div', class_="catering_item")
-
-            catering['items'][typeLabel] = []
-
-            for item in groupFoods:
-
-                item = item.find('div', class_="catering_item_wrapper")
-                link = f"https://www.nam-nyam.ru{item.a['href']}"
-                image_link = f"https://www.nam-nyam.ru{item.a.find('img')['src']}"
-
-                catering['items'] = self.parseFoodPage(item, link, image_link, typeLabel, catering['items'], itemGroup='menu')
-
-        return catering
+    items_dict[typeLabel].append(FoodItem(title, weight, calories, price, foodPageLink, image_link))
+    return items_dict

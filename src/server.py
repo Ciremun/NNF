@@ -2,11 +2,11 @@ from flask import Flask, render_template, request, redirect
 from gevent.pywsgi import WSGIServer
 from .salt import hash_password, verify_password
 from .config import config, keys
-from .parser import namnyamParser
-from .database import Database
 from .log import logger
 from .structure import Session, FoodItem, ShortFoodItem
-import threading
+from threading import Thread
+import src.parser as parser
+import src.database as db
 import json
 import time
 import datetime
@@ -84,7 +84,7 @@ def dailyMenuUpdate():
         if not boolDailyMenu:
 
             logger.info('update menu')
-            catering = namnyamParser().getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
+            catering = parser.getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
 
             complexProducts = []
             for section in catering['complex'].keys():
@@ -105,11 +105,6 @@ def dailyMenuUpdate():
                                                 for p in complexProducts])
 
         time.sleep(config['dailyMenuUpdateInterval'])
-
-db = Database()
-sessionSecret = keys['sessionSecret']
-
-catering = {'complex': {}, 'items': {}}
 
 def init_catering():
     global catering
@@ -137,18 +132,19 @@ def init_catering():
             else:
                 v[section].append(food_item)
 
-monthlyClearSessionsThread = threading.Thread(target=monthlyClearSessions)
+sessionSecret = keys['sessionSecret']
+catering = {'complex': {}, 'items': {}}
+
+monthlyClearSessionsThread = Thread(target=monthlyClearSessions)
 monthlyClearSessionsThread.start()
 
-dbVacuumThread = threading.Thread(target=databaseVacuum)
+dbVacuumThread = Thread(target=databaseVacuum)
 dbVacuumThread.start()
 
-dailyMenuUpdateThread = threading.Thread(target=dailyMenuUpdate)
+dailyMenuUpdateThread = Thread(target=dailyMenuUpdate)
 dailyMenuUpdateThread.start()
 
-
 app = Flask(__name__)
-
 
 @app.route('/')
 def index():
