@@ -1,7 +1,7 @@
 import psycopg2
 import datetime
 from .config import keys
-from typing import List, Optional
+from typing import List
 from threading import Lock
 
 
@@ -191,7 +191,7 @@ def verifyAccountShare(user_id: int, target_user_id: int):
 @acquireLock
 def getAccountShare(id_: int):
     sql = """\
-SELECT s.user_id, o.displayname, t.displayname \
+SELECT s.user_id, o.displayname, s.target_user_id, t.displayname \
 FROM account_share s \
 LEFT JOIN users o ON o.id = s.user_id \
 LEFT JOIN users t ON t.id = s.target_user_id \

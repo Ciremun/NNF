@@ -19,14 +19,8 @@ def getUserCart(username) -> dict:
         return None
 
     cart = {'complex': {}, 'menu': []}
-    for item in cartItems:
-        title = item[0]
-        price = item[1]
-        link = item[2]
-        Type = item[3]
-        amount = item[4]
-        itemID = item[5]
-
+    for i in cartItems:
+        title, price, link, Type, amount, itemID = i[0], i[1], i[2], i[3], i[4], i[5]
         if Type == 'complex':
             cart['complex'][title] = {'foods': [ShortFoodItem(x[0], x[1], x[2], ID=x[3]) 
                                                 for x in db.getComplexItems(' '.join((title, f'{price} руб.')), 'complexItem')],
@@ -173,10 +167,10 @@ def login():
                 shareinfo = db.verifyAccountShare(target_user_id, session.user_id)
                 if not shareinfo:
                     return {'success': False, 'message': 'account share not found'}
+                now = datetime.datetime.now()
                 share_interval = shareinfo[0]
                 if share_interval is not None:
                     share_date = shareinfo[1]
-                    now = datetime.datetime.now()
                     if share_date + share_interval < now:
                         db.deleteAccountShare(target_user_id, session.user_id)
                         return {'success': False, 'message': 'account share is outdated'}
@@ -257,12 +251,13 @@ def linkprofile(username):
 
         account_share = db.getAccountShare(session.user_id)
         if account_share:
-            available, shared_to = [], []
-            for u in account_share:
-                if u[0] == session.user_id:
-                    shared_to.append(u[2])
+            available, shared_to = {}, {}
+            for i in account_share:
+                user_id, user, target_user_id, target_user = i[0], i[1], i[2], i[3]
+                if user_id == session.user_id:
+                    shared_to[target_user] = target_user_id
                 else:
-                    available.append(u[1])
+                    available[user] = user_id
             userinfo['account_share'] = {
                 'available': available,
                 'shared_to': shared_to

@@ -11,12 +11,12 @@
 {% block content %}
     {% if userinfo.get('account_share') %}
         <div>available:</div>
-        {% for account in userinfo['account_share']['available'] %}
-            <div>{{ account }}</div>
+        {% for user, user_id in userinfo['account_share']['available'].items() %}
+            <div data-userid="{{ user_id }}">{{ user }}</div>
         {% endfor %}
         <div>shared to:</div>
-        {% for account in userinfo['account_share']['shared_to'] %}
-            <div>{{ account }}</div>
+        {% for user, target_user_id in userinfo['account_share']['shared_to'].items() %}
+            <div data-userid="{{ target_user_id }}">{{ user }}</div>
         {% endfor %}
     {% endif %}
     {% if userinfo.get('cart') %}
