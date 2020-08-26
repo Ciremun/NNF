@@ -38,7 +38,7 @@ def getUserCart(username) -> dict:
 
 def updateUserSession(session: Session):
     now = datetime.datetime.now()
-    if session.date < now:
+    if session.date.day < now.day:
         db.updateSessionDate(session.SID, now)
         logger.info(f'update session {session.username}')
 
@@ -66,7 +66,9 @@ def getSession(SID: str):
         return
     s = db.getSession(SID)
     if s:
-        return Session(SID, s[0], s[1], s[2], s[3])
+        session = Session(SID, s[0], s[1], s[2], s[3])
+        updateUserSession(session)
+        return session
 
 def dailyMenuUpdate():
     global catering
@@ -239,8 +241,6 @@ def linkprofile(username):
     session = getSession(SID)
     if session and session.username == username:
 
-        updateUserSession(session)
-
         cart = getUserCart(username)
         if cart:
             cartSum = db.getUserCartSum(username)
@@ -320,13 +320,12 @@ def menu():
 
         displayname = db.getUserDisplayName(username)
         if not displayname:
-            return render_template('menu.html', userinfo={'auth': False}, catering=catering)
+            return render_template('menu.html', userinfo={}, catering=catering)
 
-        updateUserSession(session)
         userinfo = {'auth': True, 'username': username, 'displayname': displayname[0]}
         return render_template('menu.html', userinfo=userinfo, catering=catering)
 
-    return render_template('menu.html', userinfo={'auth': False}, catering=catering)
+    return render_template('menu.html', userinfo={}, catering=catering)
 
 
 # Production
