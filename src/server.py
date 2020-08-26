@@ -44,7 +44,14 @@ def updateUserSession(session: Session):
 
 def monthlyClearSessions():
     while True:
-        clearOldSessions()
+        sessionsToDelete = []
+        for s in db.getSessions():
+            if s[1] + datetime.timedelta(days=30) < datetime.datetime.now():
+                sessionsToDelete.append((s[0], ))
+                continue
+        if sessionsToDelete:
+            db.deleteSessions(sessionsToDelete)
+            sessionsToDelete.clear()
         for _ in range(200):
             time.sleep(1315)
 
@@ -53,18 +60,6 @@ def databaseVacuum():
         db.vacuum()
         logger.info('vacuum')
         time.sleep(600)
-
-def clearOldSessions():
-    """
-    Delete sessions older than a month.
-    """
-    sessionsToDelete = []
-    for s in db.getSessions():
-        if s[1] + datetime.timedelta(days=30) < datetime.datetime.now():
-            sessionsToDelete.append((s[0], ))
-            continue
-    if sessionsToDelete:
-        db.deleteSessions(sessionsToDelete)
 
 def getSession(SID: str):
     if not SID:
