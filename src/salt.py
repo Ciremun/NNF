@@ -1,4 +1,7 @@
-import hashlib, binascii, os
+import hashlib
+import binascii
+import os
+
 
 # Source: https://www.vitoshacademy.com/hashing-passwords-in-python/
 

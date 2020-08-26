@@ -1,8 +1,8 @@
+import logging
+import requests
+import pandas as pd
 from bs4 import BeautifulSoup
 from .structure import FoodItem, ShortFoodItem
-import requests
-import logging
-import pandas as pd
 
 
 namnyamURL = "https://www.nam-nyam.ru/catering/"

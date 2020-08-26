@@ -1,8 +1,8 @@
-import psycopg2
 import datetime
-from .config import keys
-from typing import List
 from threading import Lock
+from typing import List
+import psycopg2
+from .config import keys
 
 
 def acquireLock(func):

@@ -1,22 +1,22 @@
+import json
+import time
+import datetime
+from threading import Thread
 from flask import Flask, render_template, request, redirect
 from gevent.pywsgi import WSGIServer
+import requests
+import src.parser as parser
+import src.database as db
 from .salt import hash_password, verify_password
 from .config import config, keys
 from .log import logger
 from .structure import Session, FoodItem, ShortFoodItem
-from threading import Thread
-import src.parser as parser
-import src.database as db
-import json
-import time
-import datetime
-import requests
 
 
 def getUserCart(username) -> dict:
     cartItems = db.getUserCartItems(username)
     if not cartItems:
-        return None
+        return
 
     cart = {'complex': {}, 'menu': []}
     for i in cartItems:
