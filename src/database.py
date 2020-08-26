@@ -1,5 +1,6 @@
 import psycopg2
 import threading
+import datetime
 from .config import keys
 from typing import List
 
@@ -48,18 +49,18 @@ orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
         self.cursor.execute(sql, (order_id, title, price, link, amount))
 
     @acquireLock
-    def addCartProduct(self, cart_id: int, product_id: int, amount: int, date: float):
+    def addCartProduct(self, cart_id: int, product_id: int, amount: int, date: datetime.datetime):
         sql = "SELECT addCartProduct(%s, %s, %s, %s)"
         self.cursor.execute(sql, (cart_id, product_id, amount, date))
 
     @acquireLock
-    def addUser(self, username: str, displayname: str, password: str, usertype: str, date: str):
+    def addUser(self, username: str, displayname: str, password: str, usertype: str, date: datetime.datetime):
         sql = "SELECT addUser(%s, %s, %s, %s, %s)"
         self.cursor.execute(sql, (username, displayname, password, usertype, date))
         return self.cursor.fetchone()
 
     @acquireLock
-    def addSession(self, sid: str, username: str, usertype: str, date: str, user_id: int):
+    def addSession(self, sid: str, username: str, usertype: str, date: datetime.datetime, user_id: int):
         sql = """\
 INSERT INTO sessions(sid, username, usertype, date, user_id) \
 VALUES (%s, %s, %s, %s, %s)\
@@ -204,7 +205,7 @@ WHERE section = %s AND type = %s\
         return self.cursor.fetchone()
 
     @acquireLock
-    def updateSessionDate(self, sid: str, newdate: str):
+    def updateSessionDate(self, sid: str, newdate: datetime.datetime):
         sql = "UPDATE sessions SET date = %s WHERE sid = %s"
         self.cursor.execute(sql, (newdate, sid))
 

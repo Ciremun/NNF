@@ -24,5 +24,5 @@ class Session(NamedTuple):
     SID: str
     username: str
     usertype: str
-    date: datetime.date
+    date: datetime.datetime
     user_id: int

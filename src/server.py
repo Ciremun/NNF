@@ -37,9 +37,9 @@ def getUserCart(username) -> dict:
     return cart
 
 def updateUserSession(session: Session):
-    today = datetime.date.today()
-    if session.date < today:
-        db.updateSessionDate(session.SID, f'{today.year}-{today.month}-{today.day}')
+    now = datetime.datetime.now()
+    if session.date < now:
+        db.updateSessionDate(session.SID, now)
         logger.info(f'update session {session.username}')
 
 def monthlyClearSessions():
@@ -60,7 +60,7 @@ def clearOldSessions():
     """
     sessionsToDelete = []
     for s in db.getSessions():
-        if s[1] + datetime.timedelta(days=30) < datetime.date.today():
+        if s[1] + datetime.timedelta(days=30) < datetime.datetime.now():
             sessionsToDelete.append((s[0], ))
             continue
     if sessionsToDelete:
@@ -95,8 +95,7 @@ def dailyMenuUpdate():
 
             db.clearDailyMenu()
 
-            date = datetime.date.today()
-            date = f'{date.year}-{date.month}-{date.day}'
+            date = datetime.datetime.now()
 
             db.addDailyMenu([(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'complexItem', date) \
                                 for k, foods in catering['complex'].items() for v in foods] + \
@@ -181,17 +180,16 @@ def login():
                 shareinfo = db.getAccountShare(target_user_id, session.user_id)
                 if not shareinfo:
                     return {'success': False, 'message': 'account share not found'}
-                now = time.time()
-                share_duration = now - shareinfo[0]
-                share_date = now - shareinfo[1]
-                if share_duration > share_date:
+                share_interval = shareinfo[0]
+                share_date = shareinfo[1]
+                now = datetime.datetime.now()
+                if share_date + share_interval < now:
                     db.deleteAccountShare(target_user_id, session.user_id)
                     return {'success': False, 'message': 'account share is outdated'}
                 username = target_userinfo[0]
                 usertype = target_userinfo[2]
                 SID = hash_password(sessionSecret)
-                date = datetime.date.today()
-                db.addSession(SID, username, usertype, f'{date.year}-{date.month}-{date.day}', target_user_id)
+                db.addSession(SID, username, usertype, now, target_user_id)
                 logger.info(f'login user {username}')
                 return {'success': True, 'SID': SID}
             return {'success': False, 'message': 'Unauthorized'}
@@ -222,8 +220,7 @@ def login():
             user_id = userinfo[3]
             if verify_password(hashed_pwd, password):
                 SID = hash_password(sessionSecret)
-                date = datetime.date.today()
-                db.addSession(SID, username, usertype, f'{date.year}-{date.month}-{date.day}', user_id)
+                db.addSession(SID, username, usertype, datetime.datetime.now(), user_id)
                 logger.info(f'login user {username}')
                 return {'success': True, 'SID': SID}
             else:
@@ -232,8 +229,7 @@ def login():
         else:
             hashed_pwd = hash_password(password)
             SID = hash_password(sessionSecret)
-            date = datetime.date.today()
-            date = f'{date.year}-{date.month}-{date.day}'
+            date = datetime.datetime.now()
             user_id = db.addUser(username, displayname, hashed_pwd, 'user', date)
             db.addSession(SID, username, 'user', date, user_id[0])
             logger.info(f'register user {username}')
@@ -311,7 +307,7 @@ def buy():
             return {'success': False, 'message': 'Error: product not found'}
 
         if act == 'add':
-            db.addCartProduct(cart_id[0], product_id[0], 1, time.time())
+            db.addCartProduct(cart_id[0], product_id[0], 1, datetime.datetime.now())
             return {'success': True}
 
         if act == 'update':

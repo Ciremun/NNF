@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION addUser(uName text, dName text, pass text, uType text, regDate date)
+CREATE OR REPLACE FUNCTION addUser(uName text, dName text, pass text, uType text, regDate timestamp)
     RETURNS users.id%TYPE AS $$
     DECLARE newid users.id%TYPE;
     BEGIN
@@ -9,7 +9,7 @@ CREATE OR REPLACE FUNCTION addUser(uName text, dName text, pass text, uType text
     END;
     $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION addCartProduct(cID int, pID int, pAmount int, dateAdded float)
+CREATE OR REPLACE FUNCTION addCartProduct(cID int, pID int, pAmount int, dateAdded timestamp)
     RETURNS VOID AS $$
     BEGIN
         IF (SELECT EXISTS(SELECT 1 FROM cartproduct WHERE cart_id = cID AND product_id = pID)) THEN
