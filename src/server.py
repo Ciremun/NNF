@@ -2,9 +2,11 @@ import json
 import time
 import datetime
 from threading import Thread
+
 from flask import Flask, render_template, request, redirect
 from gevent.pywsgi import WSGIServer
 import requests
+
 import src.parser as parser
 import src.database as db
 from .salt import hash_password, verify_password

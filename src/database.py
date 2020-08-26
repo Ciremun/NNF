@@ -1,7 +1,9 @@
 import datetime
 from threading import Lock
 from typing import List
+
 import psycopg2
+
 from .config import keys
 
 
