@@ -1,7 +1,7 @@
 import psycopg2
 import datetime
 from .config import keys
-from typing import List
+from typing import List, Optional
 from threading import Lock
 
 
@@ -183,10 +183,22 @@ WHERE section = %s AND type = %s\
     return cursor.fetchall()
 
 @acquireLock
-def getAccountShare(user_id: int, target_user_id: int):
+def verifyAccountShare(user_id: int, target_user_id: int):
     sql = "SELECT duration, date FROM account_share WHERE user_id = %s AND target_user_id = %s"
     cursor.execute(sql, (user_id, target_user_id))
     return cursor.fetchone()
+
+@acquireLock
+def getAccountShare(id_: int):
+    sql = """\
+SELECT s.user_id, o.displayname, t.displayname \
+FROM account_share s \
+LEFT JOIN users o ON o.id = s.user_id \
+LEFT JOIN users t ON t.id = s.target_user_id \
+WHERE s.user_id = %s OR s.target_user_id = %s
+"""
+    cursor.execute(sql, (id_, id_))
+    return cursor.fetchall()
 
 @acquireLock
 def updateSessionDate(sid: str, newdate: datetime.datetime):

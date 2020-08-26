@@ -170,15 +170,16 @@ def login():
                 target_userinfo = db.getUserByID(target_user_id)
                 if not target_userinfo:
                     return {'success': False, 'message': 'target user not found'}
-                shareinfo = db.getAccountShare(target_user_id, session.user_id)
+                shareinfo = db.verifyAccountShare(target_user_id, session.user_id)
                 if not shareinfo:
                     return {'success': False, 'message': 'account share not found'}
                 share_interval = shareinfo[0]
-                share_date = shareinfo[1]
-                now = datetime.datetime.now()
-                if share_date + share_interval < now:
-                    db.deleteAccountShare(target_user_id, session.user_id)
-                    return {'success': False, 'message': 'account share is outdated'}
+                if share_interval is not None:
+                    share_date = shareinfo[1]
+                    now = datetime.datetime.now()
+                    if share_date + share_interval < now:
+                        db.deleteAccountShare(target_user_id, session.user_id)
+                        return {'success': False, 'message': 'account share is outdated'}
                 username = target_userinfo[0]
                 usertype = target_userinfo[2]
                 SID = hash_password(sessionSecret)
@@ -244,12 +245,30 @@ def linkprofile(username):
         cart = getUserCart(username)
         if cart:
             cartSum = db.getUserCartSum(username)
-            cart['_SUM'] = cartSum[0]
+            cart['sum'] = cartSum[0]
 
-        userinfo = {'auth': True, 'username': username, 
-                    'displayname': userinfo[0], 'cart': cart}
+        userinfo = {
+            'auth': True, 
+            'username': username, 
+            'displayname': userinfo[0], 
+            'cart': cart,
+            'account_share': None
+        }
+
+        account_share = db.getAccountShare(session.user_id)
+        if account_share:
+            available, shared_to = [], []
+            for u in account_share:
+                if u[0] == session.user_id:
+                    shared_to.append(u[2])
+                else:
+                    available.append(u[1])
+            userinfo['account_share'] = {
+                'available': available,
+                'shared_to': shared_to
+            }
+
         return render_template('userprofile.html', userinfo=userinfo)
-
     return redirect('/menu', code=302)
 
 
@@ -322,7 +341,11 @@ def menu():
         if not displayname:
             return render_template('menu.html', userinfo={}, catering=catering)
 
-        userinfo = {'auth': True, 'username': username, 'displayname': displayname[0]}
+        userinfo = {
+            'auth': True, 
+            'username': username, 
+            'displayname': displayname[0]
+        }
         return render_template('menu.html', userinfo=userinfo, catering=catering)
 
     return render_template('menu.html', userinfo={}, catering=catering)

@@ -9,6 +9,16 @@
 {% endblock %}
 
 {% block content %}
+    {% if userinfo.get('account_share') %}
+        <div>available:</div>
+        {% for account in userinfo['account_share']['available'] %}
+            <div>{{ account }}</div>
+        {% endfor %}
+        <div>shared to:</div>
+        {% for account in userinfo['account_share']['shared_to'] %}
+            <div>{{ account }}</div>
+        {% endfor %}
+    {% endif %}
     {% if userinfo.get('cart') %}
         <table>
             <tr>
@@ -47,7 +57,7 @@
             {% endfor %}
         </table>
         <br>
-        <div class="dfdfdf">Сумма заказа - {{ userinfo['cart']['_SUM'] }} &#x20BD;</div>
+        <div class="dfdfdf">Сумма заказа - {{ userinfo['cart']['sum'] }} &#x20BD;</div>
     {% else %}
     <div class="dfdfdf">Корзина пуста</div>
     {% endif %}
