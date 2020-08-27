@@ -125,6 +125,22 @@ def init_catering():
             else:
                 v[section].append(food_item)
 
+def getSessionAccountShare(session: Session, userinfo: dict):
+    account_share = db.getAccountShare(session.user_id)
+    if account_share:
+        available, shared_to = {}, {}
+        for i in account_share:
+            user_id, user, target_user_id, target_user = i[0], i[1], i[2], i[3]
+            if user_id == session.user_id:
+                shared_to[target_user] = target_user_id
+            else:
+                available[user] = user_id
+        userinfo['account_share'] = {
+            'available': available,
+            'shared_to': shared_to
+        }
+    return userinfo
+
 sessionSecret = keys['sessionSecret']
 catering = {'complex': {}, 'items': {}}
 
@@ -247,23 +263,10 @@ def linkprofile(username):
             'auth': True, 
             'username': username, 
             'displayname': userinfo[0], 
-            'cart': cart,
-            'account_share': None
+            'cart': cart
         }
 
-        account_share = db.getAccountShare(session.user_id)
-        if account_share:
-            available, shared_to = {}, {}
-            for i in account_share:
-                user_id, user, target_user_id, target_user = i[0], i[1], i[2], i[3]
-                if user_id == session.user_id:
-                    shared_to[target_user] = target_user_id
-                else:
-                    available[user] = user_id
-            userinfo['account_share'] = {
-                'available': available,
-                'shared_to': shared_to
-            }
+        userinfo = getSessionAccountShare(session, userinfo)
 
         return render_template('userprofile.html', userinfo=userinfo)
     return redirect('/menu', code=302)
@@ -343,6 +346,9 @@ def menu():
             'username': username, 
             'displayname': displayname[0]
         }
+
+        userinfo = getSessionAccountShare(session, userinfo)
+
         return render_template('menu.html', userinfo=userinfo, catering=catering)
 
     return render_template('menu.html', userinfo={}, catering=catering)

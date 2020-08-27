@@ -13,6 +13,22 @@
                 <li class="right"><a class="top_panel" onclick="logout()">Выйти</a></li>
                 <li class="left"><a href="/menu" class="top_panel">Меню</a></li>
                 <li class="right"><a href="/u/{{ userinfo.get('username') }}" class="top_panel">{{ userinfo.get('displayname') }}</a></li>
+                {% if userinfo.get('account_share') %}
+                    {% if userinfo['account_share']['available'] %}
+                        <li class="right dropdown"><a href="#" class="top_panel">Shared</a>
+                            {% for user, user_id in userinfo['account_share']['available'].items() %}
+                                <div class="dropdown-content"><a data-userid="{{ user_id }}" href="#">{{ user }}</a></div>
+                            {% endfor %}
+                        </li>
+                    {% endif %}
+                    {% if userinfo['account_share']['shared_to'] %}
+                        <li class="right dropdown"><a href="#" class="top_panel">Shared To</a>
+                            {% for user, target_user_id in userinfo['account_share']['shared_to'].items() %}
+                                <div class="dropdown-content"><a data-userid="{{ target_user_id }}" href="#">{{ user }}</a></div>
+                            {% endfor %}
+                        </li>
+                    {% endif %}
+                {% endif %}
             {% else %}
                 <li class="right"><a id="LoginButton" class="top_panel">Вход/Регистрация</a></li>
             {% endif %}
