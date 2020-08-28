@@ -9,6 +9,14 @@
 {% endblock %}
 
 {% block content %}
+    {% if userinfo.get('account_share') and userinfo['account_share'].get('shared_to') %}
+        {% for user, target_user_id in userinfo['account_share']['shared_to'].items() %}
+            <div class="flex" style="display: flex; color: white;">
+                <div class="shared-user">{{ user }}</div>
+                <a class="delete-shared" data-userid="{{ target_user_id }}" href="#" onclick=deleteShared()>Удалить</a>
+            </div>
+        {% endfor %}
+    {% endif %}
     {% if userinfo.get('cart') %}
         <table>
             <tr>

@@ -58,7 +58,7 @@ def databaseVacuum():
         time.sleep(600)
 
 def getSession(SID: str):
-    if not SID:
+    if not isinstance(SID, str):
         return
     s = db.getSession(SID)
     if s:
@@ -181,42 +181,42 @@ def login():
             if session:
                 target_userinfo = db.getUserByID(target_user_id)
                 if not target_userinfo:
-                    return {'success': False, 'message': 'target user not found'}
+                    return {'success': False, 'message': 'Error: target user not found'}
                 shareinfo = db.verifyAccountShare(target_user_id, session.user_id)
                 if not shareinfo:
-                    return {'success': False, 'message': 'account share not found'}
+                    return {'success': False, 'message': 'Error: account share not found'}
                 now = datetime.datetime.now()
                 share_interval = shareinfo[0]
                 if share_interval is not None:
                     share_date = shareinfo[1]
                     if share_date + share_interval < now:
                         db.deleteAccountShare(target_user_id, session.user_id)
-                        return {'success': False, 'message': 'account share is outdated'}
+                        return {'success': False, 'message': 'Error: account share is outdated'}
                 username = target_userinfo[0]
                 usertype = target_userinfo[2]
                 SID = hash_password(sessionSecret)
                 db.addSession(SID, username, usertype, now, target_user_id)
                 logger.info(f'login user {username}')
                 return {'success': True, 'SID': SID}
-            return {'success': False, 'message': 'Unauthorized'}
+            return {'success': False, 'message': 'Error: Unauthorized'}
 
         displayname = message.get('displayname')
         password = message.get('password')
 
         if not (isinstance(displayname, str) and isinstance(password, str)):
-            return {'success': False, 'message': 'enter username and password'}
+            return {'success': False, 'message': 'Error: enter username and password'}
 
         if not all(0 < len(x) <= 25 for x in [displayname, password]):
-            return {'success': False, 'message': 'username/password length = 1-25 chars!'}
+            return {'success': False, 'message': 'Error: username/password length = 1-25 chars!'}
 
         for i in displayname, password:
             for letter in i:
                 code = ord(letter)
                 if code == 32:
-                    return {'success': False, 'message': 'no spaces please'}
+                    return {'success': False, 'message': 'Error: no spaces please'}
                 if (48 <= code <= 57) or (65 <= code <= 90) or (97 <= code <= 122):
                     continue
-                return {'success': False, 'message': 'only english characters and numbers'}
+                return {'success': False, 'message': 'Error: only english characters and numbers'}
 
         username = displayname.lower()
         userinfo = db.getUser(username)
@@ -231,7 +231,7 @@ def login():
                 return {'success': True, 'SID': SID}
             else:
                 logger.info(f'failed login user {username}')
-                return {'success': False, 'message': 'password did not match'}
+                return {'success': False, 'message': 'Error: password did not match'}
         else:
             hashed_pwd = hash_password(password)
             SID = hash_password(sessionSecret)
@@ -289,12 +289,13 @@ def buy():
     session = getSession(SID)
     if session:
 
-        if session.usertype == 'admin':
-            username = message.get('username')
-            if not isinstance(username, str):
-                return {'success': False, 'message': 'Error: no username'}
-        else:
-            username = session.username
+        # if session.usertype == 'admin':
+        #     username = message.get('username')
+        #     if not isinstance(username, str):
+        #         return {'success': False, 'message': 'Error: no username'}
+        # else:
+
+        username = session.username
 
         act = message.get('act')
         if all(act != x for x in ['add', 'update', 'clear']):
@@ -327,7 +328,7 @@ def buy():
             db.updateCartProduct(cart_id[0], product_id[0], amount)
             return {'success': True}
 
-    return {'success': False, 'message': 'Unauthorized'}
+    return {'success': False, 'message': 'Error: Unauthorized'}
 
 
 @app.route('/menu')
@@ -353,6 +354,22 @@ def menu():
 
     return render_template('menu.html', userinfo={}, catering=catering)
 
+
+@app.route('/shared', methods=['POST'])
+def shared():
+    message = request.get_json()
+    SID = request.cookies.get('SID')
+    session = getSession(SID)
+    if session:
+        target_user_id = message.get('target')
+        if not isinstance(target_user_id, int):
+            return {'success': False, 'message': 'Error: target not found'}
+        shareinfo = db.verifyAccountShare(session.user_id, target_user_id)
+        if not shareinfo:
+            return {'success': False, 'message': 'Error: account share not found'}
+        db.deleteAccountShare(session.user_id, target_user_id)
+        return {'success': True}
+    return {'success': False, 'message': 'Error: Unauthorized'}
 
 # Production
 

@@ -1,4 +1,3 @@
-
 function loginEnterKey() {
     if (event.key === 'Enter') login();
 }
@@ -10,7 +9,7 @@ async function processLoginResponse(login_response) {
         if (SID) postData('/logout', {SID: SID});
         now.setMonth(now.getMonth() + 1);
         document.cookie = `SID=${login_response.SID}; expires=${now.toUTCString()}; path=/;`;
-        window.location.reload(true);
+        window.location.reload();
     } else {
         showAlert(login_response.message);
     }
@@ -30,7 +29,7 @@ async function shareLogin() {
 async function logout() {
     let response = await postData('/logout', {SID: getCookie('SID')});
     if (response.success) document.cookie = "SID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    window.location.reload(true);
+    window.location.reload();
 }
 
 let modal = document.getElementById("DivModal"),
