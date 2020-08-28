@@ -160,10 +160,10 @@ input {
 .dropdown-content {
     display: none;
     position: absolute;
-    padding: 14px 16px;
     text-decoration: none;
     background-color: #2c2c5e;
     transition: background .15s;
+    text-align: center;
 }
 
 .dropdown-content a {
@@ -194,3 +194,14 @@ input {
     from {top: -300px; opacity: 0}
     to {top: 0; opacity: 1}
 }
+
+ /* Mobile */
+ @media (max-width: 1100px) {
+    ul, li, .top_panel {
+        width: 100vw;
+        font-size: 1.5em;
+    }
+    .dropdown-content {
+        width: 100vw;
+    }
+ }
