@@ -29,12 +29,8 @@ async function shareLogin() {
 
 async function logout() {
     let response = await postData('/logout', {SID: getCookie('SID')});
-    if (response.success) {
-        document.cookie = "SID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        window.location.reload(true);
-    } else {
-        window.location.reload(true);
-    }
+    if (response.success) document.cookie = "SID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    window.location.reload(true);
 }
 
 let modal = document.getElementById("DivModal"),
