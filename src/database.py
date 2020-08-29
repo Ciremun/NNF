@@ -63,7 +63,8 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
     cursor.executemany(sql, menu)
 
 @acquireLock
-def addAccountShare(user_id: int, target_user_id: int, duration: float, date: float):
+def addAccountShare(user_id: int, target_user_id: int, 
+                    duration: datetime.timedelta, date: datetime.datetime):
     sql = """\
 INSERT INTO account_share(user_id, target_user_id, duration, date) \
 VALUES (%s, %s, %s, %s)\

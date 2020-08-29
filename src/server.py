@@ -207,7 +207,7 @@ def login():
             return {'success': False, 'message': 'Error: enter username and password'}
 
         if not all(0 < len(x) <= 25 for x in [displayname, password]):
-            return {'success': False, 'message': 'Error: username/password length = 1-25 chars!'}
+            return {'success': False, 'message': 'Error: username/password length 1-25 chars'}
 
         for i in displayname, password:
             for letter in i:
@@ -299,7 +299,7 @@ def buy():
 
         act = message.get('act')
         if all(act != x for x in ['add', 'update', 'clear']):
-            return {'success': False, 'message': 'Error: invalid cart item action.'}
+            return {'success': False, 'message': 'Error: invalid cart item action'}
 
         cart_id = db.getUserCartID(username)
         if not cart_id:
@@ -311,7 +311,7 @@ def buy():
 
         product_id = message.get('productID')
         if not isinstance(product_id, int):
-            return {'success': False, 'message': 'Error: invalid product id.'}
+            return {'success': False, 'message': 'Error: invalid product id'}
 
         product_id = db.getProductByID(product_id)
         if not product_id:
@@ -324,7 +324,7 @@ def buy():
         if act == 'update':
             amount = message.get('amount')
             if not isinstance(amount, int) or amount < 0:
-                return {'success': False, 'message': 'Error: invalid cart item amount.'}
+                return {'success': False, 'message': 'Error: invalid cart item amount'}
             db.updateCartProduct(cart_id[0], product_id[0], amount)
             return {'success': True}
 
@@ -361,14 +361,34 @@ def shared():
     SID = request.cookies.get('SID')
     session = getSession(SID)
     if session:
+        act = message.get('act')
+        if all(act != x for x in ['add', 'del']):
+            return {'success': False, 'message': 'Error: invalid account share action'}
         target_user_id = message.get('target')
         if not isinstance(target_user_id, int):
-            return {'success': False, 'message': 'Error: target not found'}
+            return {'success': False, 'message': 'Error: target id must be int'}
+        if act == 'add':
+            d = message.get('duration')
+            if not isinstance(d, dict):
+                return {'success': False, 'message': 'Error: invalid account share duration'}
+            try:
+                until_datetime = datetime.datetime(d['year'], d['month'], d['day'], d['hour'], d['minute'], d['second'])
+            except KeyError as e:
+                return {'success': False, 'message': f'KeyError: account share {e} key not found'}
+            except ValueError as e:
+                return {'success': False, 'message': f'ValueError: {e}'}
+            now = datetime.datetime.now()
+            if until_datetime <= now:
+                return {'success': False, 'message': 'Error: given date expired'}
+            duration = until_datetime - now
+            db.addAccountShare(session.user_id, target_user_id, duration, now)
+            return {'success': True}
         shareinfo = db.verifyAccountShare(session.user_id, target_user_id)
         if not shareinfo:
             return {'success': False, 'message': 'Error: account share not found'}
-        db.deleteAccountShare(session.user_id, target_user_id)
-        return {'success': True}
+        if act == 'del':
+            db.deleteAccountShare(session.user_id, target_user_id)
+            return {'success': True}
     return {'success': False, 'message': 'Error: Unauthorized'}
 
 # Production
