@@ -262,7 +262,8 @@ def linkprofile(username):
             'auth': True, 
             'username': username, 
             'displayname': userinfo[0], 
-            'cart': cart
+            'cart': cart,
+            'server-date': f'{datetime.datetime.now()}'
         }
         userinfo = getSessionAccountShare(session, userinfo)
 

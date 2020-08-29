@@ -11,12 +11,13 @@
 {% block content %}
     {% if userinfo.get('account_share') and userinfo['account_share'].get('shared_to') %}
         {% for user, target_user_id in userinfo['account_share']['shared_to'].items() %}
-            <div class="flex" style="display: flex; color: white;">
+            <div class="shared-list">
                 <div class="shared-user">{{ user }}</div>
                 <a class="delete-shared" data-userid="{{ target_user_id }}" href="#" onclick=deleteShared()>Удалить</a>
             </div>
         {% endfor %}
     {% endif %}
+    <div class="shared-server-date">Время сервера: {{ userinfo.get('server-date') }}</div>
     <div class="add-shared">
         <div class="add-shared-long"><input type="text" id="add-shared-username" spellcheck="false" maxlength="25" onkeydown="addSharedEnterKey()" placeholder="Пользователь"><br><br></div>
         <div class="add-shared-mid"><input type="text" id="add-shared-year" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="год"><br><br></div>

@@ -13,6 +13,11 @@ table, th, td {
     color: #dfdfdf;
   }
 
-  /* .cartSum {
+ .shared-list {
+    display: flex;
+    color: #dfdfdf;
+ }
 
-  } */
+.shared-server-date {
+    color: #dfdfdf;
+}
