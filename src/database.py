@@ -1,6 +1,6 @@
 import datetime
 from threading import Lock
-from typing import List
+from typing import List, Optional
 
 import psycopg2
 
@@ -65,7 +65,8 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
 
 @acquireLock
 def addAccountShare(user_id: int, target_user_id: int, 
-                    duration: datetime.timedelta, date: datetime.datetime):
+                    duration: Optional[datetime.timedelta], 
+                    date: Optional[datetime.datetime]):
     sql = """\
 INSERT INTO account_share(user_id, target_user_id, duration, date) \
 VALUES (%s, %s, %s, %s)\

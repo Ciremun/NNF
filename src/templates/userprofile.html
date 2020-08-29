@@ -27,6 +27,7 @@
         <div class="add-shared-short"><input type="text" id="add-shared-minute" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="минута"><br><br></div>
         <div class="add-shared-short"><input type="text" id="add-shared-second" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="секунда"><br><br></div>
         <div class="add-shared-submit"><a href="#" onclick="addShared()">Добавить</a></div>
+        <div class="add-shared-submit"><a href="#" onclick="addShared(true)">Добавить на неопределенный срок</a></div>
     </div>
     {% if userinfo.get('cart') %}
         <table>

@@ -367,6 +367,10 @@ def shared():
             if not isinstance(d, dict):
                 return {'success': False, 'message': 'Error: invalid account share duration'}
 
+            if message.get('forever') == True:
+                db.addAccountShare(session.user_id, target_user_id[0], None, None)
+                return {'success': True}
+
             try:
                 until_datetime = datetime.datetime(d['year'], d['month'], d['day'], d['hour'], d['minute'], d['second'])
             except KeyError as e:
@@ -375,6 +379,7 @@ def shared():
                 return {'success': False, 'message': f'ValueError: {e}'}
 
             now = datetime.datetime.now()
+
             if until_datetime <= now:
                 return {'success': False, 'message': 'Error: given date expired'}
             duration = until_datetime - now

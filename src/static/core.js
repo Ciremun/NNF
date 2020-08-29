@@ -55,7 +55,7 @@ function addSharedEnterKey() {
     if (event.key === 'Enter') addShared();
 }
 
-async function addShared() {
+async function addShared(forever=null) {
     let duration = {
         year: document.getElementById('add-shared-year').value,
         month: document.getElementById('add-shared-month').value,
@@ -73,6 +73,7 @@ async function addShared() {
         act: 'add',
         duration: duration
     };
+    if (forever !== null) data.forever = true;
     let response = await postData('/shared', data);
     if (response.success) {
         showAlert('Success: account share added');
