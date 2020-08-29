@@ -137,6 +137,12 @@ def getUserDisplayName(username: str):
     return cursor.fetchone()
 
 @acquireLock
+def getUserID(username: str):
+    sql = "SELECT id FROM users WHERE username = %s"
+    cursor.execute(sql, (username,))
+    return cursor.fetchone()
+
+@acquireLock
 def getSessions():
     sql = "SELECT sid, date FROM sessions"
     cursor.execute(sql)

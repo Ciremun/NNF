@@ -17,6 +17,16 @@
             </div>
         {% endfor %}
     {% endif %}
+    <div class="add-shared">
+        <div class="add-shared-long"><input type="text" id="add-shared-username" spellcheck="false" maxlength="25" onkeydown="addSharedEnterKey()" placeholder="Пользователь"><br><br></div>
+        <div class="add-shared-mid"><input type="text" id="add-shared-year" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="год"><br><br></div>
+        <div class="add-shared-short"><input type="text" id="add-shared-month" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="месяц"><br><br></div>
+        <div class="add-shared-short"><input type="text" id="add-shared-day" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="день"><br><br></div>
+        <div class="add-shared-short"><input type="text" id="add-shared-hour" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="час"><br><br></div>
+        <div class="add-shared-short"><input type="text" id="add-shared-minute" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="минута"><br><br></div>
+        <div class="add-shared-short"><input type="text" id="add-shared-second" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="секунда"><br><br></div>
+        <div class="add-shared-submit"><a href="#" onclick="addShared()">Добавить</a></div>
+    </div>
     {% if userinfo.get('cart') %}
         <table>
             <tr>

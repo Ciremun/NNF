@@ -364,10 +364,13 @@ def shared():
         act = message.get('act')
         if all(act != x for x in ['add', 'del']):
             return {'success': False, 'message': 'Error: invalid account share action'}
-        target_user_id = message.get('target')
-        if not isinstance(target_user_id, int):
-            return {'success': False, 'message': 'Error: target id must be int'}
         if act == 'add':
+            username = message.get('username')
+            if not username or not isinstance(username, str):
+                return {'success': False, 'message': 'Error: invalid username'}
+            target_user_id = db.getUserID(username)
+            if not target_user_id or target_user_id[0] == session.user_id:
+                return {'success': False, 'message': 'Error: invalid target user'}
             d = message.get('duration')
             if not isinstance(d, dict):
                 return {'success': False, 'message': 'Error: invalid account share duration'}
@@ -381,12 +384,15 @@ def shared():
             if until_datetime <= now:
                 return {'success': False, 'message': 'Error: given date expired'}
             duration = until_datetime - now
-            db.addAccountShare(session.user_id, target_user_id, duration, now)
+            db.addAccountShare(session.user_id, target_user_id[0], duration, now)
             return {'success': True}
-        shareinfo = db.verifyAccountShare(session.user_id, target_user_id)
-        if not shareinfo:
-            return {'success': False, 'message': 'Error: account share not found'}
-        if act == 'del':
+        elif act == 'del':
+            target_user_id = message.get('target')
+            if not isinstance(target_user_id, int):
+                return {'success': False, 'message': 'Error: target user id must be int'}
+            shareinfo = db.verifyAccountShare(session.user_id, target_user_id)
+            if not shareinfo:
+                return {'success': False, 'message': 'Error: account share not found'}
             db.deleteAccountShare(session.user_id, target_user_id)
             return {'success': True}
     return {'success': False, 'message': 'Error: Unauthorized'}

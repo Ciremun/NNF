@@ -51,10 +51,43 @@ async function addToCart() {
     }
 }
 
-async function deleteShared() {
-    let response = await postData('/shared', {target: Number(event.target.dataset.userid)});
-    if (response.success) showAlert('Success: account share removed');
+function addSharedEnterKey() {
+    if (event.key === 'Enter') addShared();
+}
+
+async function addShared() {
+    let duration = {
+        year: document.getElementById('add-shared-year').value,
+        month: document.getElementById('add-shared-month').value,
+        day: document.getElementById('add-shared-day').value,
+        hour: document.getElementById('add-shared-hour').value,
+        minute: document.getElementById('add-shared-minute').value,
+        second: document.getElementById('add-shared-second').value
+    };
+    Object.keys(duration).forEach(x => {
+        if (duration[x] === "") duration[x] = 0;
+        else duration[x] = Number(duration[x]);
+    });
+    let data = {
+        username: document.getElementById('add-shared-username').value.toLowerCase(),
+        act: 'add',
+        duration: duration
+    };
+    let response = await postData('/shared', data);
+    if (response.success) {
+        showAlert('Success: account share added');
+        await sleep(2000);
+        window.location.reload();
+    }
     else showAlert(response.message);
-    await sleep(2000);
-    window.location.reload();
+}
+
+async function deleteShared() {
+    let response = await postData('/shared', {target: Number(event.target.dataset.userid), act: 'del'});
+    if (response.success) {
+        showAlert('Success: account share removed');
+        await sleep(2000);
+        window.location.reload();
+    }
+    else showAlert(response.message);
 }
