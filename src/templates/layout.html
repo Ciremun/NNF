@@ -17,9 +17,9 @@
                 </li>
                 {% if userinfo.get('account_share') %}
                     {% if userinfo['account_share']['available'] %}
-                        <li class="right dropdown"><a href="#" class="top_panel">Аккаунты</a>
+                        <li class="right dropdown"><a class="top_panel">Аккаунты</a>
                             {% for user, user_id in userinfo['account_share']['available'].items() %}
-                                <div class="dropdown-content"><a class="top_panel" data-userid="{{ user_id }}" href="#" onclick=shareLogin()>{{ user }}</a></div>
+                                <div class="dropdown-content"><a class="top_panel" data-userid="{{ user_id }}" onclick=shareLogin()>{{ user }}</a></div>
                             {% endfor %}
                         </li>
                     {% endif %}
