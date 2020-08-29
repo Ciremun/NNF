@@ -195,8 +195,8 @@ def login():
                 username = target_userinfo[0]
                 usertype = target_userinfo[2]
                 SID = hash_password(sessionSecret)
-                db.addSession(SID, username, usertype, now, target_user_id)
-                logger.info(f'login user {username}')
+                db.addSession(SID, username, usertype, now, target_user_id, shared=True)
+                logger.info(f'shared login user {username}')
                 return {'success': True, 'SID': SID}
             return {'success': False, 'message': 'Error: Unauthorized'}
 

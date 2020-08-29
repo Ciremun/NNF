@@ -46,12 +46,13 @@ def addUser(username: str, displayname: str, password: str, usertype: str, date:
     return cursor.fetchone()
 
 @acquireLock
-def addSession(sid: str, username: str, usertype: str, date: datetime.datetime, user_id: int):
+def addSession(sid: str, username: str, usertype: str, 
+               date: datetime.datetime, user_id: int, shared: bool = False):
     sql = """\
-INSERT INTO sessions(sid, username, usertype, date, user_id) \
-VALUES (%s, %s, %s, %s, %s)\
+INSERT INTO sessions(sid, username, usertype, date, user_id, shared) \
+VALUES (%s, %s, %s, %s, %s, %s)\
 """
-    cursor.execute(sql, (sid, username, usertype, date, user_id))
+    cursor.execute(sql, (sid, username, usertype, date, user_id, shared))
 
 @acquireLock
 def addDailyMenu(menu: List[tuple]):
@@ -226,8 +227,11 @@ def clearUserCart(cart_id: int):
 
 @acquireLock
 def deleteAccountShare(user_id: int, target_user_id: int):
-    sql = "DELETE FROM account_share WHERE user_id = %s AND target_user_id = %s"
-    cursor.execute(sql, (user_id, target_user_id))
+    sql = """\
+DELETE FROM account_share WHERE user_id = %s AND target_user_id = %s;\
+DELETE FROM sessions WHERE user_id = %s AND shared = TRUE;\
+"""
+    cursor.execute(sql, (user_id, target_user_id, user_id))
 
 @acquireLock
 def deleteSession(sid: str):
