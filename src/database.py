@@ -1,6 +1,6 @@
 import datetime
 from threading import Lock
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import psycopg2
 
@@ -47,12 +47,13 @@ def addUser(username: str, displayname: str, password: str, usertype: str, date:
 
 @acquireLock
 def addSession(sid: str, username: str, usertype: str, 
-               date: datetime.datetime, user_id: int, shared: bool = False):
+               date: datetime.datetime, user_id: int, 
+               asID: Optional[int] = None):
     sql = """\
-INSERT INTO sessions(sid, username, usertype, date, user_id, shared) \
+INSERT INTO sessions(sid, username, usertype, date, user_id, account_share_id) \
 VALUES (%s, %s, %s, %s, %s, %s)\
 """
-    cursor.execute(sql, (sid, username, usertype, date, user_id, shared))
+    cursor.execute(sql, (sid, username, usertype, date, user_id, asID))
 
 @acquireLock
 def addDailyMenu(menu: List[tuple]):
@@ -146,7 +147,7 @@ def getUserID(username: str):
 
 @acquireLock
 def getSessions():
-    sql = "SELECT sid, date FROM sessions"
+    sql = "SELECT id, date FROM sessions"
     cursor.execute(sql)
     return cursor.fetchall()
 
@@ -195,12 +196,12 @@ WHERE section = %s AND type = %s\
 
 @acquireLock
 def verifyAccountShare(user_id: int, target_user_id: int):
-    sql = "SELECT duration, date FROM account_share WHERE user_id = %s AND target_user_id = %s"
+    sql = "SELECT duration, date, id FROM account_share WHERE user_id = %s AND target_user_id = %s"
     cursor.execute(sql, (user_id, target_user_id))
     return cursor.fetchone()
 
 @acquireLock
-def getAccountShare(id_: int):
+def getAccountShareByID(id_: int):
     sql = """\
 SELECT s.user_id, o.displayname, s.target_user_id, t.displayname \
 FROM account_share s \
@@ -209,6 +210,12 @@ LEFT JOIN users t ON t.id = s.target_user_id \
 WHERE s.user_id = %s OR s.target_user_id = %s
 """
     cursor.execute(sql, (id_, id_))
+    return cursor.fetchall()
+
+@acquireLock
+def getAccountShares():
+    sql = "SELECT id, duration, date FROM account_share"
+    cursor.execute(sql)
     return cursor.fetchall()
 
 @acquireLock
@@ -228,11 +235,13 @@ def clearUserCart(cart_id: int):
 
 @acquireLock
 def deleteAccountShare(user_id: int, target_user_id: int):
-    sql = """\
-DELETE FROM account_share WHERE user_id = %s AND target_user_id = %s;\
-DELETE FROM sessions WHERE user_id = %s AND shared = TRUE;\
-"""
-    cursor.execute(sql, (user_id, target_user_id, user_id))
+    sql = "DELETE FROM account_share WHERE user_id = %s AND target_user_id = %s"
+    cursor.execute(sql, (user_id, target_user_id))
+
+@acquireLock
+def deleteAccountShares(IDs: List[Tuple[int]]):
+    sql = "DELETE FROM account_share WHERE id = %s"
+    cursor.executemany(sql, IDs)
 
 @acquireLock
 def deleteSession(sid: str):
@@ -240,9 +249,9 @@ def deleteSession(sid: str):
     cursor.execute(sql, (sid,))
 
 @acquireLock
-def deleteSessions(sids: List[str]):
-    sql = "DELETE FROM sessions WHERE sid = %s"
-    cursor.executemany(sql, sids)
+def deleteSessions(IDs: List[Tuple[int]]):
+    sql = "DELETE FROM sessions WHERE id = %s"
+    cursor.executemany(sql, IDs)
 
 @acquireLock
 def clearDailyMenu():

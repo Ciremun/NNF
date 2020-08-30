@@ -38,16 +38,31 @@ def updateUserSession(session: Session):
         db.updateSessionDate(session.SID, now)
         logger.info(f'update session {session.username}')
 
-def monthlyClearSessions():
+def monthlyClearDB():
+    """
+    Remove old sessions, account share.
+    """
     while True:
         sessionsToDelete = []
+        accountShareToDelete = []
+        now = datetime.datetime.now()
         for s in db.getSessions():
-            if s[1] + datetime.timedelta(days=30) < datetime.datetime.now():
-                sessionsToDelete.append((s[0], ))
-                continue
+            sessionID = s[0]
+            sessionDate = s[1]
+            if sessionDate + datetime.timedelta(days=30) <= now:
+                sessionsToDelete.append((sessionID, ))
+        for a in db.getAccountShares():
+            asID = a[0]
+            asDuration = a[1]
+            asDate = a[2]
+            if asDuration is not None and asDate + asDuration <= now:
+                accountShareToDelete.append((asID,))
         if sessionsToDelete:
             db.deleteSessions(sessionsToDelete)
             sessionsToDelete.clear()
+        if accountShareToDelete:
+            db.deleteAccountShares(accountShareToDelete)
+            accountShareToDelete.clear()
         for _ in range(200):
             time.sleep(1315)
 
@@ -126,7 +141,7 @@ def init_catering():
                 v[section].append(food_item)
 
 def getSessionAccountShare(session: Session, userinfo: dict):
-    account_share = db.getAccountShare(session.user_id)
+    account_share = db.getAccountShareByID(session.user_id)
     if account_share:
         available, shared_to = {}, {}
         for i in account_share:
@@ -144,8 +159,8 @@ def getSessionAccountShare(session: Session, userinfo: dict):
 sessionSecret = keys['sessionSecret']
 catering = {'complex': {}, 'items': {}}
 
-monthlyClearSessionsThread = Thread(target=monthlyClearSessions)
-monthlyClearSessionsThread.start()
+monthlyClearDBThread = Thread(target=monthlyClearDB)
+monthlyClearDBThread.start()
 
 dbVacuumThread = Thread(target=databaseVacuum)
 dbVacuumThread.start()
@@ -192,10 +207,11 @@ def login():
                     if share_date + share_interval < now:
                         db.deleteAccountShare(target_user_id, session.user_id)
                         return {'success': False, 'message': 'Error: account share is outdated'}
+                asID = shareinfo[2]
                 username = target_userinfo[0]
                 usertype = target_userinfo[2]
                 SID = hash_password(sessionSecret)
-                db.addSession(SID, username, usertype, now, target_user_id, shared=True)
+                db.addSession(SID, username, usertype, now, target_user_id, asID)
                 logger.info(f'shared login user {username}')
                 return {'success': True, 'SID': SID}
             return {'success': False, 'message': 'Error: Unauthorized'}

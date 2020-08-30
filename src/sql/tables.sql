@@ -3,7 +3,7 @@ users(id serial primary key, username text, displayname text, password text, use
 
 CREATE TABLE IF NOT EXISTS 
 sessions(id serial primary key, sid text, username text, usertype text, date timestamp, 
-user_id integer references users(id) on delete cascade, shared boolean);
+user_id integer references users(id) on delete cascade, account_share_id integer references account_share(id) on delete cascade);
 
 CREATE TABLE IF NOT EXISTS 
 dailymenu(id serial primary key, title text, weight text, calories text, price integer, 
