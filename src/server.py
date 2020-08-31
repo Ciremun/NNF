@@ -178,76 +178,75 @@ def login():
     add user to database.
     Create cookie and redirect to menu.
     """
-    if request.method == 'POST':
-        message = request.get_json()
+    message = request.get_json()
 
-        target_user_id = message.get('target')
-        if isinstance(target_user_id, int):
-            SID = request.cookies.get("SID")
-            session = getSession(SID)
-            if session:
-                target_userinfo = db.getUserByID(target_user_id)
-                if not target_userinfo:
-                    return {'success': False, 'message': 'Error: target user not found'}
-                shareinfo = db.verifyAccountShare(target_user_id, session.user_id)
-                if not shareinfo:
-                    return {'success': False, 'message': 'Error: account share not found'}
-                now = datetime.datetime.now()
-                share_interval = shareinfo[0]
-                if share_interval is not None:
-                    share_date = shareinfo[1]
-                    if share_date + share_interval < now:
-                        db.deleteAccountShare(target_user_id, session.user_id)
-                        return {'success': False, 'message': 'Error: account share is outdated'}
-                asID = shareinfo[2]
-                username = target_userinfo[0]
-                usertype = target_userinfo[2]
-                SID = hash_password(sessionSecret)
-                db.addSession(SID, username, usertype, now, target_user_id, asID)
-                logger.info(f'shared login user {username}')
-                return {'success': True, 'SID': SID}
-            return {'success': False, 'message': 'Error: Unauthorized'}
-
-        displayname = message.get('displayname')
-        password = message.get('password')
-
-        if not (isinstance(displayname, str) and isinstance(password, str)):
-            return {'success': False, 'message': 'Error: enter username and password'}
-
-        if not all(0 < len(x) <= 25 for x in [displayname, password]):
-            return {'success': False, 'message': 'Error: username/password length 1-25 chars'}
-
-        for i in displayname, password:
-            for letter in i:
-                code = ord(letter)
-                if code == 32:
-                    return {'success': False, 'message': 'Error: no spaces please'}
-                if (48 <= code <= 57) or (65 <= code <= 90) or (97 <= code <= 122):
-                    continue
-                return {'success': False, 'message': 'Error: only english characters and numbers'}
-
-        username = displayname.lower()
-        userinfo = db.getUser(username)
-        if userinfo:
-            hashed_pwd = userinfo[1]
-            usertype = userinfo[2]
-            user_id = userinfo[3]
-            if verify_password(hashed_pwd, password):
-                SID = hash_password(sessionSecret)
-                db.addSession(SID, username, usertype, datetime.datetime.now(), user_id)
-                logger.info(f'login user {username}')
-                return {'success': True, 'SID': SID}
-            else:
-                logger.info(f'failed login user {username}')
-                return {'success': False, 'message': 'Error: password did not match'}
-        else:
-            hashed_pwd = hash_password(password)
+    target_user_id = message.get('target')
+    if isinstance(target_user_id, int):
+        SID = request.cookies.get("SID")
+        session = getSession(SID)
+        if session:
+            target_userinfo = db.getUserByID(target_user_id)
+            if not target_userinfo:
+                return {'success': False, 'message': 'Error: target user not found'}
+            shareinfo = db.verifyAccountShare(target_user_id, session.user_id)
+            if not shareinfo:
+                return {'success': False, 'message': 'Error: account share not found'}
+            now = datetime.datetime.now()
+            share_interval = shareinfo[0]
+            if share_interval is not None:
+                share_date = shareinfo[1]
+                if share_date + share_interval < now:
+                    db.deleteAccountShare(target_user_id, session.user_id)
+                    return {'success': False, 'message': 'Error: account share is outdated'}
+            asID = shareinfo[2]
+            username = target_userinfo[0]
+            usertype = target_userinfo[2]
             SID = hash_password(sessionSecret)
-            date = datetime.datetime.now()
-            user_id = db.addUser(username, displayname, hashed_pwd, 'user', date)
-            db.addSession(SID, username, 'user', date, user_id[0])
-            logger.info(f'register user {username}')
+            db.addSession(SID, username, usertype, now, target_user_id, asID)
+            logger.info(f'shared login user {username}')
             return {'success': True, 'SID': SID}
+        return {'success': False, 'message': 'Error: Unauthorized'}
+
+    displayname = message.get('displayname')
+    password = message.get('password')
+
+    if not (isinstance(displayname, str) and isinstance(password, str)):
+        return {'success': False, 'message': 'Error: enter username and password'}
+
+    if not all(0 < len(x) <= 25 for x in [displayname, password]):
+        return {'success': False, 'message': 'Error: username/password length 1-25 chars'}
+
+    for i in displayname, password:
+        for letter in i:
+            code = ord(letter)
+            if code == 32:
+                return {'success': False, 'message': 'Error: no spaces please'}
+            if (48 <= code <= 57) or (65 <= code <= 90) or (97 <= code <= 122):
+                continue
+            return {'success': False, 'message': 'Error: only english characters and numbers'}
+
+    username = displayname.lower()
+    userinfo = db.getUser(username)
+    if userinfo:
+        hashed_pwd = userinfo[1]
+        usertype = userinfo[2]
+        user_id = userinfo[3]
+        if verify_password(hashed_pwd, password):
+            SID = hash_password(sessionSecret)
+            db.addSession(SID, username, usertype, datetime.datetime.now(), user_id)
+            logger.info(f'login user {username}')
+            return {'success': True, 'SID': SID}
+        else:
+            logger.info(f'failed login user {username}')
+            return {'success': False, 'message': 'Error: password did not match'}
+    else:
+        hashed_pwd = hash_password(password)
+        SID = hash_password(sessionSecret)
+        date = datetime.datetime.now()
+        user_id = db.addUser(username, displayname, hashed_pwd, 'user', date)
+        db.addSession(SID, username, 'user', date, user_id[0])
+        logger.info(f'register user {username}')
+        return {'success': True, 'SID': SID}
 
 
 @app.route('/u/<username>')
