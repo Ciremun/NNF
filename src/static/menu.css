@@ -202,7 +202,7 @@ header, .orders_section {
  /* Mobile */
  @media (max-width: 1100px) {
     .category_label {
-        font-size: 5em;
+        font-size: 4em;
     }
 
     .item, .complexitem {
@@ -216,7 +216,11 @@ header, .orders_section {
     }
 
     .item_title {
-        font-size: 3.5em;
+        font-size: 3em;
+    }
+
+    .item_tooltip_hover_content {
+        font-size: 0.7em;
     }
 
     .menu_item_img {

@@ -112,7 +112,7 @@ def parseFoodPage(item, foodPageLink, image_link, typeLabel, items_dict, itemGro
         if line.text.startswith("Вес: "):
             weight = ' '.join(line.text.split(' ')[1:])
         elif line.text.startswith("Калорийность: "):
-            calories = f"{' '.join(line.text.split(' ')[1:])} ккал"
+            calories = ' '.join(line.text.split(' ')[1:])
 
     price = ''.join(item_desc.find('div', id="item_price_block").text.split(' ')[1:-1])
 

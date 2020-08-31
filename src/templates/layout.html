@@ -2,32 +2,34 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='panel.css') }}">
     {% block head %}{% endblock %}
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
     <header>
-        <ul>
-            {% if userinfo.get('auth') %}
-                <li class="left"><a href="/menu" class="top_panel">Меню</a></li>
-                <li class="right dropdown">
-                    <a href="/u/{{ userinfo.get('username') }}" class="top_panel">{{ userinfo.get('displayname') }}</a>
-                    <div class="dropdown-content"><a class="top_panel" onclick="logout()">Выйти</a></div>
-                </li>
-                {% if userinfo.get('account_share') %}
-                    {% if userinfo['account_share']['available'] %}
-                        <li class="right dropdown"><a class="top_panel">Аккаунты</a>
-                            {% for user, user_id in userinfo['account_share']['available'].items() %}
-                                <div class="dropdown-content" style="position: relative;"><a class="top_panel" data-userid="{{ user_id }}" onclick=shareLogin()>{{ user }}</a></div>
-                            {% endfor %}
-                        </li>
+        <nav>
+            <input type="checkbox" id="check">
+            <label for="check" class="checkbtn">
+                <div>&equiv;</div>
+            </label>
+            <label class="logo" onclick="window.location.pathname = '/'">NNF</label>
+            <ul>
+                {% if userinfo.get('auth') %}
+                    <li><a href="/menu">Меню</a></li>
+                    {% if userinfo.get('account_share') and userinfo['account_share']['available'] %}
+                        {% for user, user_id in userinfo['account_share']['available'].items() %}
+                            <li><a data-userid="{{ user_id }}" onclick=shareLogin()>{{ user }}</a></li>
+                        {% endfor %}
                     {% endif %}
+                    <li><a href="/u/{{ userinfo.get('username') }}">{{ userinfo.get('displayname') }}</a></li>
+                    <li><a onclick="logout()">Выйти</a></li>
+                {% else %}
+                    <li><a id="LoginButton">Вход/Регистрация</a></li>
                 {% endif %}
-            {% else %}
-                <li class="right"><a id="LoginButton" class="top_panel">Вход/Регистрация</a></li>
-            {% endif %}
-        </ul>
+            </ul>
+        </nav>
         <div id="alert" class="alert"><div class="alert_content"></div></div>
         <div id="DivModal" class="modal">
             <div class="modal-content">
