@@ -38,9 +38,9 @@ def updateUserSession(session: Session):
         db.updateSessionDate(session.SID, now)
         logger.info(f'update session {session.username}')
 
-def hourlyClearDB():
+def clearDB():
     """
-    Delete old sessions, account share.
+    Delete old sessions, account share, do vacuum.
     """
     while True:
         sessionsToDelete = []
@@ -63,12 +63,8 @@ def hourlyClearDB():
         if accountShareToDelete:
             db.deleteAccountShares(accountShareToDelete)
             accountShareToDelete.clear()
-        time.sleep(3600)
-
-def databaseVacuum():
-    while True:
         db.vacuum()
-        logger.info('vacuum')
+        logger.debug('clearDB')
         time.sleep(600)
 
 def getSession(SID: str):
@@ -158,11 +154,8 @@ def getSessionAccountShare(session: Session, userinfo: dict):
 sessionSecret = keys['sessionSecret']
 catering = {'complex': {}, 'items': {}}
 
-monthlyClearDBThread = Thread(target=hourlyClearDB)
+monthlyClearDBThread = Thread(target=clearDB)
 monthlyClearDBThread.start()
-
-dbVacuumThread = Thread(target=databaseVacuum)
-dbVacuumThread.start()
 
 dailyMenuUpdateThread = Thread(target=dailyMenuUpdate)
 dailyMenuUpdateThread.start()

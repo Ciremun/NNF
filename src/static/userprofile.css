@@ -5,19 +5,85 @@ table, th, td {
     padding: 20px;
   }
 
-  .cartItemPrice, .cartItemAmount {
+.cartItemPrice, .cartItemAmount {
     text-align: center;
   }
 
-  .dfdfdf {
+.dfdfdf {
     color: #dfdfdf;
   }
 
- .shared-list {
+.shared-list {
     display: flex;
     color: #dfdfdf;
  }
 
-.shared-server-date {
+ .shared-server-date {
     color: #dfdfdf;
+}
+
+/* Input Animations With HTML And CSS */
+/* Source: https://youtu.be/IxRJ8vplzAo */
+.width200 {width: 200px;}
+.width75 {width: 75px;}
+.add-shared-forms {display: flex;}
+.add-shared-form {
+  display: flex;
+  position: relative;
+  height: 50px;
+  overflow: hidden;
+  margin-left: 20px;
+}
+
+.add-shared-form input {
+  width: 100%;
+  height: 100%;
+  padding-top: 20px;
+  border: none;
+  outline: none;
+  background-color: #191b1c;
+}
+
+.add-shared-form label {
+  position: absolute;
+  bottom: 0px;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-bottom: 1px solid black;
+}
+
+.add-shared-form label::after {
+  content: "";
+  position: absolute;
+  left: 0px;
+  bottom: -1px;
+  width: 100%;
+  height: 100%;
+  border-bottom: 3px solid #5fa8d3;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.content-name {
+  position: absolute;
+  bottom: 5px;
+  left: 0px;
+  transition: all 0.3s ease;
+  color: #fff;
+}
+
+.add-shared-form input:focus + .label-name .content-name, 
+.add-shared-form input:not(:placeholder-shown) + .label-name .content-name
+{
+  transform: translateY(-150%);
+  font-size: 14px;
+  color: #5fa8d3;
+}
+
+.add-shared-form input:focus + .label-name::after,
+.add-shared-form input:not(:placeholder-shown) + .label-name::after
+{
+  transform: translateX(0%);
 }

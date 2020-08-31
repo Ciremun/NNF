@@ -18,19 +18,38 @@
         {% endfor %}
     {% endif %}
     <div class="shared-server-date">Время сервера: {{ userinfo.get('server-date') }}</div>
-    <div class="add-shared">
-        <div class="add-shared-long"><input type="text" id="add-shared-username" spellcheck="false" maxlength="25" onkeydown="addSharedEnterKey()" placeholder="Пользователь" required></div>
-        <div class="add-shared-mid"><input type="text" id="add-shared-year" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="год"></div>
-        <div class="add-shared-short">
-            <input type="text" id="add-shared-month" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="месяц">
-            <input type="text" id="add-shared-day" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="день">
-            <input type="text" id="add-shared-hour" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="час">
-            <input type="text" id="add-shared-minute" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="минута">
-            <input type="text" id="add-shared-second" spellcheck="false" onkeydown="addSharedEnterKey()" placeholder="секунда">
+    <div class="add-shared-forms">
+        <div class="add-shared-form width200">
+            <input type="text" name="add-shared-username" id="add-shared-username" spellcheck="false" maxlength="25" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-username" class="label-name"><span class="content-name">Пользователь</span></label>
         </div>
-        <div class="add-shared-submit"><a href="#" onclick="addShared()">Добавить</a></div>
-        <div class="add-shared-submit"><a href="#" onclick="addShared(true)">Добавить на неопределенный срок</a></div>
+        <div class="add-shared-form width75">
+            <input type="text" name="add-shared-year" id="add-shared-year" spellcheck="false" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-year" class="label-name"><span class="content-name">год</span></label>
+        </div>
+        <div class="add-shared-form width75">
+            <input type="text" name="add-shared-month" id="add-shared-month" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-month" class="label-name"><span class="content-name">месяц</span></label>
+        </div>
+        <div class="add-shared-form width75">
+            <input type="text" name="add-shared-day" id="add-shared-day" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-day" class="label-name"><span class="content-name">день</span></label>
+        </div>
+        <div class="add-shared-form width75">
+            <input type="text" name="add-shared-hour" id="add-shared-hour" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-hour" class="label-name"><span class="content-name">час</span></label>
+        </div>
+        <div class="add-shared-form width75">
+            <input type="text" name="add-shared-minute" id="add-shared-minute" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-minute" class="label-name"><span class="content-name">минута</span></label>
+        </div>
+        <div class="add-shared-form width75">
+            <input type="text" name="add-shared-second" id="add-shared-second" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-second" class="label-name"><span class="content-name">секунда</span></label>
+        </div>
     </div>
+    <div class="add-shared-submit"><a href="#" onclick="addShared()">Добавить</a></div>
+    <div class="add-shared-submit"><a href="#" onclick="addShared(true)">Добавить на неопределенный срок</a></div>
     {% if userinfo.get('cart') %}
         <table>
             <tr>
