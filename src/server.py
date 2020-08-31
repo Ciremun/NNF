@@ -266,12 +266,19 @@ def linkprofile(username):
             cartSum = db.getUserCartSum(username)
             cart['sum'] = cartSum[0]
 
+        now = datetime.datetime.now()
+
         userinfo = {
             'auth': True, 
             'username': username, 
             'displayname': userinfo[0], 
             'cart': cart,
-            'server-date': f'{datetime.datetime.now()}'
+            'server-date': {'year': now.year,
+                            'month': now.month,
+                            'day': now.day,
+                            'hour': now.hour,
+                            'minute': now.minute,
+                            'second': now.second}
         }
         userinfo = getSessionAccountShare(session, userinfo)
 
