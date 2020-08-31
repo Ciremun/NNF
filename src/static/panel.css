@@ -197,7 +197,6 @@ input {
 }
 
  /* Mobile */
-
  @media (max-width: 952px) {
     label.logo {
         font-size: 30px;

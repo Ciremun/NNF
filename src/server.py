@@ -38,9 +38,9 @@ def updateUserSession(session: Session):
         db.updateSessionDate(session.SID, now)
         logger.info(f'update session {session.username}')
 
-def monthlyClearDB():
+def hourlyClearDB():
     """
-    Remove old sessions, account share.
+    Delete old sessions, account share.
     """
     while True:
         sessionsToDelete = []
@@ -63,8 +63,7 @@ def monthlyClearDB():
         if accountShareToDelete:
             db.deleteAccountShares(accountShareToDelete)
             accountShareToDelete.clear()
-        for _ in range(200):
-            time.sleep(1315)
+        time.sleep(3600)
 
 def databaseVacuum():
     while True:
@@ -159,7 +158,7 @@ def getSessionAccountShare(session: Session, userinfo: dict):
 sessionSecret = keys['sessionSecret']
 catering = {'complex': {}, 'items': {}}
 
-monthlyClearDBThread = Thread(target=monthlyClearDB)
+monthlyClearDBThread = Thread(target=hourlyClearDB)
 monthlyClearDBThread.start()
 
 dbVacuumThread = Thread(target=databaseVacuum)
@@ -379,13 +378,13 @@ def shared():
             if not target_user_id or target_user_id[0] == session.user_id:
                 return {'success': False, 'message': 'Error: invalid target user'}
 
-            d = message.get('duration')
-            if not isinstance(d, dict):
-                return {'success': False, 'message': 'Error: invalid account share duration'}
-
             if message.get('forever') == True:
                 db.addAccountShare(session.user_id, target_user_id[0], None, None)
                 return {'success': True}
+
+            d = message.get('duration')
+            if not isinstance(d, dict):
+                return {'success': False, 'message': 'Error: invalid account share duration'}
 
             try:
                 until_datetime = datetime.datetime(d['year'], d['month'], d['day'], d['hour'], d['minute'], d['second'])

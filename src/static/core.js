@@ -56,24 +56,27 @@ function addSharedEnterKey() {
 }
 
 async function addShared(forever=null) {
-    let duration = {
-        year: document.getElementById('add-shared-year').value,
-        month: document.getElementById('add-shared-month').value,
-        day: document.getElementById('add-shared-day').value,
-        hour: document.getElementById('add-shared-hour').value,
-        minute: document.getElementById('add-shared-minute').value,
-        second: document.getElementById('add-shared-second').value
-    };
-    Object.keys(duration).forEach(x => {
-        if (duration[x] === "") duration[x] = 0;
-        else duration[x] = Number(duration[x]);
-    });
     let data = {
         username: document.getElementById('add-shared-username').value.toLowerCase(),
-        act: 'add',
-        duration: duration
+        act: 'add'
     };
-    if (forever !== null) data.forever = true;
+    if (forever === true) {
+        data.forever = true;
+    } else {
+        let duration = {
+            year: document.getElementById('add-shared-year').value,
+            month: document.getElementById('add-shared-month').value,
+            day: document.getElementById('add-shared-day').value,
+            hour: document.getElementById('add-shared-hour').value,
+            minute: document.getElementById('add-shared-minute').value,
+            second: document.getElementById('add-shared-second').value
+        };
+        Object.keys(duration).forEach(x => {
+            if (duration[x] === "") duration[x] = 0;
+            else duration[x] = Number(duration[x]);
+        });
+        data.duration = duration;
+    }
     let response = await postData('/shared', data);
     if (response.success) {
         showAlert('Success: account share added');
