@@ -27,7 +27,7 @@ nav {
     height: 55px;
     width: 100%;
     position: fixed;
-    z-index: 3;
+    z-index: 2;
 }
 
 label.logo {
