@@ -249,29 +249,6 @@ def login():
         return {'success': True, 'SID': SID}
 
 
-@app.route('/cart')
-def user_cart():
-    SID = request.cookies.get("SID")
-    session = getSession(SID)
-    if session:
-        username = session.username
-        userinfo = db.getUser(username)
-        cart = getUserCart(username)
-        if cart:
-            cartSum = db.getUserCartSum(username)
-            cart['sum'] = cartSum[0]
-
-        userinfo = {
-            'auth': True, 
-            'username': username, 
-            'displayname': userinfo[0], 
-            'cart': cart
-        }
-
-        return render_template('cart.html', userinfo=userinfo)
-    return redirect('/menu', code=302)
-
-
 @app.route('/u/<username>')
 def userprofile(username):
     username = username.lower()
@@ -311,7 +288,7 @@ def logout():
     return {'success': True}
 
 
-@app.route('/cart', methods=['POST'])
+@app.route('/cart', methods=['GET', 'POST'])
 def buy():
     message = request.get_json()
     SID = request.cookies.get("SID")
@@ -319,37 +296,56 @@ def buy():
     if session:
         username = session.username
 
-        act = message.get('act')
-        if all(act != x for x in ['add', 'update', 'clear']):
-            return {'success': False, 'message': 'Error: invalid cart item action'}
+        if request.method == 'POST':
+            act = message.get('act')
+            if all(act != x for x in ['add', 'update', 'clear']):
+                return {'success': False, 'message': 'Error: invalid cart item action'}
 
-        cart_id = db.getUserCartID(username)
-        if not cart_id:
-            return {'success': False, 'message': 'Error: cart not found'}
+            cart_id = db.getUserCartID(username)
+            if not cart_id:
+                return {'success': False, 'message': 'Error: cart not found'}
 
-        if act == 'clear':
-            db.clearUserCart(cart_id[0])
-            return {'success': True}
+            if act == 'clear':
+                db.clearUserCart(cart_id[0])
+                return {'success': True}
 
-        product_id = message.get('productID')
-        if not isinstance(product_id, int):
-            return {'success': False, 'message': 'Error: invalid product id'}
-        product_id = db.getProductByID(product_id)
-        if not product_id:
-            return {'success': False, 'message': 'Error: product not found'}
+            product_id = message.get('productID')
+            if not isinstance(product_id, int):
+                return {'success': False, 'message': 'Error: invalid product id'}
+            product_id = db.getProductByID(product_id)
+            if not product_id:
+                return {'success': False, 'message': 'Error: product not found'}
 
-        if act == 'add':
-            db.addCartProduct(cart_id[0], product_id[0], 1, datetime.datetime.now())
-            return {'success': True}
+            if act == 'add':
+                db.addCartProduct(cart_id[0], product_id[0], 1, datetime.datetime.now())
+                return {'success': True}
 
-        if act == 'update':
-            amount = message.get('amount')
-            if not isinstance(amount, int) or amount < 0:
-                return {'success': False, 'message': 'Error: invalid cart item amount'}
-            db.updateCartProduct(cart_id[0], product_id[0], amount)
-            return {'success': True}
+            if act == 'update':
+                amount = message.get('amount')
+                if not isinstance(amount, int) or amount < 0:
+                    return {'success': False, 'message': 'Error: invalid cart item amount'}
+                db.updateCartProduct(cart_id[0], product_id[0], amount)
+                return {'success': True}
+        else:
+            userinfo = db.getUser(username)
+            cart = getUserCart(username)
+            if cart:
+                cartSum = db.getUserCartSum(username)
+                cart['sum'] = cartSum[0]
 
-    return {'success': False, 'message': 'Error: Unauthorized'}
+            userinfo = {
+                'auth': True, 
+                'username': username, 
+                'displayname': userinfo[0], 
+                'cart': cart
+            }
+
+            userinfo = getSessionAccountShare(session, userinfo)
+            return render_template('cart.html', userinfo=userinfo)
+    if request.method == 'POST':
+        return {'success': False, 'message': 'Error: Unauthorized'}
+    else:
+        return redirect('/menu', code=302)
 
 
 @app.route('/menu')
