@@ -249,35 +249,51 @@ def login():
         return {'success': True, 'SID': SID}
 
 
-@app.route('/u/<username>')
-def linkprofile(username):
-    username = username.lower()
-
-    userinfo = db.getUser(username)
-    if not userinfo:
-        return redirect('/menu', code=302)
-
+@app.route('/cart')
+def user_cart():
     SID = request.cookies.get("SID")
     session = getSession(SID)
-    if session and session.username == username:
+    if session:
+        username = session.username
+        userinfo = db.getUser(username)
         cart = getUserCart(username)
         if cart:
             cartSum = db.getUserCartSum(username)
             cart['sum'] = cartSum[0]
 
+        userinfo = {
+            'auth': True, 
+            'username': username, 
+            'displayname': userinfo[0], 
+            'cart': cart
+        }
+
+        return render_template('cart.html', userinfo=userinfo)
+    return redirect('/menu', code=302)
+
+
+@app.route('/u/<username>')
+def userprofile(username):
+    username = username.lower()
+    userinfo = db.getUser(username)
+
+    SID = request.cookies.get("SID")
+    session = getSession(SID)
+    if session and session.username == username:
         now = datetime.datetime.now()
 
         userinfo = {
             'auth': True, 
             'username': username, 
             'displayname': userinfo[0], 
-            'cart': cart,
-            'server-date': {'year': now.year,
-                            'month': now.month,
-                            'day': now.day,
-                            'hour': now.hour,
-                            'minute': now.minute,
-                            'second': now.second}
+            'server-date': {
+                'year': now.year,
+                'month': now.month,
+                'day': now.day,
+                'hour': now.hour,
+                'minute': now.minute,
+                'second': now.second
+                }
         }
         userinfo = getSessionAccountShare(session, userinfo)
 

@@ -1,18 +1,3 @@
-table, th, td {
-    border-bottom: 1.5px solid #aaa;
-    border-collapse: collapse;
-    color: #dfdfdf;
-    padding: 20px;
-  }
-
-.cartItemPrice, .cartItemAmount {
-    text-align: center;
-  }
-
-.dfdfdf {
-    color: #dfdfdf;
-  }
-
 .shared-list {
     display: flex;
     color: #dfdfdf;

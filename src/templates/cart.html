@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='cart.css') }}">
+{% endblock %}
+
+{% block title %}
+    {{ userinfo.get('displayname') }}'s cart
+{% endblock %}
+
+{% block content %}
+    {% if userinfo.get('cart') %}
+        <table>
+            <tr>
+                <th>Товар</th>
+                <th>Количество</th>
+                <th>Цена</th>
+            </tr>
+            {% for title, complexInfo in userinfo['cart']['complex'].items() %}
+                <tr>
+                    <td>
+                        <div class="complexProduct">
+                            <div class="complexProductTitle">{{ title }}</div>
+                            <div class="complexProductItems">
+                                {% for food in complexInfo['foods'] %}
+                                    <div class="complexProductItem">
+                                        &emsp;&emsp;&emsp;<a href="{{ food.link }}">{{ food.title }}  -  {{ food.price }} &#x20BD;</a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="cartItemAmount">{{ complexInfo['amount'] }}</td>
+                    <td class="cartItemPrice">{{ complexInfo['price'] *  complexInfo['amount']  }} &#x20BD;</td>
+                </tr>
+            {% endfor %}
+            {% for food in userinfo['cart']['menu'] %}
+                <tr>
+                    <td>
+                        <div class="product">
+                            {{ food.title }}
+                        </div>
+                    </td>
+                    <td class="cartItemAmount">{{ food.amount }}</td>
+                    <td class="cartItemPrice">{{ food.price * food.amount }} &#x20BD;</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <div class="dfdfdf">Сумма заказа - {{ userinfo['cart']['sum'] }} &#x20BD;</div>
+    {% else %}
+    <div class="dfdfdf">Корзина пуста</div>
+    {% endif %}
+{% endblock %}
