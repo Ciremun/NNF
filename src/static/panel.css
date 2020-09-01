@@ -6,6 +6,10 @@
     box-sizing: border-box;
 }
 
+header {
+    padding-bottom: 100px;
+}
+
 body {
     background-color: #191b1c;
     overflow-x: hidden;
@@ -21,6 +25,8 @@ nav {
     background: #810040;
     height: 55px;
     width: 100%;
+    position: fixed;
+    z-index: 3;
 }
 
 label.logo {
@@ -220,7 +226,6 @@ input {
         left: -100%;
         text-align: center;
         transition: all .3s;
-        z-index: 1;
     }
     nav ul li {
         display: block;
