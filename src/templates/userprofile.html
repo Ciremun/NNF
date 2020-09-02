@@ -13,7 +13,7 @@
         {% for user, target_user_id in userinfo['account_share']['shared_to'].items() %}
             <div class="shared-list">
                 <div class="shared-user">{{ user }}</div>
-                <a class="delete-shared" data-userid="{{ target_user_id }}" href="#" onclick=deleteShared()>Удалить</a>
+                <a class="delete-shared" data-userid="{{ target_user_id }}" onclick=deleteShared()>Удалить</a>
             </div>
         {% endfor %}
     {% endif %}
@@ -23,30 +23,22 @@
             <label for="add-shared-username" class="label-name"><span class="content-name">Пользователь</span></label>
         </div>
         <div class="add-shared-form width75">
-            <input type="text" name="add-shared-year" id="add-shared-year" spellcheck="false" value="{{ userinfo['server-date']['year'] }}" placeholder=" " onkeydown="addSharedEnterKey()">
-            <label for="add-shared-year" class="label-name"><span class="content-name">год</span></label>
+            <input type="text" name="add-shared-day" id="add-shared-days" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-day" class="label-name"><span class="content-name">дни</span></label>
         </div>
         <div class="add-shared-form width75">
-            <input type="text" name="add-shared-month" id="add-shared-month" spellcheck="false" maxlength="2" value="{{ userinfo['server-date']['month'] }}" placeholder=" " onkeydown="addSharedEnterKey()">
-            <label for="add-shared-month" class="label-name"><span class="content-name">месяц</span></label>
+            <input type="text" name="add-shared-hour" id="add-shared-hours" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-hour" class="label-name"><span class="content-name">часы</span></label>
         </div>
         <div class="add-shared-form width75">
-            <input type="text" name="add-shared-day" id="add-shared-day" spellcheck="false" maxlength="2" value="{{ userinfo['server-date']['day'] }}" placeholder=" " onkeydown="addSharedEnterKey()">
-            <label for="add-shared-day" class="label-name"><span class="content-name">день</span></label>
+            <input type="text" name="add-shared-minute" id="add-shared-minutes" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-minute" class="label-name"><span class="content-name">минуты</span></label>
         </div>
         <div class="add-shared-form width75">
-            <input type="text" name="add-shared-hour" id="add-shared-hour" spellcheck="false" maxlength="2" value="{{ userinfo['server-date']['hour'] }}" placeholder=" " onkeydown="addSharedEnterKey()">
-            <label for="add-shared-hour" class="label-name"><span class="content-name">час</span></label>
-        </div>
-        <div class="add-shared-form width75">
-            <input type="text" name="add-shared-minute" id="add-shared-minute" spellcheck="false" maxlength="2" value="{{ userinfo['server-date']['minute'] }}" placeholder=" " onkeydown="addSharedEnterKey()">
-            <label for="add-shared-minute" class="label-name"><span class="content-name">минута</span></label>
-        </div>
-        <div class="add-shared-form width75">
-            <input type="text" name="add-shared-second" id="add-shared-second" spellcheck="false" maxlength="2" value="{{ userinfo['server-date']['second'] }}" placeholder=" " onkeydown="addSharedEnterKey()">
-            <label for="add-shared-second" class="label-name"><span class="content-name">секунда</span></label>
+            <input type="text" name="add-shared-second" id="add-shared-seconds" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey()">
+            <label for="add-shared-second" class="label-name"><span class="content-name">секунды</span></label>
         </div>
     </div>
-    <div class="add-shared-submit"><a href="#" onclick="addShared()">Добавить</a></div>
-    <div class="add-shared-submit"><a href="#" onclick="addShared(true)">Добавить на неопределенный срок</a></div>
+    <div class="add-shared-submit"><a onclick="addShared()">Добавить</a></div>
+    <div class="add-shared-submit"><a onclick="addShared(true)">Добавить на неопределенный срок</a></div>
 {% endblock %}

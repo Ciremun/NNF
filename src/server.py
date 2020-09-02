@@ -257,20 +257,11 @@ def userprofile(username):
     SID = request.cookies.get("SID")
     session = getSession(SID)
     if session and session.username == username:
-        now = datetime.datetime.now()
 
         userinfo = {
             'auth': True, 
             'username': username, 
-            'displayname': userinfo[0], 
-            'server-date': {
-                'year': now.year,
-                'month': now.month,
-                'day': now.day,
-                'hour': now.hour,
-                'minute': now.minute,
-                'second': now.second
-                }
+            'displayname': userinfo[0]
         }
         userinfo = getSessionAccountShare(session, userinfo)
 
@@ -394,23 +385,19 @@ def shared():
                 return {'success': True}
 
             d = message.get('duration')
-            if not isinstance(d, dict):
-                return {'success': False, 'message': 'Error: invalid account share duration'}
-
             try:
-                until_datetime = datetime.datetime(d['year'], d['month'], d['day'], d['hour'], d['minute'], d['second'])
-            except KeyError as e:
-                return {'success': False, 'message': f'KeyError: account share {e} key not found'}
-            except ValueError as e:
-                return {'success': False, 'message': f'ValueError: {e}'}
+                assert isinstance(d, dict)
+                assert len(d) == 4
+                assert all(isinstance(v, int) and v >= 0 for v in [d.get('days'), d.get('hours'), d.get('minutes'), d.get('seconds')])
+                duration = datetime.timedelta(**d)
+            except AssertionError:
+                return {'success': False, 'message': 'Error: invalid account share duration'}
+            except OverflowError:
+                return {'success': False, 'message': 'OverflowError: int too large'}
+            except TypeError:
+                return {'success': False, 'message': 'TypeError: invalid datetime.timedelta keyword argument'}
 
-            now = datetime.datetime.now()
-
-            if until_datetime <= now:
-                return {'success': False, 'message': 'Error: given date expired'}
-            duration = until_datetime - now
-
-            db.addAccountShare(session.user_id, target_user_id[0], duration, now)
+            db.addAccountShare(session.user_id, target_user_id[0], duration, datetime.datetime.now())
             return {'success': True}
         if act == 'del':
             target_user_id = message.get('target')

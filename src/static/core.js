@@ -64,17 +64,16 @@ async function addShared(forever=null) {
         data.forever = true;
     } else {
         let duration = {
-            year: document.getElementById('add-shared-year').value,
-            month: document.getElementById('add-shared-month').value,
-            day: document.getElementById('add-shared-day').value,
-            hour: document.getElementById('add-shared-hour').value,
-            minute: document.getElementById('add-shared-minute').value,
-            second: document.getElementById('add-shared-second').value
+            days: document.getElementById('add-shared-days').value,
+            hours: document.getElementById('add-shared-hours').value,
+            minutes: document.getElementById('add-shared-minutes').value,
+            seconds: document.getElementById('add-shared-seconds').value
         };
         Object.keys(duration).forEach(x => {
             if (duration[x] === "") duration[x] = 0;
             else duration[x] = Number(duration[x]);
         });
+        if (Object.values(duration).reduce((a, b) => a + b) <= 0) return showAlert('Error: invalid account share duration');
         data.duration = duration;
     }
     let response = await postData('/shared', data);

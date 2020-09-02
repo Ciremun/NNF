@@ -68,10 +68,7 @@ VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)\
 def addAccountShare(user_id: int, target_user_id: int, 
                     duration: Optional[datetime.timedelta], 
                     date: Optional[datetime.datetime]):
-    sql = """\
-INSERT INTO account_share(user_id, target_user_id, duration, date) \
-VALUES (%s, %s, %s, %s)\
-"""
+    sql = "SELECT addAccountShare(%s, %s, %s, %s)"
     cursor.execute(sql, (user_id, target_user_id, duration, date))
 
 @acquireLock

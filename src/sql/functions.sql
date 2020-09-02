@@ -30,3 +30,16 @@ CREATE OR REPLACE FUNCTION updateCartProduct(cID int, pID int, pAmount int)
         END IF;
     END;
     $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION addAccountShare(userID int, targetUserID int, shareDuration interval, dateAdded timestamp)
+    RETURNS VOID AS $$
+    BEGIN
+        IF (SELECT EXISTS(SELECT 1 FROM account_share WHERE user_id = userID AND target_user_id = targetUserID)) THEN
+            UPDATE account_share SET duration = shareDuration, date = dateAdded;
+        ELSE
+            INSERT INTO account_share(user_id, target_user_id, duration, date) 
+                VALUES (userID, targetUserID, shareDuration, dateAdded);
+        END IF;
+    END;
+    $$ LANGUAGE plpgsql;
+
