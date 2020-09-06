@@ -69,15 +69,11 @@
 }
 
 .add-shared-submit {
-  padding: 20px 0 20px 20px;
-  font-size: 25px;
+  margin-top: 20px;
 }
 
-.margin-top-10 {
-  margin-top: 10px;
-}
-
-.add-shared-submit a:hover, .delete-shared a:hover {
+.add-shared-submit a:hover, 
+.delete-shared a:hover {
   color: #e70073;
   transition: .4s;
 }
@@ -90,7 +86,11 @@
 .shared-user {
   display: flex;
   justify-content: space-between;
+}
+
+.shared-user, .account-share-title, 
+.add-shared-submit {
   color: #fff;
-  padding: 0 0 10px 20px;
   font-size: 25px;
+  padding: 0 0 10px 20px;
 }

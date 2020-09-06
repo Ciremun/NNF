@@ -9,6 +9,9 @@
 {% endblock %}
 
 {% block content %}
+    <div class="account-share-title">
+        Открыть доступ для других пользователей
+    </div>
     <div class="add-shared-forms">
         <div class="add-shared-form width200">
             <input type="text" name="add-shared-username" id="add-shared-username" spellcheck="false" maxlength="25" placeholder=" " onkeydown="addSharedEnterKey()">
@@ -33,7 +36,7 @@
     </div>
     <div class="add-shared-submit">
         <div><a onclick="addShared()">Добавить</a></div>
-        <div class="margin-top-10"><a onclick="addShared(true)">Добавить на неопределенный срок</a></div>
+        <div style="margin-top: 10px;"><a onclick="addShared(true)">Добавить на неопределенный срок</a></div>
     </div>
     {% if userinfo.get('account_share') and userinfo['account_share'].get('shared_to') %}
         <div class="shared-list">
