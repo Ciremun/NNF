@@ -13,9 +13,11 @@ CREATE OR REPLACE FUNCTION addCartProduct(cID int, pID int, pAmount int, dateAdd
     RETURNS VOID AS $$
     BEGIN
         IF (SELECT EXISTS(SELECT 1 FROM cartproduct WHERE cart_id = cID AND product_id = pID)) THEN
-            UPDATE cartproduct SET amount = amount + pAmount WHERE cart_id = cID AND product_id = pID;
+            UPDATE cartproduct SET amount = amount + pAmount 
+                WHERE cart_id = cID AND product_id = pID;
         ELSE
-            INSERT INTO cartproduct(cart_id, product_id, amount, date) VALUES (cID, pID, pAmount, dateAdded);
+            INSERT INTO cartproduct(cart_id, product_id, amount, date) 
+                VALUES (cID, pID, pAmount, dateAdded);
         END IF;
     END;
     $$ LANGUAGE plpgsql;
@@ -35,7 +37,8 @@ CREATE OR REPLACE FUNCTION addAccountShare(userID int, targetUserID int, shareDu
     RETURNS VOID AS $$
     BEGIN
         IF (SELECT EXISTS(SELECT 1 FROM account_share WHERE user_id = userID AND target_user_id = targetUserID)) THEN
-            UPDATE account_share SET duration = shareDuration, date = dateAdded;
+            UPDATE account_share SET duration = shareDuration, date = dateAdded 
+                WHERE user_id = userID AND target_user_id = targetUserID;
         ELSE
             INSERT INTO account_share(user_id, target_user_id, duration, date) 
                 VALUES (userID, targetUserID, shareDuration, dateAdded);
