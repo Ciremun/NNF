@@ -394,8 +394,6 @@ def shared():
                 return {'success': False, 'message': 'Error: invalid account share duration'}
             except OverflowError:
                 return {'success': False, 'message': 'OverflowError: int too large'}
-            except TypeError:
-                return {'success': False, 'message': 'TypeError: invalid datetime.timedelta keyword argument'}
 
             db.addAccountShare(session.user_id, target_user_id[0], duration, datetime.datetime.now())
             return {'success': True}
