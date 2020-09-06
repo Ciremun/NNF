@@ -66,7 +66,7 @@ def clearDB():
             accountShareToDelete.clear()
         db.vacuum()
         logger.debug('clearDB')
-        time.sleep(600)
+        time.sleep(60)
 
 def getSession(SID: str):
     if not isinstance(SID, str):

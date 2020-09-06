@@ -1,7 +1,3 @@
-const sleep = (ms) => {
-    return new Promise(resolve => setTimeout(resolve, ms))
-}
-
 function getCookie(name) {
     let matches = document.cookie.match(new RegExp(
       "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -86,16 +82,12 @@ async function addShared(forever=null, duration=null) {
         data.duration = duration;
     }
     let response = await postData('/shared', data);
-    if (response.success) {
-        showAlert('Success: account share added');
-    }
+    if (response.success) window.location.reload();
     else showAlert(response.message);
 }
 
 async function deleteShared() {
     let response = await postData('/shared', {target: Number(event.target.dataset.userid), act: 'del'});
-    if (response.success) {
-        showAlert('Success: account share removed');
-    }
+    if (response.success) window.location.reload();
     else showAlert(response.message);
 }
