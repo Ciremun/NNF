@@ -204,7 +204,8 @@ SELECT s.user_id, o.displayname, s.target_user_id, t.displayname, s.duration, s.
 FROM account_share s \
 LEFT JOIN users o ON o.id = s.user_id \
 LEFT JOIN users t ON t.id = s.target_user_id \
-WHERE s.user_id = %s OR s.target_user_id = %s
+WHERE s.user_id = %s OR s.target_user_id = %s \
+ORDER BY s.date DESC\
 """
     cursor.execute(sql, (id_, id_))
     return cursor.fetchall()
