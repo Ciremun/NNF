@@ -88,8 +88,6 @@ async function addShared(forever=null, duration=null) {
     let response = await postData('/shared', data);
     if (response.success) {
         showAlert('Success: account share added');
-        await sleep(2000);
-        window.location.reload();
     }
     else showAlert(response.message);
 }
@@ -98,8 +96,6 @@ async function deleteShared() {
     let response = await postData('/shared', {target: Number(event.target.dataset.userid), act: 'del'});
     if (response.success) {
         showAlert('Success: account share removed');
-        await sleep(2000);
-        window.location.reload();
     }
     else showAlert(response.message);
 }
