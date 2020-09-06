@@ -200,7 +200,7 @@ def verifyAccountShare(user_id: int, target_user_id: int):
 @acquireLock
 def getAccountShareByID(id_: int):
     sql = """\
-SELECT s.user_id, o.displayname, s.target_user_id, t.displayname \
+SELECT s.user_id, o.displayname, s.target_user_id, t.displayname, s.duration, s.date \
 FROM account_share s \
 LEFT JOIN users o ON o.id = s.user_id \
 LEFT JOIN users t ON t.id = s.target_user_id \

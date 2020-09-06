@@ -80,12 +80,12 @@
 
 .shared-list {
   margin-top: 50px;
-  width: 350px;
 }
 
 .shared-user {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  max-width: 650px;
+  grid-template-columns: 2.5fr 2.2fr 1fr;
 }
 
 .shared-user, .account-share-title, 

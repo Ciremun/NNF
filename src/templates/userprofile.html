@@ -18,7 +18,7 @@
             <label for="add-shared-username" class="label-name"><span class="content-name">Пользователь</span></label>
         </div>
         <div class="add-shared-form width75">
-            <input type="text" name="add-shared-day" id="add-shared-days" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey()">
+            <input type="text" name="add-shared-day" id="add-shared-days" spellcheck="false" maxlength="4" placeholder=" " onkeydown="addSharedEnterKey()">
             <label for="add-shared-day" class="label-name"><span class="content-name">дни</span></label>
         </div>
         <div class="add-shared-form width75">
@@ -40,10 +40,11 @@
     </div>
     {% if userinfo.get('account_share') and userinfo['account_share'].get('shared_to') %}
         <div class="shared-list">
-            {% for user, target_user_id in userinfo['account_share']['shared_to'].items() %}
+            {% for user, info in userinfo['account_share']['shared_to'].items() %}
                 <div class="shared-user">
                     <div class="shared-user-username">{{ user }}</div>
-                    <div class="delete-shared"><a data-userid="{{ target_user_id }}" onclick=deleteShared()>Удалить</a></div>
+                    <div class="shared-user-duration">{{ info['duration'] }}</div>
+                    <div class="delete-shared"><a data-userid="{{ info['id'] }}" onclick=deleteShared()>Удалить</a></div>
                 </div>
             {% endfor %}
         </div>
