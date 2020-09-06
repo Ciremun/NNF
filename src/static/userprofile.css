@@ -1,9 +1,4 @@
-.shared-list {
-    display: flex;
-    color: #dfdfdf;
- }
-
- .shared-server-date {
+.shared-server-date {
     color: #dfdfdf;
 }
 
@@ -71,4 +66,31 @@
 .add-shared-form input:not(:placeholder-shown) + .label-name::after
 {
   transform: translateX(0%);
+}
+
+.add-shared-submit {
+  padding: 20px 0 20px 20px;
+  font-size: 25px;
+}
+
+.margin-top-10 {
+  margin-top: 10px;
+}
+
+.add-shared-submit a:hover, .delete-shared a:hover {
+  color: #e70073;
+  transition: .4s;
+}
+
+.shared-list {
+  margin-top: 50px;
+  width: 350px;
+}
+
+.shared-user {
+  display: flex;
+  justify-content: space-between;
+  color: #fff;
+  padding: 0 0 10px 20px;
+  font-size: 25px;
 }

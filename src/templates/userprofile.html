@@ -9,14 +9,6 @@
 {% endblock %}
 
 {% block content %}
-    {% if userinfo.get('account_share') and userinfo['account_share'].get('shared_to') %}
-        {% for user, target_user_id in userinfo['account_share']['shared_to'].items() %}
-            <div class="shared-list">
-                <div class="shared-user">{{ user }}</div>
-                <a class="delete-shared" data-userid="{{ target_user_id }}" onclick=deleteShared()>Удалить</a>
-            </div>
-        {% endfor %}
-    {% endif %}
     <div class="add-shared-forms">
         <div class="add-shared-form width200">
             <input type="text" name="add-shared-username" id="add-shared-username" spellcheck="false" maxlength="25" placeholder=" " onkeydown="addSharedEnterKey()">
@@ -39,6 +31,18 @@
             <label for="add-shared-second" class="label-name"><span class="content-name">секунды</span></label>
         </div>
     </div>
-    <div class="add-shared-submit"><a onclick="addShared()">Добавить</a></div>
-    <div class="add-shared-submit"><a onclick="addShared(true)">Добавить на неопределенный срок</a></div>
+    <div class="add-shared-submit">
+        <div><a onclick="addShared()">Добавить</a></div>
+        <div class="margin-top-10"><a onclick="addShared(true)">Добавить на неопределенный срок</a></div>
+    </div>
+    {% if userinfo.get('account_share') and userinfo['account_share'].get('shared_to') %}
+        <div class="shared-list">
+            {% for user, target_user_id in userinfo['account_share']['shared_to'].items() %}
+                <div class="shared-user">
+                    <div class="shared-user-username">{{ user }}</div>
+                    <div class="delete-shared"><a data-userid="{{ target_user_id }}" onclick=deleteShared()>Удалить</a></div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 {% endblock %}
