@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='panel.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/panel.css') }}">
     {% block head %}{% endblock %}
     <title>{% block title %}{% endblock %}</title>
 </head>
@@ -47,7 +47,7 @@
         </div>
     </header>
     {% block content %}{% endblock %}
-    <script src="{{ url_for('static',filename='core.js') }}"></script>
-    <script src="{{ url_for('static',filename='panel.js') }}"></script>
+    <script src="{{ url_for('static',filename='js/core.js') }}"></script>
+    <script src="{{ url_for('static',filename='js/panel.js') }}"></script>
 </body>
 </html>
