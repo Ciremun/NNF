@@ -2,7 +2,7 @@ from math import floor
 
 def new_timecode_explicit(days, hours, minutes, seconds, duration):
     if duration < 1:
-        return f'{floor(duration * 1000)}ms'
+        return f'{floor(duration * 1000)}мс'
     timecode = []
     timecode_dict = {'д': days, 'ч': hours, 'м': minutes, 'с': seconds}
     for k, v in timecode_dict.items():
