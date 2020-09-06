@@ -52,23 +52,32 @@ async function addToCart() {
 }
 
 function addSharedEnterKey() {
-    if (event.key === 'Enter') addShared();
+    if (event.key === 'Enter') {
+        let d = getDocumentAccountShareDuration();
+        addShared(forever=Object.values(d).every(x => (x === "")), duration=d);
+    }
 }
 
-async function addShared(forever=null) {
+function getDocumentAccountShareDuration() {
+    return {
+        days: document.getElementById('add-shared-days').value,
+        hours: document.getElementById('add-shared-hours').value,
+        minutes: document.getElementById('add-shared-minutes').value,
+        seconds: document.getElementById('add-shared-seconds').value
+    };
+}
+
+async function addShared(forever=null, duration=null) {
+    let username = document.getElementById('add-shared-username').value.toLowerCase();
+    if (!username) return showAlert('Error: no username');
     let data = {
-        username: document.getElementById('add-shared-username').value.toLowerCase(),
+        username: username,
         act: 'add'
     };
-    if (forever === true) {
+    if (forever) {
         data.forever = true;
     } else {
-        let duration = {
-            days: document.getElementById('add-shared-days').value,
-            hours: document.getElementById('add-shared-hours').value,
-            minutes: document.getElementById('add-shared-minutes').value,
-            seconds: document.getElementById('add-shared-seconds').value
-        };
+        if (!duration) duration = getDocumentAccountShareDuration();
         Object.keys(duration).forEach(x => {
             if (duration[x] === "") duration[x] = 0;
             else duration[x] = Number(duration[x]);
