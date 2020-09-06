@@ -2,6 +2,10 @@ CREATE TABLE IF NOT EXISTS
 users(id serial primary key, username text, displayname text, password text, usertype text, date timestamp);
 
 CREATE TABLE IF NOT EXISTS 
+account_share(user_id integer references users(id) on delete cascade, 
+target_user_id integer references users(id) on delete cascade, duration interval, date timestamp, id serial primary key);
+
+CREATE TABLE IF NOT EXISTS 
 sessions(id serial primary key, sid text, username text, usertype text, date timestamp, 
 user_id integer references users(id) on delete cascade, account_share_id integer references account_share(id) on delete cascade);
 
@@ -22,7 +26,3 @@ orders(user_id integer references users(id) on delete cascade, id serial primary
 CREATE TABLE IF NOT EXISTS 
 orderproduct(order_id integer references orders(id) on delete cascade, 
 title text, price integer, link text, amount integer, id serial primary key);
-
-CREATE TABLE IF NOT EXISTS 
-account_share(user_id integer references users(id) on delete cascade, 
-target_user_id integer references users(id) on delete cascade, duration interval, date timestamp, id serial primary key);

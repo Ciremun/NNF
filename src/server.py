@@ -403,10 +403,9 @@ def shared():
                 assert len(d) == 4
                 assert all(isinstance(v, int) and v >= 0 for v in [d.get('days'), d.get('hours'), d.get('minutes'), d.get('seconds')])
                 duration = datetime.timedelta(**d)
+                assert duration.total_seconds() <= 864276039
             except AssertionError:
                 return {'success': False, 'message': 'Error: invalid account share duration'}
-            except OverflowError:
-                return {'success': False, 'message': 'OverflowError: int too large'}
 
             db.addAccountShare(session.user_id, target_user_id[0], duration, datetime.datetime.now())
             return {'success': True}
