@@ -394,7 +394,7 @@ def shared():
                 return {'success': False, 'message': 'Error: invalid target user'}
 
             if message.get('forever') == True:
-                db.addAccountShare(session.user_id, target_user_id[0], None, None)
+                db.addAccountShare(session.user_id, target_user_id[0], None, datetime.datetime.now())
                 return {'success': True}
 
             d = message.get('duration')
