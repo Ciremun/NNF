@@ -36,12 +36,17 @@ function showAlert(msg) {
     notify.classList.toggle('alert_animation');
 }
 
-async function addToCart() {
-    let response = await postData('/cart', {productID: Number(event.target.dataset.itemid),
-                                            username: window.username,
-                                            act: 'add'});
+async function cartAction(act, amount=null) {
+    let data = {
+        productID: Number(event.target.dataset.itemid),
+        username: window.username,
+        act: act
+    }
+    if (amount !== null) data.amount = amount;
+    let response = await postData('/cart', data);
     if (response.success) {
-        showAlert('Success: cart item added');
+        if (act === 'update') window.location.reload();
+        else showAlert(`Success: ${act} cart item`);
     } else {
         showAlert(response.message);
     }

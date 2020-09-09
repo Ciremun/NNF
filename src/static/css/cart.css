@@ -1,14 +1,23 @@
 table, th, td {
-    border-bottom: 1.5px solid #aaa;
-    border-collapse: collapse;
-    color: #dfdfdf;
-    padding: 20px;
+  border-bottom: 1.5px solid #aaa;
+  border-collapse: collapse;
+  color: #dfdfdf;
+  padding: 20px;
   }
 
 .cartItemPrice, .cartItemAmount {
-    text-align: center;
+  text-align: center;
   }
 
 .dfdfdf {
-    color: #dfdfdf;
+  color: #dfdfdf;
   }
+
+.cartItemAction {
+  width: 100px;
+  height: 19px;
+  background-color: #810040;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}

@@ -15,6 +15,7 @@
                 <th>Товар</th>
                 <th>Количество</th>
                 <th>Цена</th>
+                <th></th>
             </tr>
             {% for title, complexInfo in userinfo['cart']['complex'].items() %}
                 <tr>
@@ -32,6 +33,7 @@
                     </td>
                     <td class="cartItemAmount">{{ complexInfo['amount'] }}</td>
                     <td class="cartItemPrice">{{ complexInfo['price'] *  complexInfo['amount']  }} &#x20BD;</td>
+                    <td class="cartItemAction" data-itemid="{{ complexInfo['ID'] }}" onclick="cartAction('update', 0)">x</td>
                 </tr>
             {% endfor %}
             {% for food in userinfo['cart']['menu'] %}
@@ -43,6 +45,7 @@
                     </td>
                     <td class="cartItemAmount">{{ food.amount }}</td>
                     <td class="cartItemPrice">{{ food.price * food.amount }} &#x20BD;</td>
+                    <td class="cartItemAction" data-itemid="{{ food.ID }}" onclick="cartAction('update', 0)">x</td>
                 </tr>
             {% endfor %}
         </table>
