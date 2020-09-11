@@ -39,6 +39,8 @@ label.logo {
     font-weight: bold;
     cursor: pointer;
     user-select: none;
+    transition: none;
+    background: #810040;
 }
 
 nav ul {
