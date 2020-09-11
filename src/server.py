@@ -326,7 +326,7 @@ def buy():
 
             if act == 'update':
                 amount = message.get('amount')
-                if not isinstance(amount, int) or amount < 0:
+                if not isinstance(amount, int) or not 100 > amount >= 0:
                     return {'success': False, 'message': 'Error: invalid cart item amount'}
                 db.updateCartProduct(cart_id[0], product_id[0], amount)
                 return {'success': True}

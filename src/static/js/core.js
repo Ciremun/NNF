@@ -1,3 +1,6 @@
+var typingTimer;
+var doneTypingInterval = 100;
+
 function getCookie(name) {
     let matches = document.cookie.match(new RegExp(
       "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -36,13 +39,14 @@ function showAlert(msg) {
     notify.classList.toggle('alert_animation');
 }
 
-async function cartAction(act, amount=null) {
+async function cartAction(act, amount=null, productID=null) {
     let data = {
-        productID: Number(event.target.dataset.itemid),
         username: window.username,
         act: act
     }
-    if (amount !== null) data.amount = amount;
+    if (amount !== null) data.amount = Number(amount);
+    if (productID !== null) data.productID = Number(productID);
+    else data.productID = Number(event.target.dataset.itemid);
     let response = await postData('/cart', data);
     if (response.success) {
         if (act === 'update') window.location.reload();
@@ -95,4 +99,13 @@ async function deleteShared() {
     let response = await postData('/shared', {target: Number(event.target.dataset.userid), act: 'del'});
     if (response.success) window.location.reload();
     else showAlert(response.message);
+}
+
+function setTypingTimer() {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(cartAction, doneTypingInterval, 'update', event.target.value, event.target.dataset.itemid);
+}
+
+function clearTypingTimer() {
+    clearTimeout(typingTimer);
 }

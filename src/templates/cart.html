@@ -31,7 +31,7 @@
                             </div>
                         </div>
                     </td>
-                    <td class="cartItemAmount">{{ complexInfo['amount'] }}</td>
+                    <td class="cartItemAmount"><input data-itemid="{{ complexInfo['ID'] }}" type="text" value="{{ complexInfo['amount'] }}" onkeyup="setTypingTimer()" onkeydown="clearTypingTimer()"></td>
                     <td class="cartItemPrice">{{ complexInfo['price'] *  complexInfo['amount']  }} &#x20BD;</td>
                     <td class="cartItemAction" data-itemid="{{ complexInfo['ID'] }}" onclick="cartAction('update', 0)">x</td>
                 </tr>
@@ -43,7 +43,7 @@
                             {{ food.title }}
                         </div>
                     </td>
-                    <td class="cartItemAmount">{{ food.amount }}</td>
+                    <td class="cartItemAmount"><input data-itemid="{{ food.ID }}" type="text" value="{{ food.amount }}" onkeyup="setTypingTimer()" onkeydown="clearTypingTimer()"></td>
                     <td class="cartItemPrice">{{ food.price * food.amount }} &#x20BD;</td>
                     <td class="cartItemAction" data-itemid="{{ food.ID }}" onclick="cartAction('update', 0)">x</td>
                 </tr>
