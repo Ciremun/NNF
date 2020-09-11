@@ -18,11 +18,6 @@
             <ul>
                 {% if userinfo.get('auth') %}
                     <li><a href="/menu">Меню</a></li>
-                    {% if userinfo.get('account_share') and userinfo['account_share']['available'] %}
-                        {% for user, user_id in userinfo['account_share']['available'].items() %}
-                            <li><a data-userid="{{ user_id }}" onclick=shareLogin()>{{ user }}</a></li>
-                        {% endfor %}
-                    {% endif %}
                     <li><a href="/cart">Корзина</a></li>
                     <li><a href="/u/{{ userinfo.get('username') }}">{{ userinfo.get('displayname') }}</a></li>
                     <li><a onclick="logout()">Выйти</a></li>
