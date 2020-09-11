@@ -102,6 +102,7 @@ async function deleteShared() {
 }
 
 function setTypingTimer() {
+    if (!event.target.value || event.target.value === "0") return;
     clearTimeout(typingTimer);
     typingTimer = setTimeout(cartAction, doneTypingInterval, 'update', event.target.value, event.target.dataset.itemid);
 }
