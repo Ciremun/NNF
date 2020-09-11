@@ -19,7 +19,7 @@
             </tr>
             {% for title, complexInfo in userinfo['cart']['complex'].items() %}
                 <tr>
-                    <td>
+                    <td class="tableProduct">
                         <div class="complexProduct">
                             <div class="complexProductTitle">{{ title }}</div>
                             <div class="complexProductItems">
@@ -38,7 +38,7 @@
             {% endfor %}
             {% for food in userinfo['cart']['menu'] %}
                 <tr>
-                    <td>
+                    <td class="tableProduct">
                         <div class="product">
                             {{ food.title }}
                         </div>
