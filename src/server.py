@@ -345,7 +345,6 @@ def buy():
                 'cart': cart
             }
 
-            userinfo = getSessionAccountShare(session, userinfo)
             return render_template('cart.html', userinfo=userinfo)
     if request.method == 'POST':
         return {'success': False, 'message': 'Error: Unauthorized'}
@@ -369,7 +368,6 @@ def menu():
             'username': username, 
             'displayname': displayname[0]
         }
-        userinfo = getSessionAccountShare(session, userinfo)
 
         return render_template('menu.html', userinfo=userinfo, catering=catering)
     return render_template('menu.html', userinfo={}, catering=catering)
