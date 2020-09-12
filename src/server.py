@@ -143,17 +143,17 @@ def getSessionAccountShare(session: Session, userinfo: dict):
         for i in account_share:
             user_id, user, target_user_id, target_user, \
                 s_Duration, s_Date = i[0], i[1], i[2], i[3], i[4], i[5]
-            if s_Duration is None:
-                duration = 'Бессрочно'
-            else:
-                now = datetime.datetime.now()
-                expiration_date = s_Date + s_Duration
-                if expiration_date <= now:
-                    duration = 'Истек'
-                else:
-                    seconds_left = (expiration_date - now).total_seconds()
-                    duration = seconds_convert(seconds_left)
             if user_id == session.user_id:
+                if s_Duration is None:
+                    duration = 'Бессрочно'
+                else:
+                    now = datetime.datetime.now()
+                    expiration_date = s_Date + s_Duration
+                    if expiration_date <= now:
+                        duration = 'Истек'
+                    else:
+                        seconds_left = (expiration_date - now).total_seconds()
+                        duration = seconds_convert(seconds_left)
                 shared_to[target_user] = {'id': target_user_id, 
                                           'duration': duration}
             else:
