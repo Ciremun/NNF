@@ -2,6 +2,7 @@ import json
 import time
 import datetime
 from threading import Thread
+from typing import Optional
 
 from flask import Flask, render_template, request, redirect
 from gevent.pywsgi import WSGIServer
@@ -16,7 +17,7 @@ from .structure import Session, FoodItem, ShortFoodItem
 from .utils import seconds_convert
 
 
-def getUserCart(username) -> dict:
+def getUserCart(username: str) -> dict:
     cartItems = db.getUserCartItems(username)
     if not cartItems:
         return
@@ -68,7 +69,7 @@ def clearDB():
         logger.debug('clearDB')
         time.sleep(60)
 
-def getSession(SID: str):
+def getSession(SID: str) -> Optional[Session]:
     if not isinstance(SID, str):
         return
     s = db.getSession(SID)
@@ -136,7 +137,7 @@ def init_catering():
             else:
                 v[section].append(food_item)
 
-def getSessionAccountShare(session: Session, userinfo: dict):
+def getSessionAccountShare(session: Session, userinfo: dict) -> dict:
     account_share = db.getAccountShareByID(session.user_id)
     if account_share:
         available, shared_to = {}, {}
