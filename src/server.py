@@ -303,12 +303,19 @@ def buy():
 
         if request.method == 'POST':
             act = message.get('act')
-            if all(act != x for x in ['add', 'update', 'clear']):
+            if all(act != x for x in ['add', 'update', 'clear', 'submit']):
                 return {'success': False, 'message': 'Error: invalid cart item action'}
 
             cart_id = db.getUserCartID(username)
             if not cart_id:
                 return {'success': False, 'message': 'Error: cart not found'}
+
+            if act == 'submit':
+                order_id = db.addOrder(session.user_id, datetime.datetime.now())
+                order_products = [(order_id, x[0], x[1], x[2], x[4]) for x in db.getUserCartItems(username)]
+                db.addOrderProducts(order_products)
+                db.clearUserCart(cart_id[0])
+                return {'success': True}
 
             if act == 'clear':
                 db.clearUserCart(cart_id[0])

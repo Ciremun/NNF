@@ -22,17 +22,18 @@ def postgreInit():
     cursor.execute(open('src/sql/functions.sql').read())
 
 @acquireLock
-def addOrder(user_id: int, date: str):
-    sql = "INSERT INTO orders(user_id, date) VALUES (%s)"
-    cursor.execute(sql, (user_id,))
+def addOrder(user_id: int, date: datetime.datetime):
+    sql = "INSERT INTO orders(user_id, date) VALUES (%s, %s) RETURNING id"
+    cursor.execute(sql, (user_id, date))
+    return cursor.fetchone()
 
 @acquireLock
-def addOrderProduct(order_id: int, title: str, price: int, link: str, amount: int):
+def addOrderProducts(order_products: List[Tuple[int, str, int, str, int]]):
     sql = """\
 INSERT INTO \
 orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
 """
-    cursor.execute(sql, (order_id, title, price, link, amount))
+    cursor.executemany(sql, order_products)
 
 @acquireLock
 def addCartProduct(cart_id: int, product_id: int, amount: int, date: datetime.datetime):
@@ -56,7 +57,7 @@ VALUES (%s, %s, %s, %s, %s, %s)\
     cursor.execute(sql, (sid, username, usertype, date, user_id, asID))
 
 @acquireLock
-def addDailyMenu(menu: List[tuple]):
+def addDailyMenu(menu: List[Tuple[str, str, str, int, str, str, str, str, datetime.datetime]]):
     sql = """\
 INSERT INTO \
 dailymenu(title, weight, calories, price, link, image_link, section, type, date) \

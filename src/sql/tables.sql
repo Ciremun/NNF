@@ -21,7 +21,7 @@ cartproduct(cart_id integer references cart(id) on delete cascade,
 product_id integer references dailymenu(id) on delete cascade, amount integer, date timestamp, id serial primary key);
 
 CREATE TABLE IF NOT EXISTS 
-orders(user_id integer references users(id) on delete cascade, id serial primary key);
+orders(user_id integer references users(id) on delete cascade, date timestamp, id serial primary key);
 
 CREATE TABLE IF NOT EXISTS 
 orderproduct(order_id integer references orders(id) on delete cascade, 
