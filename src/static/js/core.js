@@ -44,13 +44,15 @@ async function cartAction(act, amount=null, productID=null) {
         username: window.username,
         act: act
     }
-    if (amount !== null) data.amount = Number(amount);
-    if (productID !== null) data.productID = Number(productID);
-    else data.productID = Number(event.target.dataset.itemid);
+    if (!['submit', 'clear'].includes(act)) {
+        if (amount !== null) data.amount = Number(amount);
+        if (productID !== null) data.productID = Number(productID);
+        else data.productID = Number(event.target.dataset.itemid);
+    }
     let response = await postData('/cart', data);
     if (response.success) {
-        if (act === 'update') window.location.reload();
-        else showAlert(`Success: ${act} cart item`);
+        if (act !== 'add') window.location.reload();
+        else showAlert(`Success: add cart item`);
     } else {
         showAlert(response.message);
     }

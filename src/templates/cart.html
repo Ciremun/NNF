@@ -51,6 +51,8 @@
         </table>
         <br>
         <div class="dfdfdf">Сумма заказа - {{ userinfo['cart']['sum'] }} &#x20BD;</div>
+        <div class="cartSubmit" onclick="cartAction('submit')">Оформить заказ</div>
+        <div class="cartClear" onclick="cartAction('clear')">Очистить корзину</div>
     {% else %}
     <div class="dfdfdf">Корзина пуста</div>
     {% endif %}

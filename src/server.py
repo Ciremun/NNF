@@ -353,7 +353,7 @@ def buy():
             }
 
             return render_template('cart.html', userinfo=userinfo)
-    if request.method == 'POST':
+    elif request.method == 'POST':
         return {'success': False, 'message': 'Error: Unauthorized'}
     else:
         return redirect('/menu', code=302)
