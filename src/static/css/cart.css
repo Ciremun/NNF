@@ -9,10 +9,6 @@ table, th, td {
   text-align: center;
 }
 
-.dfdfdf {
-  color: #dfdfdf;
-}
-
 .cartItemAction {
   width: 100px;
   height: 19px;
@@ -29,4 +25,22 @@ table, th, td {
 .cartItemAmount input {
   width: 30px;
   text-align: center;
+}
+
+.cartInfo, .cartAct {
+  font-size: 25px;
+  padding: 0 0 10px 20px;
+}
+
+.cartInfo, .cartAct a {
+  color: #dfdfdf;
+}
+
+.cartAct a {
+  cursor: pointer;
+  transition: 0.4s;
+}
+
+.cartAct a:hover {
+  color: #e70073;
 }
