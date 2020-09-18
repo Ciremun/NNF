@@ -1,5 +1,4 @@
-var typingTimer;
-var doneTypingInterval = 100;
+// utils
 
 function getCookie(name) {
     let matches = document.cookie.match(new RegExp(
@@ -19,6 +18,13 @@ async function postData(url = '', data = {}) {
     return response.json();
 }
 
+// alert animation
+
+function showAlert(msg) {
+    notify.innerText = msg;
+    notify.classList.toggle('alert_animation');
+}
+
 let notify = document.getElementById("alert");
 
 notify.addEventListener('animationstart', () => {
@@ -34,10 +40,7 @@ notify.addEventListener('animationcancel', () => {
     notify.classList.toggle('alert_animation');
 });
 
-function showAlert(msg) {
-    notify.innerText = msg;
-    notify.classList.toggle('alert_animation');
-}
+// cart
 
 async function cartAction(act, amount=null, productID=null) {
     let data = {
@@ -57,6 +60,54 @@ async function cartAction(act, amount=null, productID=null) {
         showAlert(response.message);
     }
 }
+
+// typingTimer
+
+let typingTimer;
+let doneTypingInterval = 100;
+
+function setTypingTimer() {
+    if (!event.target.value || event.target.value === "0") return;
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(cartAction, doneTypingInterval, 'update', event.target.value, event.target.dataset.itemid);
+}
+
+function clearTypingTimer() {
+    clearTimeout(typingTimer);
+}
+
+// login
+
+function loginEnterKey() {
+    if (event.key === 'Enter') login();
+}
+
+async function processLoginResponse(login_response) {
+    if (login_response.success) {
+        let SID = getCookie('SID'),
+            now = new Date();
+        if (SID) postData('/logout', {SID: SID});
+        now.setMonth(now.getMonth() + 1);
+        document.cookie = `SID=${login_response.SID}; expires=${now.toUTCString()}; path=/;`;
+        window.location.reload();
+    } else {
+        showAlert(login_response.message);
+    }
+}
+
+async function login() {
+    login_response = await postData('/login', {displayname: userfield.value, password: passfield.value});
+    await processLoginResponse(login_response);
+    passfield.value = "";
+}
+
+async function logout() {
+    let response = await postData('/logout', {SID: getCookie('SID')});
+    if (response.success) document.cookie = "SID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    window.location.reload();
+}
+
+// account share
 
 function addSharedEnterKey() {
     if (event.key === 'Enter') {
@@ -97,55 +148,18 @@ async function addShared(forever=null, duration=null) {
     else showAlert(response.message);
 }
 
+async function shareLogin() {
+    login_response = await postData('/login', {target: Number(event.target.dataset.userid)});
+    await processLoginResponse(login_response);
+}
+
 async function deleteShared() {
     let response = await postData('/shared', {target: Number(event.target.dataset.userid), act: 'del'});
     if (response.success) window.location.reload();
     else showAlert(response.message);
 }
 
-function setTypingTimer() {
-    if (!event.target.value || event.target.value === "0") return;
-    clearTimeout(typingTimer);
-    typingTimer = setTimeout(cartAction, doneTypingInterval, 'update', event.target.value, event.target.dataset.itemid);
-}
-
-function clearTypingTimer() {
-    clearTimeout(typingTimer);
-}
-
-function loginEnterKey() {
-    if (event.key === 'Enter') login();
-}
-
-async function processLoginResponse(login_response) {
-    if (login_response.success) {
-        let SID = getCookie('SID'),
-            now = new Date();
-        if (SID) postData('/logout', {SID: SID});
-        now.setMonth(now.getMonth() + 1);
-        document.cookie = `SID=${login_response.SID}; expires=${now.toUTCString()}; path=/;`;
-        window.location.reload();
-    } else {
-        showAlert(login_response.message);
-    }
-}
-
-async function login() {
-    login_response = await postData('/login', {displayname: userfield.value, password: passfield.value});
-    await processLoginResponse(login_response);
-    passfield.value = "";
-}
-
-async function shareLogin() {
-    login_response = await postData('/login', {target: Number(event.target.dataset.userid)});
-    await processLoginResponse(login_response);
-}
-
-async function logout() {
-    let response = await postData('/logout', {SID: getCookie('SID')});
-    if (response.success) document.cookie = "SID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    window.location.reload();
-}
+// login form
 
 let modal = document.getElementById("DivModal"),
     btn = document.getElementById("LoginButton"),
