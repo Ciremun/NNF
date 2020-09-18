@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/orders.css') }}">
+{% endblock %}
+
+{% block title %}
+    {{ userinfo.get('displayname') }}
+{% endblock %}
+
+{% block content %}
+    {% if userinfo.get('orders') %}
+        {% for order_id, order_info in userinfo['orders'].items() %}
+            <div class="order">
+                {% for p in order_info.get('products') %}
+                    <div class="order_item">
+                        {{ p.title }}
+                        {{ p.price }}
+                        {{ p.link }}
+                        {{ p.amount }}
+                    </div>
+                {% endfor %}
+                <div class="order_date">
+                    {{ order_info.get('order_date') }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        Список заказов пуст
+    {% endif %}
+{% endblock %}

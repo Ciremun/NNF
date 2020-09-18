@@ -36,6 +36,15 @@ orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
     cursor.executemany(sql, order_products)
 
 @acquireLock
+def getOrderProducts(user_id: int):
+    sql = """\
+SELECT op.title, op.price, op.link, op.amount, o.id, o.date \
+FROM orders o JOIN orderproduct op on op.order_id = o.id WHERE \
+o.user_id = %s ORDER BY o.date"""
+    cursor.execute(sql, (user_id,))
+    return cursor.fetchall()
+
+@acquireLock
 def addCartProduct(cart_id: int, product_id: int, amount: int, date: datetime.datetime):
     sql = "SELECT addCartProduct(%s, %s, %s, %s)"
     cursor.execute(sql, (cart_id, product_id, amount, date))
@@ -129,12 +138,6 @@ def getUser(username: str):
 def getUserByID(user_id: int):
     sql = "SELECT username, displayname, usertype FROM users WHERE id = %s"
     cursor.execute(sql, (user_id,))
-    return cursor.fetchone()
-
-@acquireLock
-def getUserDisplayName(username: str):
-    sql = "SELECT displayname FROM users WHERE username = %s"
-    cursor.execute(sql, (username,))
     return cursor.fetchone()
 
 @acquireLock
