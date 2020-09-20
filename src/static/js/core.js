@@ -42,15 +42,14 @@ notify.addEventListener('animationcancel', () => {
 
 // cart
 
-async function cartAction(act, amount=null, productID=null) {
+async function cartAction(e, act, amount=null) {
     let data = {
         username: window.username,
         act: act
     }
     if (!['submit', 'clear'].includes(act)) {
-        if (amount !== null) data.amount = Number(amount);
-        if (productID !== null) data.productID = Number(productID);
-        else data.productID = Number(event.target.dataset.itemid);
+        if (amount !== null) data.amount = +amount;
+        data.productID = +e.dataset.itemid;
     }
     let response = await postData('/cart', data);
     if (response.success) {
@@ -66,10 +65,10 @@ async function cartAction(act, amount=null, productID=null) {
 let typingTimer;
 let doneTypingInterval = 100;
 
-function setTypingTimer() {
-    if (!event.target.value || event.target.value === "0") return;
+function setCartAmountTypingTimer(e) {
+    if (!e.value || e.value === "0") return;
     clearTimeout(typingTimer);
-    typingTimer = setTimeout(cartAction, doneTypingInterval, 'update', event.target.value, event.target.dataset.itemid);
+    typingTimer = setTimeout(cartAction, doneTypingInterval, e, 'update', e.value);
 }
 
 function clearTypingTimer() {
@@ -78,8 +77,8 @@ function clearTypingTimer() {
 
 // login
 
-function loginEnterKey() {
-    if (event.key === 'Enter') login();
+function loginEnterKey(e) {
+    if (e.key === 'Enter') login();
 }
 
 async function processLoginResponse(login_response) {
@@ -109,8 +108,8 @@ async function logout() {
 
 // account share
 
-function addSharedEnterKey() {
-    if (event.key === 'Enter') {
+function addSharedEnterKey(e) {
+    if (e.key === 'Enter') {
         let d = getDocumentAccountShareDuration();
         addShared(forever=Object.values(d).every(x => (x === "")), duration=d);
     }
@@ -138,7 +137,7 @@ async function addShared(forever=null, duration=null) {
         if (!duration) duration = getDocumentAccountShareDuration();
         Object.keys(duration).forEach(x => {
             if (duration[x] === "") duration[x] = 0;
-            else duration[x] = Number(duration[x]);
+            else duration[x] = +duration[x];
         });
         if (Object.values(duration).reduce((a, b) => a + b) <= 0) return showAlert('Error: invalid account share duration');
         data.duration = duration;
@@ -148,13 +147,13 @@ async function addShared(forever=null, duration=null) {
     else showAlert(response.message);
 }
 
-async function shareLogin() {
-    login_response = await postData('/login', {target: Number(event.target.dataset.userid)});
+async function shareLogin(e) {
+    login_response = await postData('/login', {target: +e.dataset.userid});
     await processLoginResponse(login_response);
 }
 
-async function deleteShared() {
-    let response = await postData('/shared', {target: Number(event.target.dataset.userid), act: 'del'});
+async function deleteShared(e) {
+    let response = await postData('/shared', {target: +e.dataset.userid, act: 'del'});
     if (response.success) window.location.reload();
     else showAlert(response.message);
 }

@@ -31,9 +31,9 @@
                             </div>
                         </div>
                     </td>
-                    <td class="cartItemAmount"><input data-itemid="{{ complexInfo['ID'] }}" type="text" value="{{ complexInfo['amount'] }}" onkeyup="setTypingTimer()" onkeydown="clearTypingTimer()"></td>
+                    <td class="cartItemAmount"><input data-itemid="{{ complexInfo['ID'] }}" type="text" value="{{ complexInfo['amount'] }}" onkeyup="setCartAmountTypingTimer(this)" onkeydown="clearTypingTimer()"></td>
                     <td class="cartItemPrice">{{ complexInfo['price'] *  complexInfo['amount']  }} &#x20BD;</td>
-                    <td class="cartItemAction" data-itemid="{{ complexInfo['ID'] }}" onclick="cartAction('update', 0)">x</td>
+                    <td class="cartItemAction" data-itemid="{{ complexInfo['ID'] }}" onclick="cartAction(this, 'update', 0)">x</td>
                 </tr>
             {% endfor %}
             {% for food in userinfo['cart']['menu'] %}
@@ -43,16 +43,16 @@
                             {{ food.title }}
                         </div>
                     </td>
-                    <td class="cartItemAmount"><input data-itemid="{{ food.ID }}" type="text" value="{{ food.amount }}" onkeyup="setTypingTimer()" onkeydown="clearTypingTimer()"></td>
+                    <td class="cartItemAmount"><input data-itemid="{{ food.ID }}" type="text" value="{{ food.amount }}" onkeyup="setCartAmountTypingTimer(this)" onkeydown="clearTypingTimer()"></td>
                     <td class="cartItemPrice">{{ food.price * food.amount }} &#x20BD;</td>
-                    <td class="cartItemAction" data-itemid="{{ food.ID }}" onclick="cartAction('update', 0)">x</td>
+                    <td class="cartItemAction" data-itemid="{{ food.ID }}" onclick="cartAction(this, 'update', 0)">x</td>
                 </tr>
             {% endfor %}
         </table>
         <br>
         <div class="cartInfo">Сумма заказа - {{ userinfo['cart']['sum'] }} &#x20BD;</div>
-        <div class="cartAct"><a onclick="cartAction('submit')">Оформить заказ</a></div>
-        <div class="cartAct"><a onclick="cartAction('clear')">Очистить корзину</a></div>
+        <div class="cartAct"><a onclick="cartAction(this, 'submit')">Оформить заказ</a></div>
+        <div class="cartAct"><a onclick="cartAction(this, 'clear')">Очистить корзину</a></div>
     {% else %}
     <div class="cartInfo">Корзина пуста</div>
     {% endif %}

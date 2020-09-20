@@ -13,7 +13,7 @@
         {% for category, items in catering['complex'].items() %}
             <div class="category_head">
                 <div class="category_label">{{ category }}</div>
-                <div class="circle rotate360" data-itemid="{{ items['ID'] }}" onclick="cartAction('add')">+</div>
+                <div class="circle rotate360" data-itemid="{{ items['ID'] }}" onclick="cartAction(this, 'add')">+</div>
                 <div class="circle heart" data-itemid="{{ items['ID'] }}" onclick="addToFavorites()"><span>&#x2764;</span></div>
             </div>
             <div class="complex_category">
@@ -46,7 +46,7 @@
                         <div class="menu_item_img">
                             <img src="{{ item.image_link }}" alt="{{ item.title }}">
                             <div class="hidden">
-                                <div class="circle rotate360" data-itemid="{{ item.ID }}" onclick="cartAction('add')">+</div>
+                                <div class="circle rotate360" data-itemid="{{ item.ID }}" onclick="cartAction(this, 'add')">+</div>
                                 <div class="circle heart" data-itemid="{{ items['ID'] }}" onclick="addToFavorites()"><span>&#x2764;</span></div>
                             </div>
                         </div>
