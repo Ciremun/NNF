@@ -23,6 +23,7 @@ class ShortFoodItem:
 class Session(NamedTuple):
     SID: str
     username: str
+    displayname: str
     usertype: str
     date: datetime.datetime
     user_id: int

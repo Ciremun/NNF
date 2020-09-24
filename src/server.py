@@ -74,7 +74,7 @@ def getSession(SID: str) -> Optional[Session]:
         return
     s = db.getSession(SID)
     if s:
-        session = Session(SID, s[0], s[1], s[2], s[3])
+        session = Session(SID, s[0], s[1], s[2], s[3], s[4])
         updateUserSession(session)
         return session
 
@@ -213,11 +213,9 @@ def login():
                     db.deleteAccountShare(target_user_id, session.user_id)
                     return {'success': False, 'message': 'Error: account share is outdated'}
             asID = shareinfo[2]
-            username = target_userinfo[0]
-            usertype = target_userinfo[2]
             SID = hash_password(sessionSecret)
-            db.addSession(SID, username, usertype, now, target_user_id, asID)
-            logger.info(f'shared login user {username}')
+            db.addSession(SID, now, target_user_id, asID)
+            logger.info(f'shared login user {target_userinfo[0]}')
             return {'success': True, 'SID': SID}
         return {'success': False, 'message': 'Error: Unauthorized'}
 
@@ -243,11 +241,10 @@ def login():
     userinfo = db.getUser(username)
     if userinfo:
         hashed_pwd = userinfo[1]
-        usertype = userinfo[2]
         user_id = userinfo[3]
         if verify_password(hashed_pwd, password):
             SID = hash_password(sessionSecret)
-            db.addSession(SID, username, usertype, datetime.datetime.now(), user_id)
+            db.addSession(SID, datetime.datetime.now(), user_id)
             logger.info(f'login user {username}')
             return {'success': True, 'SID': SID}
         else:
@@ -258,7 +255,7 @@ def login():
         SID = hash_password(sessionSecret)
         date = datetime.datetime.now()
         user_id = db.addUser(username, displayname, hashed_pwd, 'user', date)
-        db.addSession(SID, username, 'user', date, user_id[0])
+        db.addSession(SID, date, user_id[0])
         logger.info(f'register user {username}')
         return {'success': True, 'SID': SID}
 
@@ -371,7 +368,7 @@ def menu():
         userinfo = {
             'auth': True, 
             'username': session.username, 
-            'displayname': session.username # @@@ refactor sessions table
+            'displayname': session.displayname
         }
 
         return render_template('menu.html', userinfo=userinfo, catering=catering)
@@ -394,7 +391,7 @@ def orders_():
             'auth': True,
             'orders': orders,
             'username': session.username,
-            'displayname': session.username # @@@ refactor sessions table
+            'displayname': session.displayname
         }
         return render_template('orders.html', userinfo=userinfo)
     return redirect('/menu')

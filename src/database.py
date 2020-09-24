@@ -45,25 +45,26 @@ o.user_id = %s ORDER BY o.date"""
     return cursor.fetchall()
 
 @acquireLock
-def addCartProduct(cart_id: int, product_id: int, amount: int, date: datetime.datetime):
+def addCartProduct(cart_id: int, product_id: int, 
+                   amount: int, date: datetime.datetime):
     sql = "SELECT addCartProduct(%s, %s, %s, %s)"
     cursor.execute(sql, (cart_id, product_id, amount, date))
 
 @acquireLock
-def addUser(username: str, displayname: str, password: str, usertype: str, date: datetime.datetime):
+def addUser(username: str, displayname: str, password: str, 
+            usertype: str, date: datetime.datetime):
     sql = "SELECT addUser(%s, %s, %s, %s, %s)"
     cursor.execute(sql, (username, displayname, password, usertype, date))
     return cursor.fetchone()
 
 @acquireLock
-def addSession(sid: str, username: str, usertype: str, 
-               date: datetime.datetime, user_id: int, 
-               asID: Optional[int] = None):
+def addSession(sid: str, date: datetime.datetime, 
+               user_id: int, asID: Optional[int] = None):
     sql = """\
-INSERT INTO sessions(sid, username, usertype, date, user_id, account_share_id) \
-VALUES (%s, %s, %s, %s, %s, %s)\
+INSERT INTO sessions(sid, date, user_id, account_share_id) \
+VALUES (%s, %s, %s, %s)\
 """
-    cursor.execute(sql, (sid, username, usertype, date, user_id, asID))
+    cursor.execute(sql, (sid, date, user_id, asID))
 
 @acquireLock
 def addDailyMenu(menu: List[Tuple[str, str, str, int, str, str, str, str, datetime.datetime]]):
@@ -154,7 +155,10 @@ def getSessions():
 
 @acquireLock
 def getSession(SID: str):
-    sql = "SELECT username, usertype, date, user_id FROM sessions WHERE sid = %s"
+    sql = """\
+SELECT u.username, u.displayname, u.usertype, s.date, s.user_id \
+FROM sessions s JOIN users u ON u.id = s.user_id WHERE sid = %s\
+"""
     cursor.execute(sql, (SID,))
     return cursor.fetchone()
 
