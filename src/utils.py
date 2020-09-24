@@ -175,9 +175,9 @@ def getSessionAccountShare(session: Session, userinfo: dict) -> dict:
         }
     return userinfo
 
-def formResponse(session: Session, isForm: bool, data: dict, error_type=None):
+def formResponse(redirect_url: str, isForm: bool, data: dict, error_type=None):
     if isForm:
         if not data['success']:
             flash(data['message'], error_type)
-        return redirect(f'/u/{session.username}')
+        return redirect(redirect_url)
     return data

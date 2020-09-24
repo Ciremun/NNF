@@ -259,24 +259,23 @@ def shared():
                 return {'success': False, 'message': 'Error: no form data'}
             isForm = False
         error_type = 'accountShareError'
-
-        print(f'{isForm}, {message}')
+        redirect_url = f'/u/{session.username}'
 
         act = message.get('act')
         if all(act != x for x in ['add', 'del']):
             data = {'success': False, 'message': 'Error: invalid account share action'}
-            return formResponse(session, isForm, data, error_type)
+            return formResponse(redirect_url, isForm, data, error_type)
 
         if act == 'add':
             username = message.get('username')
             if not username or not isinstance(username, str):
                 data = {'success': False, 'message': 'Error: invalid username'}
-                return formResponse(session, isForm, data, error_type)
+                return formResponse(redirect_url, isForm, data, error_type)
 
             target_user_id = db.getUserID(username)
             if not target_user_id or target_user_id[0] == session.user_id:
                 data = {'success': False, 'message': 'Error: invalid target user'}
-                return formResponse(session, isForm, data, error_type)
+                return formResponse(redirect_url, isForm, data, error_type)
 
             duration = {'days': message.get('days'), 
                         'hours': message.get('hours'), 
@@ -285,7 +284,7 @@ def shared():
 
             if message.get('forever') == True or all(x == "" for x in duration.values()):
                 db.addAccountShare(session.user_id, target_user_id[0], None, datetime.datetime.now())
-                return formResponse(session, isForm, {'success': True})
+                return formResponse(redirect_url, isForm, {'success': True})
 
             try:
                 for k, v in duration.items():
@@ -299,23 +298,23 @@ def shared():
                 assert duration.total_seconds() <= 864276039
             except Exception:
                 data = {'success': False, 'message': 'Error: invalid account share duration'}
-                return formResponse(session, isForm, data, error_type)
+                return formResponse(redirect_url, isForm, data, error_type)
 
             db.addAccountShare(session.user_id, target_user_id[0], duration, datetime.datetime.now())
-            return formResponse(session, isForm, {'success': True})
+            return formResponse(redirect_url, isForm, {'success': True})
         if act == 'del':
             target_user_id = message.get('target')
             if not isinstance(target_user_id, int):
                 data = {'success': False, 'message': 'Error: target user id must be int'}
-                return formResponse(session, isForm, data, error_type)
+                return formResponse(redirect_url, isForm, data, error_type)
 
             shareinfo = db.verifyAccountShare(session.user_id, target_user_id)
             if not shareinfo:
                 data = {'success': False, 'message': 'Error: account share not found'}
-                return formResponse(session, isForm, data, error_type)
+                return formResponse(redirect_url, isForm, data, error_type)
 
             db.deleteAccountShare(session.user_id, target_user_id)
-            return formResponse(session, isForm, {'success': True})
+            return formResponse(redirect_url, isForm, {'success': True})
     return {'success': False, 'message': 'Error: Unauthorized'}
 
 # Production
