@@ -1,9 +1,10 @@
 from math import floor
-from typing import Optional
+from typing import Optional, Union
 import datetime
 import time
 
 import requests
+from flask import flash, redirect
 
 import src.parser as parser
 import src.database as db
@@ -173,3 +174,10 @@ def getSessionAccountShare(session: Session, userinfo: dict) -> dict:
             'shared_to': shared_to
         }
     return userinfo
+
+def formResponse(session: Session, isForm: bool, data: dict, error_type=None):
+    if isForm:
+        if not data['success']:
+            flash(data['message'], error_type)
+        return redirect(f'/u/{session.username}')
+    return data

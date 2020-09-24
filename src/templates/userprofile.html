@@ -10,32 +10,43 @@
 
 {% block content %}
     <div class="account-share-title" style="margin-top: 0px;">Открыть доступ для других пользователей</div>
-    <div class="add-shared-forms">
-        <div class="add-shared-form width200">
-            <input type="text" name="add-shared-username" id="add-shared-username" spellcheck="false" maxlength="25" placeholder=" " onkeydown="addSharedEnterKey(event)">
-            <label for="add-shared-username" class="label-name"><span class="content-name">Пользователь</span></label>
+    <form action="/shared" method="POST" onsubmit="event.preventDefault(); addShared();">
+        <input type="hidden" name="act" value="add">
+        <div class="add-shared-forms">
+            <div class="add-shared-form width200">
+                <input type="text" name="username" id="add-shared-username" spellcheck="false" maxlength="25" placeholder=" ">
+                <label for="username" class="label-name"><span class="content-name">Пользователь</span></label>
+            </div>
+            <div class="add-shared-form width75">
+                <input type="text" name="days" id="add-shared-days" spellcheck="false" maxlength="4" placeholder=" ">
+                <label for="days" class="label-name"><span class="content-name">дни</span></label>
+            </div>
+            <div class="add-shared-form width75">
+                <input type="text" name="hours" id="add-shared-hours" spellcheck="false" maxlength="2" placeholder=" ">
+                <label for="hours" class="label-name"><span class="content-name">часы</span></label>
+            </div>
+            <div class="add-shared-form width75">
+                <input type="text" name="minutes" id="add-shared-minutes" spellcheck="false" maxlength="2" placeholder=" ">
+                <label for="minutes" class="label-name"><span class="content-name">минуты</span></label>
+            </div>
+            <div class="add-shared-form width75">
+                <input type="text" name="seconds" id="add-shared-seconds" spellcheck="false" maxlength="2" placeholder=" ">
+                <label for="seconds" class="label-name"><span class="content-name">секунды</span></label>
+            </div>
         </div>
-        <div class="add-shared-form width75">
-            <input type="text" name="add-shared-day" id="add-shared-days" spellcheck="false" maxlength="4" placeholder=" " onkeydown="addSharedEnterKey(event)">
-            <label for="add-shared-day" class="label-name"><span class="content-name">дни</span></label>
+        <div class="add-shared-submit">
+            <div><input type="submit" value="Добавить"></div>
         </div>
-        <div class="add-shared-form width75">
-            <input type="text" name="add-shared-hour" id="add-shared-hours" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey(event)">
-            <label for="add-shared-hour" class="label-name"><span class="content-name">часы</span></label>
-        </div>
-        <div class="add-shared-form width75">
-            <input type="text" name="add-shared-minute" id="add-shared-minutes" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey(event)">
-            <label for="add-shared-minute" class="label-name"><span class="content-name">минуты</span></label>
-        </div>
-        <div class="add-shared-form width75">
-            <input type="text" name="add-shared-second" id="add-shared-seconds" spellcheck="false" maxlength="2" placeholder=" " onkeydown="addSharedEnterKey(event)">
-            <label for="add-shared-second" class="label-name"><span class="content-name">секунды</span></label>
-        </div>
-    </div>
-    <div class="add-shared-submit">
-        <div><a onclick="addShared()">Добавить</a></div>
-        <div style="margin-left: 50px;"><a onclick="addShared(true)">Добавить на неопределенный срок</a></div>
-    </div>
+    </form>
+    {% with errors = get_flashed_messages(category_filter=["accountShareError"]) %}
+        {% if errors %}
+            <div class="account-share-title" style="color:#e70073">
+                {% for msg in errors %}
+                    {{ msg }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
     {% if userinfo.get('account_share') and userinfo['account_share']['available'] %}
         <div class="account-share-title">Доступные аккаунты:</div>
         <div class="shared-list">

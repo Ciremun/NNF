@@ -108,39 +108,31 @@ async function logout() {
 
 // account share
 
-function addSharedEnterKey(e) {
-    if (e.key === 'Enter') {
-        let d = getDocumentAccountShareDuration();
-        addShared(forever=Object.values(d).every(x => (x === "")), duration=d);
-    }
-}
+let shareDays    = document.getElementById('add-shared-days'),
+    shareHours   = document.getElementById('add-shared-hours'),
+    shareMinutes = document.getElementById('add-shared-minutes'),
+    shareSeconds = document.getElementById('add-shared-seconds');
 
-function getDocumentAccountShareDuration() {
-    return {
-        days: document.getElementById('add-shared-days').value,
-        hours: document.getElementById('add-shared-hours').value,
-        minutes: document.getElementById('add-shared-minutes').value,
-        seconds: document.getElementById('add-shared-seconds').value
-    };
-}
-
-async function addShared(forever=null, duration=null) {
+async function addShared() {
     let username = document.getElementById('add-shared-username').value.toLowerCase();
     if (!username) return showAlert('Error: no username');
     let data = {
         username: username,
         act: 'add'
     };
-    if (forever) {
+    if ([shareDays.value, shareHours.value, shareMinutes.value, shareSeconds.value].every(x => (x === ""))) {
         data.forever = true;
     } else {
-        if (!duration) duration = getDocumentAccountShareDuration();
-        Object.keys(duration).forEach(x => {
-            if (duration[x] === "") duration[x] = 0;
-            else duration[x] = +duration[x];
-        });
-        if (Object.values(duration).reduce((a, b) => a + b) <= 0) return showAlert('Error: invalid account share duration');
-        data.duration = duration;
+        let duration = [shareDays.value, shareHours.value, 
+                        shareMinutes.value, shareSeconds.value];
+        duration = duration.map(x => x === "" ? 0 : +x);
+        console.log(duration);
+        console.log(duration.reduce((a, b) => a + b) <= 0);
+        if (duration.reduce((a, b) => a + b) <= 0) return showAlert('Error: invalid account share duration');
+        data.days    = duration[0];
+        data.hours   = duration[1];
+        data.minutes = duration[2];
+        data.seconds = duration[3];
     }
     let response = await postData('/shared', data);
     if (response.success) window.location.reload();
@@ -160,9 +152,9 @@ async function deleteShared(e) {
 
 // login form
 
-let modal = document.getElementById("DivModal"),
-    btn = document.getElementById("LoginButton"),
-    span = document.getElementsByClassName("CloseModal")[0],
+let modal     = document.getElementById("DivModal"),
+    btn       = document.getElementById("LoginButton"),
+    span      = document.getElementsByClassName("CloseModal")[0],
     userfield = document.getElementById('userfield'),
     passfield = document.getElementById('passfield');
 

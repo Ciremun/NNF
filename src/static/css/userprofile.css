@@ -73,7 +73,14 @@
   display: flex;
 }
 
-.add-shared-submit a:hover, 
+.add-shared-submit input {
+  font-family: 'Times New Roman', Times, serif;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.add-shared-submit input:hover, 
 .delete-shared a:hover,
 .available-user a:hover {
   color: #e70073;
@@ -95,7 +102,7 @@
 }
 
 .shared-user, .account-share-title, 
-.available-user, .add-shared-submit {
+.available-user, .add-shared-submit input {
   font-size: 25px;
   padding: 0 0 10px 20px;
 }

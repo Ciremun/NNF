@@ -14,7 +14,7 @@ from .config import config, keys
 from .log import logger
 from .structure import ShortFoodItem
 from .utils import (seconds_convert, get_catering, clearDB, dailyMenuUpdate, 
-    getSession, getSessionAccountShare, getUserCart)
+    getSession, getSessionAccountShare, getUserCart, formResponse)
 
 
 catering = get_catering()
@@ -26,10 +26,11 @@ dailyMenuUpdateThread = Thread(target=dailyMenuUpdate)
 dailyMenuUpdateThread.start()
 
 app = Flask(__name__)
+app.secret_key = keys['sessionSecret']
 
 @app.route('/')
 def index():
-    return redirect('/menu', code=302)
+    return redirect('/menu')
 
 
 @app.route('/login', methods=['POST'])
@@ -113,22 +114,19 @@ def login():
 
 @app.route('/u/<username>')
 def userprofile(username):
-    username = username.lower()
-    userinfo = db.getUser(username)
-
     SID = request.cookies.get("SID")
     session = getSession(SID)
-    if session and session.username == username:
+    if session and session.username == username.lower():
 
         userinfo = {
             'auth': True, 
-            'username': username, 
-            'displayname': userinfo[0]
+            'username': session.username, 
+            'displayname': session.displayname
         }
         userinfo = getSessionAccountShare(session, userinfo)
 
         return render_template('userprofile.html', userinfo=userinfo)
-    return redirect('/menu', code=302)
+    return redirect('/menu')
 
 
 @app.route('/logout', methods=['POST'])
@@ -143,10 +141,10 @@ def logout():
 
 @app.route('/cart', methods=['GET', 'POST'])
 def buy():
-    message = request.get_json()
     SID = request.cookies.get("SID")
     session = getSession(SID)
     if session:
+        message = request.get_json()
         username = session.username
 
         if request.method == 'POST':
@@ -207,7 +205,7 @@ def buy():
     elif request.method == 'POST':
         return {'success': False, 'message': 'Error: Unauthorized'}
     else:
-        return redirect('/menu', code=302)
+        return redirect('/menu')
 
 
 @app.route('/menu')
@@ -249,50 +247,75 @@ def orders_():
 
 @app.route('/shared', methods=['POST'])
 def shared():
-    message = request.get_json()
     SID = request.cookies.get('SID')
     session = getSession(SID)
     if session:
+
+        message = request.form
+        isForm = True
+        if not message:
+            message = request.get_json()
+            if not message:
+                return {'success': False, 'message': 'Error: no form data'}
+            isForm = False
+        error_type = 'accountShareError'
+
+        print(f'{isForm}, {message}')
+
         act = message.get('act')
         if all(act != x for x in ['add', 'del']):
-            return {'success': False, 'message': 'Error: invalid account share action'}
+            data = {'success': False, 'message': 'Error: invalid account share action'}
+            return formResponse(session, isForm, data, error_type)
 
         if act == 'add':
             username = message.get('username')
             if not username or not isinstance(username, str):
-                return {'success': False, 'message': 'Error: invalid username'}
+                data = {'success': False, 'message': 'Error: invalid username'}
+                return formResponse(session, isForm, data, error_type)
 
             target_user_id = db.getUserID(username)
             if not target_user_id or target_user_id[0] == session.user_id:
-                return {'success': False, 'message': 'Error: invalid target user'}
+                data = {'success': False, 'message': 'Error: invalid target user'}
+                return formResponse(session, isForm, data, error_type)
 
-            if message.get('forever') == True:
+            duration = {'days': message.get('days'), 
+                        'hours': message.get('hours'), 
+                        'minutes': message.get('minutes'), 
+                        'seconds': message.get('seconds')}
+
+            if message.get('forever') == True or all(x == "" for x in duration.values()):
                 db.addAccountShare(session.user_id, target_user_id[0], None, datetime.datetime.now())
-                return {'success': True}
+                return formResponse(session, isForm, {'success': True})
 
-            d = message.get('duration')
             try:
-                assert isinstance(d, dict)
-                assert len(d) == 4
-                assert all(isinstance(v, int) and v >= 0 for v in [d.get('days'), d.get('hours'), d.get('minutes'), d.get('seconds')])
-                duration = datetime.timedelta(**d)
+                for k, v in duration.items():
+                    if v == "":
+                        v = 0
+                    elif not isinstance(v, int):
+                        v = int(v)
+                    assert 9999 >= v >= 0
+                    duration[k] = v
+                duration = datetime.timedelta(**duration)
                 assert duration.total_seconds() <= 864276039
-            except AssertionError:
-                return {'success': False, 'message': 'Error: invalid account share duration'}
+            except Exception:
+                data = {'success': False, 'message': 'Error: invalid account share duration'}
+                return formResponse(session, isForm, data, error_type)
 
             db.addAccountShare(session.user_id, target_user_id[0], duration, datetime.datetime.now())
-            return {'success': True}
+            return formResponse(session, isForm, {'success': True})
         if act == 'del':
             target_user_id = message.get('target')
             if not isinstance(target_user_id, int):
-                return {'success': False, 'message': 'Error: target user id must be int'}
+                data = {'success': False, 'message': 'Error: target user id must be int'}
+                return formResponse(session, isForm, data, error_type)
 
             shareinfo = db.verifyAccountShare(session.user_id, target_user_id)
             if not shareinfo:
-                return {'success': False, 'message': 'Error: account share not found'}
+                data = {'success': False, 'message': 'Error: account share not found'}
+                return formResponse(session, isForm, data, error_type)
 
             db.deleteAccountShare(session.user_id, target_user_id)
-            return {'success': True}
+            return formResponse(session, isForm, {'success': True})
     return {'success': False, 'message': 'Error: Unauthorized'}
 
 # Production
