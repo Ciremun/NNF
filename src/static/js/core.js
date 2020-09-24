@@ -152,25 +152,25 @@ async function deleteShared(e) {
 
 // login form
 
-let modal     = document.getElementById("DivModal"),
-    btn       = document.getElementById("LoginButton"),
-    span      = document.getElementsByClassName("CloseModal")[0],
-    userfield = document.getElementById('userfield'),
-    passfield = document.getElementById('passfield');
+let loginForm   = document.getElementById("DivModal"),
+    loginButton = document.getElementById("LoginButton"),
+    closeModal  = document.getElementsByClassName("CloseModal")[0],
+    userfield   = document.getElementById('userfield'),
+    passfield   = document.getElementById('passfield');
 
-if (btn !== null) {
-    btn.onclick = function() {
-        modal.style.display = "block";
+if (loginButton !== null) {
+    loginButton.onclick = function() {
+        loginForm.style.display = "block";
         userfield.focus();
     }
 
-    span.onclick = function() {
-        modal.style.display = "none";
+    closeModal.onclick = function() {
+        loginForm.style.display = "none";
     }
 
     window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
+        if (event.target == loginForm) {
+            loginForm.style.display = "none";
         }
     }
 }
