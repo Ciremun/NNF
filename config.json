@@ -1,4 +1,3 @@
 {
-    "flaskLogging": true,
-    "dailyMenuUpdateInterval": 3600
+    "flaskLogging": true
 }

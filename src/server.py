@@ -8,165 +8,16 @@ from flask import Flask, render_template, request, redirect, make_response
 from gevent.pywsgi import WSGIServer
 import requests
 
-import src.parser as parser
 import src.database as db
 from .salt import hash_password, verify_password
 from .config import config, keys
 from .log import logger
-from .structure import Session, FoodItem, ShortFoodItem
-from .utils import seconds_convert
+from .structure import ShortFoodItem
+from .utils import (seconds_convert, get_catering, clearDB, dailyMenuUpdate, 
+    getSession, getSessionAccountShare, getUserCart)
 
 
-def getUserCart(username: str) -> dict:
-    cartItems = db.getUserCartItems(username)
-    if not cartItems:
-        return
-
-    cart = {'complex': {}, 'menu': []}
-    for i in cartItems:
-        title, price, link, Type, amount, itemID = i[0], i[1], i[2], i[3], i[4], i[5]
-        if Type == 'complex':
-            cart['complex'][title] = {'foods': [ShortFoodItem(x[0], x[1], x[2], ID=x[3]) 
-                                                for x in db.getComplexItems(' '.join((title, f'{price} руб.')), 'complexItem')],
-                                      'price': price, 'ID': itemID, 'amount': amount}
-        elif Type == 'menu':
-            cart['menu'].append(ShortFoodItem(title, price, link, amount=amount, ID=itemID))
-
-    return cart
-
-def updateUserSession(session: Session):
-    now = datetime.datetime.now()
-    if session.date.day < now.day:
-        db.updateSessionDate(session.SID, now)
-        logger.info(f'update session {session.username}')
-
-def clearDB():
-    """
-    Delete old sessions, account share, do vacuum.
-    """
-    while True:
-        sessionsToDelete = []
-        accountShareToDelete = []
-        now = datetime.datetime.now()
-        for s in db.getSessions():
-            sessionID = s[0]
-            sessionDate = s[1]
-            if sessionDate + datetime.timedelta(days=30) <= now:
-                sessionsToDelete.append((sessionID, ))
-        for a in db.getAccountShares():
-            asID = a[0]
-            asDuration = a[1]
-            asDate = a[2]
-            if asDuration is not None and asDate + asDuration <= now:
-                accountShareToDelete.append((asID,))
-        if sessionsToDelete:
-            db.deleteSessions(sessionsToDelete)
-            sessionsToDelete.clear()
-        if accountShareToDelete:
-            db.deleteAccountShares(accountShareToDelete)
-            accountShareToDelete.clear()
-        db.vacuum()
-        logger.debug('clearDB')
-        time.sleep(60)
-
-def getSession(SID: str) -> Optional[Session]:
-    if not isinstance(SID, str):
-        return
-    s = db.getSession(SID)
-    if s:
-        session = Session(SID, s[0], s[1], s[2], s[3], s[4])
-        updateUserSession(session)
-        return session
-
-def dailyMenuUpdate():
-    global catering
-    init_catering()
-
-    while True:
-
-        boolDailyMenu = db.checkDailyMenu()
-
-        if not boolDailyMenu:
-
-            logger.info('update menu')
-            catering = parser.getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
-
-            complexProducts = []
-            for section in catering['complex'].keys():
-                section = section.split(' ')
-                title = ' '.join(section[:-2])
-                price = int(section[-2:-1][0])
-                complexProducts.append(ShortFoodItem(title, price, 'None'))
-
-            db.clearDailyMenu()
-
-            date = datetime.datetime.now()
-
-            db.addDailyMenu([(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'complexItem', date) \
-                                for k, foods in catering['complex'].items() for v in foods] + \
-                                    [(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'menu', date) \
-                                        for k, foods in catering['items'].items() for v in foods] + \
-                                            [(p.title, 'None', 'None', p.price, 'None', 'None', 'None', 'complex', date) \
-                                                for p in complexProducts])
-
-        time.sleep(config['dailyMenuUpdateInterval'])
-
-def init_catering():
-    global catering
-    old_section = None
-
-    for k, v in {'complexItem': catering['complex'], 'menu': catering['items']}.items():
-        for i in db.getDailyMenuByType(k):
-            section = i[6]
-            food_item = FoodItem(i[0], i[1], i[2], i[3], i[4], i[5], ID=i[7])
-            if section != old_section:
-                if k == 'complexItem':
-                    v[section] = {}
-                    v[section]['foods'] = []
-                    v[section]['foods'].append(food_item)
-                    split_ = section.split(' ')
-                    product_id = db.getProductID(' '.join(split_[:-2]), int(split_[-2:-1][0]), 'complex')
-                    v[section]['ID'] = product_id[0]
-                else:
-                    v[section] = []
-                    v[section].append(food_item)
-                old_section = section
-                continue
-            if k == 'complexItem':
-                v[section]['foods'].append(food_item)
-            else:
-                v[section].append(food_item)
-
-def getSessionAccountShare(session: Session, userinfo: dict) -> dict:
-    account_share = db.getAccountShareByID(session.user_id)
-    if account_share:
-        available, shared_to = {}, {}
-        for i in account_share:
-            user_id, user, target_user_id, target_user, \
-                s_Duration, s_Date = i[0], i[1], i[2], i[3], i[4], i[5]
-            if user_id == session.user_id:
-                if s_Duration is None:
-                    duration = 'Бессрочно'
-                else:
-                    now = datetime.datetime.now()
-                    expiration_date = s_Date + s_Duration
-                    if expiration_date <= now:
-                        duration = 'Истек'
-                    else:
-                        seconds_left = (expiration_date - now).total_seconds()
-                        duration = seconds_convert(seconds_left)
-                shared_to[target_user] = {'id': target_user_id, 
-                                          'duration': duration}
-            else:
-                available[user] = user_id
-        userinfo['account_share'] = {
-            'available': available,
-            'shared_to': shared_to
-        }
-    return userinfo
-
-sessionSecret = keys['sessionSecret']
-catering = {'complex': {}, 'items': {}}
+catering = get_catering()
 
 monthlyClearDBThread = Thread(target=clearDB)
 monthlyClearDBThread.start()
@@ -213,7 +64,7 @@ def login():
                     db.deleteAccountShare(target_user_id, session.user_id)
                     return {'success': False, 'message': 'Error: account share is outdated'}
             asID = shareinfo[2]
-            SID = hash_password(sessionSecret)
+            SID = hash_password(keys['sessionSecret'])
             db.addSession(SID, now, target_user_id, asID)
             logger.info(f'shared login user {target_userinfo[0]}')
             return {'success': True, 'SID': SID}
@@ -243,7 +94,7 @@ def login():
         hashed_pwd = userinfo[1]
         user_id = userinfo[3]
         if verify_password(hashed_pwd, password):
-            SID = hash_password(sessionSecret)
+            SID = hash_password(keys['sessionSecret'])
             db.addSession(SID, datetime.datetime.now(), user_id)
             logger.info(f'login user {username}')
             return {'success': True, 'SID': SID}
@@ -252,7 +103,7 @@ def login():
             return {'success': False, 'message': 'Error: password did not match'}
     else:
         hashed_pwd = hash_password(password)
-        SID = hash_password(sessionSecret)
+        SID = hash_password(keys['sessionSecret'])
         date = datetime.datetime.now()
         user_id = db.addUser(username, displayname, hashed_pwd, 'user', date)
         db.addSession(SID, date, user_id[0])
