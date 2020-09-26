@@ -16,7 +16,6 @@ from .classes import ShortFoodItem, FormResponseHandler, Cookie
 from .utils import (seconds_convert, get_catering, clearDB, dailyMenuUpdate, 
     getSession, getSessionAccountShare, getUserCart, getFormData)
 
-
 catering = get_catering()
 
 monthlyClearDBThread = Thread(target=clearDB)

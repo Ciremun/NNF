@@ -6,9 +6,7 @@ from bs4 import BeautifulSoup
 
 from .classes import FoodItem, ShortFoodItem
 
-
 namnyamURL = "https://www.nam-nyam.ru/catering/"
-
 
 # def createExcel():
 #     try:

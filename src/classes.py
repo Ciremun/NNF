@@ -3,7 +3,6 @@ import datetime
 
 from flask import flash, redirect, make_response
 
-
 class FoodItem:
 
     def __init__(self, title, weight, calories, price, link, image_link, ID=None):

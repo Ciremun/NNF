@@ -40,9 +40,11 @@
     </form>
     {% with errors = get_flashed_messages(category_filter=["accountShare"]) %}
         {% if errors %}
-            <div class="account-share-title" style="color:#e70073">
+            <div class="alert">
                 {% for msg in errors %}
-                    {{ msg }}
+                    <div class="alert_content">
+                        {{ msg }}
+                    </div>
                 {% endfor %}
             </div>
         {% endif %}
