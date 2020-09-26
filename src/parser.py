@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 
-from .structure import FoodItem, ShortFoodItem
+from .classes import FoodItem, ShortFoodItem
 
 
 namnyamURL = "https://www.nam-nyam.ru/catering/"

@@ -12,7 +12,7 @@ import src.database as db
 from .salt import hash_password, verify_password
 from .config import config, keys
 from .log import logger
-from .structure import ShortFoodItem, FormResponseHandler, Cookie
+from .classes import ShortFoodItem, FormResponseHandler, Cookie
 from .utils import (seconds_convert, get_catering, clearDB, dailyMenuUpdate, 
     getSession, getSessionAccountShare, getUserCart, getFormData)
 

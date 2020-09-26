@@ -9,7 +9,7 @@ from flask import flash, redirect, request, abort
 import src.parser as parser
 import src.database as db
 from .log import logger
-from .structure import FoodItem, ShortFoodItem, Session
+from .classes import FoodItem, ShortFoodItem, Session
 
 def new_timecode_explicit(days, hours, minutes, seconds, duration):
     if duration < 1:
