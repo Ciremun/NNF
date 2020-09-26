@@ -29,6 +29,7 @@ nav {
     width: 100%;
     position: fixed;
     z-index: 2;
+    cursor: default;
 }
 
 label.logo {
@@ -48,13 +49,13 @@ nav ul {
     margin-right: 20px;
 }
 
-nav ul li {
+nav li {
     display: inline-block;
     line-height: 55px;
     margin: 0 5px;
 }
 
-nav ul li a {
+nav li a, nav li input, nav li label {
     color: white;
     font-size: 17px;
     padding: 7px 13px;
@@ -62,9 +63,21 @@ nav ul li a {
     text-transform: uppercase;
 }
 
-nav a:hover {
+nav li input, nav li label {
+    font-family: 'Times New Roman', Times, serif;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+nav a:hover, nav input:hover, nav li label:hover {
     background: #b4005a;
     transition: .4s;
+}
+
+.modal-body input:hover {
+    background-color: #191b1c;
+    transition: none;
 }
 
 .checkbtn {
@@ -78,13 +91,16 @@ nav a:hover {
     user-select: none;
 }
 
-#check {
+#check, #showmodal, #closemodal {
     display: none;
 }
 
+#showmodal:checked~#modal {
+    display: block;
+}
+
 /* Modal */
-/* Source: https://www.w3schools.com/howto/howto_css_modals.asp */
-.modal {
+#modal {
     display: none;
     position: fixed;
     z-index: 3;
@@ -94,8 +110,8 @@ nav a:hover {
     height: 100%;
     background-color: rgba(0,0,0,0.4);
 }
-  
-.CloseModal {
+
+.close-modal-cross {
     position: absolute;
     top: 5px;
     right: 10px;
@@ -104,8 +120,7 @@ nav a:hover {
     font-weight: bold;
 }
   
-.CloseModal:hover, .CloseModal:focus {
-    color: black;
+.close-modal-cross:hover, .close-modal-cross:focus {
     text-decoration: none;
     cursor: pointer;
 }
@@ -161,7 +176,7 @@ input {
     width: 30%;
 }
 
-/* Alert message */
+/* Alert message  @@@ refactor */
 .alert {
     position: fixed;
     left: 0;
@@ -189,6 +204,13 @@ input {
     animation: alert 2s forwards;
 }
 
+.flash {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 25px;
+    padding: 0 0 10px 20px;
+    color: #e70073;
+}
+
 /* Animations */
 @keyframes alert {
     from {transform: translate(-50%,-100px)}
@@ -211,7 +233,7 @@ input {
         font-size: 30px;
         padding-left: 50px;
     }
-    nav ul li a {
+    nav li a, nav li input, nav li label {
         font-size: 16px;
     }
 }
@@ -230,15 +252,15 @@ input {
         text-align: center;
         transition: all .3s;
     }
-    nav ul li {
+    nav li {
         display: block;
         margin: 50px 0;
         line-height: 30px;
     }
-    nav ul li a {
+    nav li a, nav li input, nav li label {
         font-size: 20px;
     }
-    nav a:hover {
+    nav a:hover, nav input:hover, nav li label:hover {
         background: none;
         color: #e70073;
     }

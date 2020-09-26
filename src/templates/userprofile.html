@@ -14,7 +14,7 @@
         <input type="hidden" name="act" value="add">
         <div class="add-shared-forms">
             <div class="add-shared-form width200">
-                <input type="text" name="username" id="add-shared-username" spellcheck="false" maxlength="25" placeholder=" ">
+                <input type="text" name="username" id="add-shared-username" spellcheck="false" maxlength="25" placeholder=" " required>
                 <label for="username" class="label-name"><span class="content-name">Пользователь</span></label>
             </div>
             <div class="add-shared-form width75">
@@ -38,7 +38,7 @@
             <div><input type="submit" value="Добавить"></div>
         </div>
     </form>
-    {% with errors = get_flashed_messages(category_filter=["accountShareError"]) %}
+    {% with errors = get_flashed_messages(category_filter=["accountShare"]) %}
         {% if errors %}
             <div class="account-share-title" style="color:#e70073">
                 {% for msg in errors %}

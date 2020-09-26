@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/panel.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/core.css') }}">
     {% block head %}{% endblock %}
     <title>{% block title %}{% endblock %}</title>
 </head>
@@ -20,27 +20,43 @@
                     <li><a href="/menu">Меню</a></li>
                     <li><a href="/cart">Корзина</a></li>
                     <li><a href="/u/{{ userinfo.get('username') }}">{{ userinfo.get('displayname') }}</a></li>
-                    <li><a onclick="logout()">Выйти</a></li>
+                    <li>
+                        <form action="/logout" method="POST">
+                            <input type="submit" value="Выйти">
+                        </form>
+                    </li>
                 {% else %}
-                    <li><a id="LoginButton">Вход/Регистрация</a></li>
+                    <input type="radio" id="showmodal" name="modal">
+                    <li><label for="showmodal">Вход/Регистрация</label></li>
+                    <div id="modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <input type="radio" id="closemodal" name="modal">
+                                <label for="closemodal" class="close-modal-cross">&times;</label>
+                                <h2>hi!</h2>
+                            </div>
+                            <div class="modal-body">
+                                <form action="/login" method="POST" onsubmit="return login(); return false;">
+                                    <div class="userbox"><input type="text" name="displayname" id="userfield" spellcheck="false" maxlength="25" placeholder="Пользователь" required><br><br></div>
+                                    <div class="passbox"><input type="password" name="password" id="passfield" spellcheck="false" maxlength="25" placeholder="Пароль" required><br><br></div>
+                                    <div class="loginbutton"><input type="submit" value="login"></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 {% endif %}
             </ul>
         </nav>
-        <div id="alert" class="alert"><div class="alert_content"></div></div>
-        <div id="DivModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span class="CloseModal">&times;</span>
-                    <h2>hi!</h2>
-                </div>
-                <div class="modal-body">
-                    <div class="userbox"><input type="text" id="userfield" spellcheck="false" maxlength="25" onkeydown="loginEnterKey(event)" placeholder="Пользователь"><br><br></div>
-                    <div class="passbox"><input type="password" id="passfield" spellcheck="false" maxlength="25" onkeydown="loginEnterKey(event)" placeholder="Пароль"><br><br></div>
-                    <div class="loginbutton"><input type="submit" value="login" onclick="login()"></div>
-                </div>
-            </div>
-        </div>
     </header>
+    {% with errors = get_flashed_messages(category_filter=["login"]) %}
+        {% if errors %}
+            <div class="flash">
+                {% for msg in errors %}
+                    {{ msg }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
     {% block content %}{% endblock %}
     <script src="{{ url_for('static',filename='js/core.js') }}"></script>
 </body>
