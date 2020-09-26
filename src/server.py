@@ -55,11 +55,11 @@ def login():
         if session:
             target_userinfo = db.getUserByID(target_user_id)
             if not target_userinfo:
-                response.message = 'Error: target user not found'
+                response.message = 'Ошибка: пользователь не найден'
                 return response.make_response()
             shareinfo = db.verifyAccountShare(target_user_id, session.user_id)
             if not shareinfo:
-                response.message = 'Error: account share not found'
+                response.message = 'Ошибка: раздача не найдена'
                 return response.make_response()
             now = datetime.datetime.now()
             share_interval = shareinfo[0]
@@ -67,7 +67,7 @@ def login():
                 share_date = shareinfo[1]
                 if share_date + share_interval < now:
                     db.deleteAccountShare(target_user_id, session.user_id)
-                    response.message = 'Error: account share is outdated'
+                    response.message = 'Ошибка: раздача устарела'
                     return response.make_response()
             asID = shareinfo[2]
             SID = hash_password(keys['sessionSecret'])
@@ -75,29 +75,26 @@ def login():
             logger.info(f'shared login user {target_userinfo[0]}')
             response.cookie = Cookie('SID', SID)
             return response.make_response()
-        response.message = 'Error: Unauthorized'
+        response.message = 'Ошибка: требуется авторизация'
         return response.make_response()
 
     displayname = message.get('displayname')
     password = message.get('password')
 
-    if not (isinstance(displayname, str) and isinstance(password, str)):
-        response.message = 'Error: enter username and password'
+    if not all(isinstance(x, str) for x in [displayname, password]):
+        response.message = 'Ошибка: введите имя пользователя и пароль'
         return response.make_response()
 
     if not all(0 < len(x) <= 25 for x in [displayname, password]):
-        response.message = 'Error: username/password length 1-25 chars'
+        response.message = 'Ошибка: имя пользователя и пароль от 1 до 25 символов'
         return response.make_response()
 
     for i in displayname, password:
         for letter in i:
             code = ord(letter)
-            if code == 32:
-                response.message = 'Error: no spaces please'
-                return response.make_response()
             if (48 <= code <= 57) or (65 <= code <= 90) or (97 <= code <= 122):
                 continue
-            response.message = 'Error: only english characters and numbers'
+            response.message = 'Ошибка: только английские символы и числа'
             return response.make_response()
 
     username = displayname.lower()
@@ -116,7 +113,7 @@ def login():
             return response.make_response()
         else:
             logger.info(f'failed login user {username}')
-            response.message = 'Error: password did not match'
+            response.message = 'Ошибка: неверный пароль'
             return response.make_response()
     else:
         hashed_pwd = hash_password(password)
@@ -169,16 +166,16 @@ def buy():
         if request.method == 'POST':
             act = message.get('act')
             if all(act != x for x in ['add', 'update', 'clear', 'submit']):
-                return {'success': False, 'message': 'Error: invalid cart item action'}
+                return {'success': False, 'message': 'Ошибка: неверное действие'}
 
             cart_id = db.getUserCartID(username)
             if not cart_id:
-                return {'success': False, 'message': 'Error: cart not found'}
+                return {'success': False, 'message': 'Ошибка: корзина не найдена'}
 
             if act == 'submit':
                 user_cart_items = db.getUserCartItems(username)
                 if not user_cart_items:
-                    return {'success': False, 'message': 'Error: empty cart'}
+                    return {'success': False, 'message': 'Ошибка: корзина пуста'}
                 order_id = db.addOrder(session.user_id, datetime.datetime.now())
                 order_products = [(order_id, x[0], x[1], x[2], x[4]) for x in user_cart_items]
                 db.addOrderProducts(order_products)
@@ -191,10 +188,10 @@ def buy():
 
             product_id = message.get('productID')
             if not isinstance(product_id, int):
-                return {'success': False, 'message': 'Error: invalid product id'}
+                return {'success': False, 'message': 'Ошибка: ID продукта должен быть типа int'}
             product_id = db.getProductByID(product_id)
             if not product_id:
-                return {'success': False, 'message': 'Error: product not found'}
+                return {'success': False, 'message': 'Ошибка: предмет не найден'}
 
             if act == 'add':
                 db.addCartProduct(cart_id[0], product_id[0], 1, datetime.datetime.now())
@@ -203,7 +200,7 @@ def buy():
             if act == 'update':
                 amount = message.get('amount')
                 if not isinstance(amount, int) or not 100 > amount >= 0:
-                    return {'success': False, 'message': 'Error: invalid cart item amount'}
+                    return {'success': False, 'message': 'Ошибка: неверное количество товара'}
                 db.updateCartProduct(cart_id[0], product_id[0], amount)
                 return {'success': True}
         else:
@@ -222,7 +219,7 @@ def buy():
 
             return render_template('cart.html', userinfo=userinfo)
     elif request.method == 'POST':
-        return {'success': False, 'message': 'Error: Unauthorized'}
+        return {'success': False, 'message': 'Ошибка: требуется авторизация'}
     else:
         return redirect('/menu')
 
@@ -276,18 +273,18 @@ def shared():
 
         act = message.get('act')
         if all(act != x for x in ['add', 'del']):
-            response.message = 'Error: invalid account share action'
+            response.message = 'Ошибка: неверное действие'
             return response.make_response()
 
         if act == 'add':
             username = message.get('username')
             if not username or not isinstance(username, str):
-                response.message = 'Error: invalid username'
+                response.message = 'Ошибка: неверное имя пользователя'
                 return response.make_response()
 
             target_user_id = db.getUserID(username)
             if not target_user_id or target_user_id[0] == session.user_id:
-                response.message = 'Error: invalid target user'
+                response.message = 'Ошибка: неверный пользователь'
                 return response.make_response()
 
             duration = {'days': message.get('days'), 
@@ -310,7 +307,7 @@ def shared():
                 duration = datetime.timedelta(**duration)
                 assert duration.total_seconds() <= 864276039
             except Exception:
-                response.message = 'Error: invalid account share duration'
+                response.message = 'Ошибка: неверная длительность раздачи'
                 return response.make_response()
 
             db.addAccountShare(session.user_id, target_user_id[0], duration, datetime.datetime.now())
@@ -318,17 +315,17 @@ def shared():
         if act == 'del':
             target_user_id = message.get('target')
             if not isinstance(target_user_id, int):
-                response.message = 'Error: target user id must be int'
+                response.message = 'Ошибка: ID пользователя должен быть типа int'
                 return response.make_response()
 
             shareinfo = db.verifyAccountShare(session.user_id, target_user_id)
             if not shareinfo:
-                response.message = 'Error: account share not found'
+                response.message = 'Ошибка: раздача не найдена'
                 return response.make_response()
 
             db.deleteAccountShare(session.user_id, target_user_id)
             return response.make_response()
-    response.message = 'Error: Unauthorized'
+    response.message = 'Ошибка: требуется авторизация'
     return response.make_response()
 
 # Production
