@@ -11,28 +11,6 @@
 //     return response;
 // }
 
-// alert animation @@@ refactor
-
-function showAlert(msg) {
-    notify.innerText = msg;
-    notify.classList.toggle('alert_animation');
-}
-
-let notify = document.getElementById("alert");
-
-notify.addEventListener('animationstart', () => {
-    notify.style.opacity = 1;
-});
-
-notify.addEventListener('animationend', () => {
-    notify.style.opacity = 0;
-});
-
-notify.addEventListener('animationcancel', () => {
-    notify.style.opacity = 0;
-    notify.classList.toggle('alert_animation');
-});
-
 // cart @@@ refactor
 
 async function cartAction(e, act, amount=null) {
@@ -80,7 +58,7 @@ let shareUsername = document.getElementById('add-shared-username'),
     shareMinutes  = document.getElementById('add-shared-minutes'),
     shareSeconds  = document.getElementById('add-shared-seconds');
 
-async function addShared() {
+function addShared() {
     // @@@ validate addShared form
     return true;
 }
@@ -95,8 +73,6 @@ async function addShared() {
 //     if (response.success) window.location.reload();
 //     else showAlert(response.message);
 // }
-
-// login form @@@ refactor
 
 let loginButton = document.getElementById("showmodal"),
     userfield   = document.getElementById('userfield'),

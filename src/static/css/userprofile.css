@@ -73,7 +73,9 @@
   display: flex;
 }
 
-.add-shared-submit input {
+.add-shared-submit input, 
+.available-user button, 
+.delete-shared button {
   font-family: 'Times New Roman', Times, serif;
   border: none;
   outline: none;
@@ -81,8 +83,8 @@
 }
 
 .add-shared-submit input:hover, 
-.delete-shared a:hover,
-.available-user a:hover {
+.delete-shared button:hover,
+.available-user button:hover {
   color: #e70073;
   transition: .4s;
 }
@@ -108,5 +110,14 @@
 }
 
 .shared-user, .available-user, .add-shared-submit {
+  color: #fff;
+}
+
+button {
+  border: none;
+  background: inherit;
+  outline: none;
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 25px;
   color: #fff;
 }

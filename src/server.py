@@ -38,21 +38,24 @@ def login():
     """
     Login page does signup and login (username+password),
     check if credentials are valid.
-    If user exists: verify password, create new session,
-    send error message if wrong password.
-    Or register user: hash password, create new session,
-    add user to database.
-    Create cookie and redirect to menu.
+    If user exists: verify password, error message if wrong password.
+    Or register user: hash password, add user to database.
+    Create cookie and session, refresh page or redirect to menu.
     """
     message = getFormData(request)
     redirect_url = request.referrer or '/'
     response = FormResponseHandler(redirect_url, flash_type='login')
 
     target_user_id = message.get('target')
-    if isinstance(target_user_id, int):
+    if isinstance(target_user_id, str):
         SID = request.cookies.get("SID")
         session = getSession(SID)
         if session:
+            try:
+                target_user_id = int(target_user_id)
+            except Exception:
+                response.message = 'Ошибка: ID пользователя должен быть типа int'
+                return response.make_response()
             target_userinfo = db.getUserByID(target_user_id)
             if not target_userinfo:
                 response.message = 'Ошибка: пользователь не найден'
@@ -239,6 +242,7 @@ def menu():
         return render_template('menu.html', userinfo=userinfo, catering=catering)
     return render_template('menu.html', userinfo={}, catering=catering)
 
+
 @app.route('/orders')
 def orders_():
     SID = request.cookies.get('SID')
@@ -260,6 +264,7 @@ def orders_():
         }
         return render_template('orders.html', userinfo=userinfo)
     return redirect('/menu')
+
 
 @app.route('/shared', methods=['POST'])
 def shared():
@@ -314,7 +319,9 @@ def shared():
             return response.make_response()
         if act == 'del':
             target_user_id = message.get('target')
-            if not isinstance(target_user_id, int):
+            try:
+                target_user_id = int(target_user_id)
+            except Exception:
                 response.message = 'Ошибка: ID пользователя должен быть типа int'
                 return response.make_response()
 
