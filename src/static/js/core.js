@@ -67,24 +67,12 @@ if (loginButton !== null) loginButton.onclick = () => userfield.focus();
 
 // account share
 
-let shareUsername = document.getElementById('add-shared-username'),
-    shareDays     = document.getElementById('add-shared-days'),
-    shareHours    = document.getElementById('add-shared-hours'),
-    shareMinutes  = document.getElementById('add-shared-minutes'),
-    shareSeconds  = document.getElementById('add-shared-seconds');
-
 function addShared() {
+    let shareUsername = document.getElementById('add-shared-username'),
+        shareDays     = document.getElementById('add-shared-days'),
+        shareHours    = document.getElementById('add-shared-hours'),
+        shareMinutes  = document.getElementById('add-shared-minutes'),
+        shareSeconds  = document.getElementById('add-shared-seconds');
     // @@@ validate addShared form
     return true;
 }
-
-// async function shareLogin(e) {
-//     login_response = await postData('/login', {target: +e.dataset.userid});
-//     await processLoginResponse(login_response);
-// }
-
-// async function deleteShared(e) {
-//     let response = await postData('/shared', {target: +e.dataset.userid, act: 'del'});
-//     if (response.success) window.location.reload();
-//     else showAlert(response.message);
-// }
