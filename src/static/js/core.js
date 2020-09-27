@@ -45,10 +45,16 @@ function clearTypingTimer() {
 
 // login
 
+let loginButton = document.getElementById("showmodal"),
+    userfield   = document.getElementById('userfield'),
+    passfield   = document.getElementById('passfield');
+
 function login() {
     // @@@ validate login form
     return true;
 }
+
+if (loginButton !== null) loginButton.onclick = () => userfield.focus();
 
 // account share
 
@@ -73,9 +79,3 @@ function addShared() {
 //     if (response.success) window.location.reload();
 //     else showAlert(response.message);
 // }
-
-let loginButton = document.getElementById("showmodal"),
-    userfield   = document.getElementById('userfield'),
-    passfield   = document.getElementById('passfield');
-
-if (loginButton !== null) loginButton.onclick = () => userfield.focus();
