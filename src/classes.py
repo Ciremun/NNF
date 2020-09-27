@@ -1,7 +1,8 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
+from enum import Enum
 import datetime
 
-from flask import flash, redirect, make_response
+from flask import flash, redirect, make_response, abort, jsonify, request
 
 class FoodItem:
 
@@ -35,18 +36,46 @@ class Cookie(NamedTuple):
     key: str
     value: str
 
-class FormResponseHandler():
+class ResponseType(Enum):
+    HTTP = 1
+    JSON = 2
 
-    def __init__(self, redirect_url, message=None, flash_type=None, cookie: Cookie = None):
+class ResponseTypeError(Exception):
+    pass
+
+class FormHandler():
+
+    def __init__(self, redirect_url=None, flash_type=None, response_type=ResponseType.HTTP):
         self.redirect_url = redirect_url
-        self.message = message
         self.flash_type = flash_type
-        self.cookie = cookie
+        self.response_type = response_type
+        self.message = None
+        self.cookie = None
 
-    def make_response(self):
-        response = make_response(redirect(self.redirect_url))
-        if self.message:
-            flash(self.message, self.flash_type)
+    @property
+    def response(self):
+        if self.response_type == ResponseType.JSON:
+            response_data = {'status': 200}
+            if self.message:
+                response_data['message'] = self.message
+            response_data = jsonify(response_data)
+        elif self.response_type == ResponseType.HTTP:
+            if self.message:
+                flash(self.message, self.flash_type)
+            response_data = redirect(self.redirect_url)
+        else:
+            raise ResponseTypeError('Unknown ResponseType')
+        response = make_response(response_data)
         if self.cookie:
             response.set_cookie(self.cookie.key, self.cookie.value, max_age=2620000)
         return response
+
+    def get_form(self, request: request) -> Optional[dict]:
+        data = request.form
+        self.response_type = ResponseType.HTTP
+        if not data:
+            data = request.get_json()
+            self.response_type = ResponseType.JSON
+            if not data:
+                abort(400)
+        return data

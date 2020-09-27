@@ -9,62 +9,100 @@
 {% endblock %}
 
 {% block content %}
-    <section class="orders_section">
-        {% for category, items in catering['complex'].items() %}
-            <div class="category_head">
-                <div class="category_label">{{ category }}</div>
-                <div class="circle rotate360" data-itemid="{{ items['ID'] }}" onclick="cartAction(this, 'add')">+</div>
-                <div class="circle heart" data-itemid="{{ items['ID'] }}" onclick="addToFavorites()"><span>&#x2764;</span></div>
+{% with errors = get_flashed_messages(category_filter=["cart"]) %}
+    {% if errors %}
+        <div class="alert">
+            {% for msg in errors %}
+                <div class="alert_content">
+                    {{ msg }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+<section class="orders_section">
+    {% for category, items in catering['complex'].items() %}
+        <div class="category_head">
+            <div class="category_label">{{ category }}</div>
+                <form action="/cart" method="POST" onsubmit="event.preventDefault();">
+                    <input type="hidden" name="productID" value="{{ items['ID'] }}">
+                    <div class="form_content">
+                        <div class="circle rotate360">
+                            <button type="submit" name="act" value="cartadd" data-itemid="{{ items['ID'] }}" onclick="cartAction(this);">
+                                +
+                            </button>
+                        </div>
+                        <div class="circle heart">
+                            <button type="submit" name="act" value="fav" data-itemid="{{ items['ID'] }}" onclick="cartAction(this);">
+                                &#x2764;
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="complex_category">
-                {% for item in items['foods'] %}
-                    <div class="complexitem">
+        </div>
+        <div class="complex_category">
+            {% for item in items['foods'] %}
+                <div class="complexitem">
+                    <img src="{{ item.image_link }}" alt="{{ item.title }}">
+                    <div class="item_title">
+                        <div class="item_tooltip_hover">
+                            {{ item.title }}
+                            <div class="item_tooltip_hover_content">
+                                Вес: {{ item.weight }}<br>
+                                Калорийность: {{ item.calories }}<br>
+                                Цена: {{ item.price }} &#x20BD;<br>
+                                <a target="_blank" rel="noopener noreferrer" href="{{ item.link }}">Ссылка</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <br><br>
+    {% endfor %}
+    {% for category, items in catering['items'].items() %}
+        <div class="category_head">
+            <div class="category_label">{{ category }}</div>
+        </div>
+        <div class="menu_category">
+            {% for item in items %}
+                <div class="item">
+                    <div class="menu_item_img">
                         <img src="{{ item.image_link }}" alt="{{ item.title }}">
-                        <div class="item_title">
-                            <div class="item_tooltip_hover">
-                                {{ item.title }}
-                                <div class="item_tooltip_hover_content">
-                                    Вес: {{ item.weight }}<br>
-                                    Калорийность: {{ item.calories }}<br>
-                                    Цена: {{ item.price }} &#x20BD;<br>
-                                    <a target="_blank" rel="noopener noreferrer" href="{{ item.link }}">Ссылка</a>
+                        <div class="hidden">
+                            <form action="/cart" method="POST" onsubmit="event.preventDefault();">
+                                <input type="hidden" name="productID" value="{{ item.ID }}">
+                                <div class="form_content">
+                                    <div class="circle rotate360">
+                                        <button type="submit" name="act" value="cartadd" data-itemid="{{ item.ID }}" onclick="cartAction(this);">
+                                            +
+                                        </button>
+                                    </div>
+                                    <div class="circle heart">
+                                        <button type="submit" name="act" value="fav" data-itemid="{{ item.ID }}" onclick="cartAction(this);">
+                                            &#x2764;
+                                        </button>
+                                    </div>
                                 </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="item_title">
+                        <div class="item_tooltip_hover">
+                            {{ item.title }}
+                            <div class="item_tooltip_hover_content">
+                                Вес: {{ item.weight }}<br>
+                                Калорийность: {{ item.calories }}<br>
+                                Цена: {{ item.price }} &#x20BD;<br>
+                                <a target="_blank" rel="noopener noreferrer" href="{{ item.link }}">Ссылка</a>
                             </div>
                         </div>
                     </div>
-                {% endfor %}
-            </div>
-            <br><br>
-        {% endfor %}
-        {% for category, items in catering['items'].items() %}
-            <div class="category_head">
-                <div class="category_label">{{ category }}</div>
-            </div>
-            <div class="menu_category">
-                {% for item in items %}
-                    <div class="item">
-                        <div class="menu_item_img">
-                            <img src="{{ item.image_link }}" alt="{{ item.title }}">
-                            <div class="hidden">
-                                <div class="circle rotate360" data-itemid="{{ item.ID }}" onclick="cartAction(this, 'add')">+</div>
-                                <div class="circle heart" data-itemid="{{ items['ID'] }}" onclick="addToFavorites()"><span>&#x2764;</span></div>
-                            </div>
-                        </div>
-                        <div class="item_title">
-                            <div class="item_tooltip_hover">
-                                {{ item.title }}
-                                <div class="item_tooltip_hover_content">
-                                    Вес: {{ item.weight }}<br>
-                                    Калорийность: {{ item.calories }}<br>
-                                    Цена: {{ item.price }} &#x20BD;<br>
-                                    <a target="_blank" rel="noopener noreferrer" href="{{ item.link }}">Ссылка</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-            <br><br>
-        {% endfor %}
-    </section>
+                </div>
+            {% endfor %}
+        </div>
+        <br><br>
+    {% endfor %}
+</section>
 {% endblock %}

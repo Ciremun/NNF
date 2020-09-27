@@ -1,31 +1,40 @@
 // utils
 
-// async function postData(url = '', data = {}) {
-//     const response = await fetch(url, {
-//       headers: {
-//         'Content-Type': 'application/json'
-//       },
-//       method: 'POST',
-//       body: JSON.stringify(data)
-//     });
-//     return response;
-// }
+async function postData(url, data = {}) {
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    return response.json();
+}
+
+function showAlert(message) {
+    let alerts = document.getElementsByClassName('alert');
+    if (alerts.length !== 0) 
+        for (item of alerts)
+            item.remove();
+    let outer_div = document.createElement('div'),
+        inner_div = document.createElement('div');
+    outer_div.classList.add('alert');
+    inner_div.classList.add('alert_content');
+    inner_div.innerText = message;
+    outer_div.appendChild(inner_div);
+    document.body.appendChild(outer_div);
+}
 
 // cart @@@ refactor
 
-async function cartAction(e, act, amount=null) {
-    let data = {act: act}
-    if (!['submit', 'clear'].includes(act)) {
-        if (amount !== null) data.amount = +amount;
-        data.productID = +e.dataset.itemid;
-    }
+async function cartAction(e, act=null, amount=null) {
+    if (act === null) act = e.value;
+    let data = {act: act};
+    if (amount !== null) data.amount = +amount;
+    if (!['cartsbm', 'cartcl'].includes(act)) data.productID = +e.dataset.itemid;
     let response = await postData('/cart', data);
-    if (response.success) {
-        if (act !== 'add') window.location.reload();
-        else showAlert('Предмет добавлен в корзину');
-    } else {
-        showAlert(response.message);
-    }
+    if (!['cartadd', 'fav'].includes(act)) window.location.reload();
+    if (response.message) showAlert(response.message);
 }
 
 // typingTimer

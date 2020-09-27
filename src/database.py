@@ -83,6 +83,11 @@ def addAccountShare(user_id: int, target_user_id: int,
     cursor.execute(sql, (user_id, target_user_id, duration, date))
 
 @acquireLock
+def addUserFav(user_id: int, product_id: int):
+    sql = "INSERT INTO userfav(user_id, product_id) VALUES (%s, %s)"
+    cursor.execute(sql, (user_id, product_id))
+
+@acquireLock
 def getUserCartItems(username: str):
     sql = """\
 SELECT p.title, p.price, p.link, p.type, cp.amount, p.id \
@@ -225,6 +230,12 @@ def getAccountShares():
     return cursor.fetchall()
 
 @acquireLock
+def getUserFavByProductID(user_id: int, product_id: int):
+    sql = "SELECT user_id, product_id FROM userfav WHERE user_id = %s AND product_id = %s"
+    cursor.execute(sql, (user_id, product_id))
+    return cursor.fetchone()
+
+@acquireLock
 def updateSessionDate(sid: str, newdate: datetime.datetime):
     sql = "UPDATE sessions SET date = %s WHERE sid = %s"
     cursor.execute(sql, (newdate, sid))
@@ -258,6 +269,11 @@ def deleteSession(sid: str):
 def deleteSessions(IDs: List[Tuple[int]]):
     sql = "DELETE FROM sessions WHERE id = %s"
     cursor.executemany(sql, IDs)
+
+@acquireLock
+def deleteUserFav(user_fav: Tuple[int, int]):
+    sql = "DELETE FROM userfav WHERE user_id = %s AND product_id = %s"
+    cursor.execute(sql, user_fav)
 
 @acquireLock
 def clearDailyMenu():

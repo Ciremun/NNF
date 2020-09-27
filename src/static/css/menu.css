@@ -1,3 +1,11 @@
+button {
+    outline: none;
+    user-select: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
 .orders_section {
     padding-bottom: 50px;
 }
@@ -85,7 +93,7 @@
     color: #3391ff;
 }
 
-.category_head {
+.category_head, .form_content {
     display: flex;
 }
 
@@ -104,11 +112,6 @@
     justify-content: center;
     margin-left: 10px;
     cursor: pointer;
-    font-size: 35px;
-    font-weight: bold;
-    font-family: Courier;
-    color: white;
-    
     user-select: none;
 }
 
@@ -116,11 +119,18 @@
     transition: transform .8s;
 }
 
+.rotate360 button {
+    font-size: 35px;
+    font-weight: bold;
+    font-family: Courier;
+    color: white;
+}
+
 .rotate360:hover {
     transform: rotate(360deg);
 }
 
-.heart {
+.heart button {
     font-size: 20px;
     color: #ff0040;
 }
@@ -129,7 +139,7 @@
     transform: rotate(-45deg);
 }
 
-.heart:hover span {
+.heart:hover button {
     animation: animateHeart 1.2s infinite;
 }
 

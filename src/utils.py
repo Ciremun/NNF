@@ -4,7 +4,6 @@ import datetime
 import time
 
 import requests
-from flask import flash, redirect, request, abort
 
 import src.parser as parser
 import src.database as db
@@ -174,12 +173,4 @@ def getSessionAccountShare(session: Session, userinfo: dict) -> dict:
             'shared_to': shared_to
         }
     return userinfo
-
-def getFormData(request: request) -> Optional[dict]:
-    data = request.form
-    if not data:
-        data = request.get_json()
-        if not data:
-            abort(400)
-    return data
     
