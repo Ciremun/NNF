@@ -9,79 +9,79 @@
 {% endblock %}
 
 {% block content %}
-    <div class="account-share-title" style="margin-top: 0px;">Открыть доступ для других пользователей</div>
-    <form action="/shared" method="POST" onsubmit="return addShared(); return false;">
-        <input type="hidden" name="act" value="add">
-        <div class="add-shared-forms">
-            <div class="add-shared-form width200">
-                <input type="text" name="username" id="add-shared-username" spellcheck="false" maxlength="25" placeholder=" " required>
-                <label for="username" class="label-name"><span class="content-name">Пользователь</span></label>
-            </div>
-            <div class="add-shared-form width75">
-                <input type="text" name="days" id="add-shared-days" spellcheck="false" maxlength="4" placeholder=" ">
-                <label for="days" class="label-name"><span class="content-name">дни</span></label>
-            </div>
-            <div class="add-shared-form width75">
-                <input type="text" name="hours" id="add-shared-hours" spellcheck="false" maxlength="2" placeholder=" ">
-                <label for="hours" class="label-name"><span class="content-name">часы</span></label>
-            </div>
-            <div class="add-shared-form width75">
-                <input type="text" name="minutes" id="add-shared-minutes" spellcheck="false" maxlength="2" placeholder=" ">
-                <label for="minutes" class="label-name"><span class="content-name">минуты</span></label>
-            </div>
-            <div class="add-shared-form width75">
-                <input type="text" name="seconds" id="add-shared-seconds" spellcheck="false" maxlength="2" placeholder=" ">
-                <label for="seconds" class="label-name"><span class="content-name">секунды</span></label>
-            </div>
+{% with errors = get_flashed_messages(category_filter=["accountShare"]) %}
+    {% if errors %}
+        <div class="alert">
+            {% for msg in errors %}
+                <div class="alert_content">
+                    {{ msg }}
+                </div>
+            {% endfor %}
         </div>
-        <div class="add-shared-submit">
-            <div><input type="submit" value="Добавить"></div>
+    {% endif %}
+{% endwith %}
+<div class="account-share-title" style="margin-top: 0px;">Открыть доступ для других пользователей</div>
+<form action="/shared" method="POST" onsubmit="return addShared(); return false;">
+    <input type="hidden" name="act" value="add">
+    <div class="add-shared-forms">
+        <div class="add-shared-form width200">
+            <input type="text" name="username" id="add-shared-username" spellcheck="false" maxlength="25" placeholder=" " required>
+            <label for="username" class="label-name"><span class="content-name">Пользователь</span></label>
         </div>
-    </form>
-    {% with errors = get_flashed_messages(category_filter=["accountShare"]) %}
-        {% if errors %}
-            <div class="alert">
-                {% for msg in errors %}
-                    <div class="alert_content">
-                        {{ msg }}
-                    </div>
-                {% endfor %}
+        <div class="add-shared-form width75">
+            <input type="text" name="days" id="add-shared-days" spellcheck="false" maxlength="4" placeholder=" ">
+            <label for="days" class="label-name"><span class="content-name">дни</span></label>
+        </div>
+        <div class="add-shared-form width75">
+            <input type="text" name="hours" id="add-shared-hours" spellcheck="false" maxlength="2" placeholder=" ">
+            <label for="hours" class="label-name"><span class="content-name">часы</span></label>
+        </div>
+        <div class="add-shared-form width75">
+            <input type="text" name="minutes" id="add-shared-minutes" spellcheck="false" maxlength="2" placeholder=" ">
+            <label for="minutes" class="label-name"><span class="content-name">минуты</span></label>
+        </div>
+        <div class="add-shared-form width75">
+            <input type="text" name="seconds" id="add-shared-seconds" spellcheck="false" maxlength="2" placeholder=" ">
+            <label for="seconds" class="label-name"><span class="content-name">секунды</span></label>
+        </div>
+    </div>
+    <div class="add-shared-submit">
+        <div><input type="submit" value="Добавить"></div>
+    </div>
+</form>
+{% if userinfo.get('account_share') and userinfo['account_share']['available'] %}
+    <div class="account-share-title">Доступные аккаунты:</div>
+    <div class="shared-list">
+        {% for user, user_id in userinfo['account_share']['available'].items() %}
+            <div class="available-user">
+                <form action="/login" method="POST">
+                    <input type="hidden" name="target" value="{{ user_id }}">
+                    <button type="submit">{{ user }}</button>
+                </form>
             </div>
-        {% endif %}
-    {% endwith %}
-    {% if userinfo.get('account_share') and userinfo['account_share']['available'] %}
-        <div class="account-share-title">Доступные аккаунты:</div>
-        <div class="shared-list">
-            {% for user, user_id in userinfo['account_share']['available'].items() %}
-                <div class="available-user">
-                    <form action="/login" method="POST">
-                        <input type="hidden" name="target" value="{{ user_id }}">
-                        <button type="submit">{{ user }}</button>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="account-share-title" style="color: #fff;">Нет доступных аккаунтов</div>
+{% endif %}
+{% if userinfo.get('account_share') and userinfo['account_share'].get('shared_to') %}
+    <div class="account-share-title">Список раздач:</div>
+    <div class="shared-list">
+        {% for user, info in userinfo['account_share']['shared_to'].items() %}
+            <div class="shared-user">
+                <div class="shared-user-username">{{ user }}</div>
+                <div class="shared-user-duration">{{ info['duration'] }}</div>
+                <div class="delete-shared">
+                    <form action="/shared" method="POST">
+                        <input type="hidden" name="act" value="del">
+                        <input type="hidden" name="target" value="{{ info['id'] }}">
+                        <button type="submit">Удалить</button>
                     </form>
                 </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="account-share-title" style="color: #fff;">Нет доступных аккаунтов</div>
-    {% endif %}
-    {% if userinfo.get('account_share') and userinfo['account_share'].get('shared_to') %}
-        <div class="account-share-title">Список раздач:</div>
-        <div class="shared-list">
-            {% for user, info in userinfo['account_share']['shared_to'].items() %}
-                <div class="shared-user">
-                    <div class="shared-user-username">{{ user }}</div>
-                    <div class="shared-user-duration">{{ info['duration'] }}</div>
-                    <div class="delete-shared">
-                        <form action="/shared" method="POST">
-                            <input type="hidden" name="act" value="del">
-                            <input type="hidden" name="target" value="{{ info['id'] }}">
-                            <button type="submit">Удалить</button>
-                        </form>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="account-share-title" style="color: #fff;">Нет раздач</div>
-    {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="account-share-title" style="color: #fff;">Нет раздач</div>
+{% endif %}
 {% endblock %}

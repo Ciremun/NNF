@@ -45,7 +45,7 @@ let doneTypingInterval = 100;
 function setCartAmountTypingTimer(e) {
     if (!e.value || e.value === "0") return;
     clearTimeout(typingTimer);
-    typingTimer = setTimeout(cartAction, doneTypingInterval, e, 'update', e.value);
+    typingTimer = setTimeout(cartAction, doneTypingInterval, e, 'cartupd', e.value);
 }
 
 function clearTypingTimer() {

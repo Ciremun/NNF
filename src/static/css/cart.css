@@ -27,20 +27,24 @@ table, th, td {
   text-align: center;
 }
 
-.cartInfo, .cartAct {
+.cartInfo, .cartAct button {
   font-size: 25px;
   padding: 0 0 10px 20px;
 }
 
-.cartInfo, .cartAct a {
+.cartInfo, .cartAct button {
   color: #dfdfdf;
 }
 
-.cartAct a {
+.cartAct button {
+  font-family: 'Times New Roman', Times, serif;
+  border: none;
+  background: none;
+  outline: none;
   cursor: pointer;
   transition: 0.4s;
 }
 
-.cartAct a:hover {
+.cartAct button:hover {
   color: #e70073;
 }

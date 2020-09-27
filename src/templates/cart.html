@@ -9,51 +9,76 @@
 {% endblock %}
 
 {% block content %}
-    {% if userinfo.get('cart') %}
-        <table>
-            <tr>
-                <th>Товар</th>
-                <th>Количество</th>
-                <th>Цена</th>
-                <th></th>
-            </tr>
-            {% for title, complexInfo in userinfo['cart']['complex'].items() %}
-                <tr>
-                    <td class="tableProduct">
-                        <div class="complexProduct">
-                            <div class="complexProductTitle">{{ title }}</div>
-                            <div class="complexProductItems">
-                                {% for food in complexInfo['foods'] %}
-                                    <div class="complexProductItem">
-                                        &emsp;&emsp;&emsp;<a href="{{ food.link }}">{{ food.title }}  -  {{ food.price }} &#x20BD;</a>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </td>
-                    <td class="cartItemAmount"><input data-itemid="{{ complexInfo['ID'] }}" type="text" value="{{ complexInfo['amount'] }}" onkeyup="setCartAmountTypingTimer(this)" onkeydown="clearTypingTimer()"></td>
-                    <td class="cartItemPrice">{{ complexInfo['price'] *  complexInfo['amount']  }} &#x20BD;</td>
-                    <td class="cartItemAction" data-itemid="{{ complexInfo['ID'] }}" onclick="cartAction(this, 'update', 0)">x</td>
-                </tr>
+{% with errors = get_flashed_messages(category_filter=["cart"]) %}
+    {% if errors %}
+        <div class="alert">
+            {% for msg in errors %}
+                <div class="alert_content">
+                    {{ msg }}
+                </div>
             {% endfor %}
-            {% for food in userinfo['cart']['menu'] %}
-                <tr>
-                    <td class="tableProduct">
-                        <div class="product">
-                            {{ food.title }}
-                        </div>
-                    </td>
-                    <td class="cartItemAmount"><input data-itemid="{{ food.ID }}" type="text" value="{{ food.amount }}" onkeyup="setCartAmountTypingTimer(this)" onkeydown="clearTypingTimer()"></td>
-                    <td class="cartItemPrice">{{ food.price * food.amount }} &#x20BD;</td>
-                    <td class="cartItemAction" data-itemid="{{ food.ID }}" onclick="cartAction(this, 'update', 0)">x</td>
-                </tr>
-            {% endfor %}
-        </table>
-        <br>
-        <div class="cartInfo">Сумма заказа - {{ userinfo['cart']['sum'] }} &#x20BD;</div>
-        <div class="cartAct"><a onclick="cartAction(this, 'submit')">Оформить заказ</a></div>
-        <div class="cartAct"><a onclick="cartAction(this, 'clear')">Очистить корзину</a></div>
-    {% else %}
-    <div class="cartInfo">Корзина пуста</div>
+        </div>
     {% endif %}
+{% endwith %}
+{% if userinfo.get('cart') %}
+    <table>
+        <tr>
+            <th>Товар</th>
+            <th>Количество</th>
+            <th>Цена</th>
+            <th></th>
+        </tr>
+        {% for title, complexInfo in userinfo['cart']['complex'].items() %}
+            <tr>
+                <td class="tableProduct">
+                    <div class="complexProduct">
+                        <div class="complexProductTitle">{{ title }}</div>
+                        <div class="complexProductItems">
+                            {% for food in complexInfo['foods'] %}
+                                <div class="complexProductItem">
+                                    &emsp;&emsp;&emsp;<a href="{{ food.link }}">{{ food.title }}  -  {{ food.price }} &#x20BD;</a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </td>
+                <td class="cartItemAmount">
+                    <form action="/cart" method="POST" onsubmit="event.preventDefault();">
+                        <input type="hidden" name="productID" value="{{ complexInfo['ID'] }}">
+                        <input type="submit" name="act" value="cartupd" style="display: none;">
+                        <input data-itemid="{{ complexInfo['ID'] }}" type="text" name="amount" value="{{ complexInfo['amount'] }}" onkeyup="setCartAmountTypingTimer(this)" onkeydown="clearTypingTimer()">
+                    </form>
+                    </td>
+                <td class="cartItemPrice">{{ complexInfo['price'] *  complexInfo['amount']  }} &#x20BD;</td>
+                <td class="cartItemAction" data-itemid="{{ complexInfo['ID'] }}" onclick="cartAction(this, 'cartupd', 0)">x</td>
+            </tr>
+        {% endfor %}
+        {% for food in userinfo['cart']['menu'] %}
+            <tr>
+                <td class="tableProduct">
+                    <div class="product">
+                        {{ food.title }}
+                    </div>
+                </td>
+                <td class="cartItemAmount">
+                    <form action="/cart" method="POST" onsubmit="event.preventDefault();">
+                        <input type="hidden" name="productID" value="{{ food.ID }}">
+                        <input type="submit" name="act" value="cartupd" style="display: none;">
+                        <input data-itemid="{{ food.ID }}" type="text" name="amount" value="{{ food.amount }}" onkeyup="setCartAmountTypingTimer(this)" onkeydown="clearTypingTimer()">
+                    </form>
+                </td>
+                <td class="cartItemPrice">{{ food.price * food.amount }} &#x20BD;</td>
+                <td class="cartItemAction" data-itemid="{{ food.ID }}" onclick="cartAction(this, 'cartupd', 0)">x</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <div class="cartInfo">Сумма заказа - {{ userinfo['cart']['sum'] }} &#x20BD;</div>
+    <form action="/cart" method="POST" onsubmit="event.preventDefault();">
+        <div class="cartAct"><button type="submit" name="act" value="cartsbm" onclick="cartAction(this, 'cartsbm')">Оформить заказ</button></div>
+        <div class="cartAct"><button type="submit" name="act" value="cartcl" onclick="cartAction(this, 'cartcl')">Очистить корзину</button></div>
+    </form>
+{% else %}
+    <div class="cartInfo">Корзина пуста</div>
+{% endif %}
 {% endblock %}

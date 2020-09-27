@@ -158,16 +158,16 @@ def userprofile(username):
 
 
 @app.route('/cart', methods=['GET', 'POST'])
-def buy():
+def cart():
     SID = request.cookies.get("SID")
     session = getSession(SID)
     redirect_url = request.referrer or '/'
     handler = FormHandler(redirect_url, flash_type='cart')
-    message = handler.get_form(request)
     if session:
         username = session.username
 
         if request.method == 'POST':
+            message = handler.get_form(request)
             act = message.get('act')
             if all(act != x for x in ['cartadd', 'cartupd', 'cartcl', 'cartsbm', 'fav']):
                 handler.message = 'Ошибка: неверное действие'
@@ -222,7 +222,10 @@ def buy():
 
             if act == 'cartupd':
                 amount = message.get('amount')
-                if not isinstance(amount, int) or not 100 > amount >= 0:
+                try:
+                    amount = int(amount)
+                    assert 100 > amount >= 0
+                except Exception:
                     handler.message = 'Ошибка: неверное количество товара'
                     return handler.response
                 db.updateCartProduct(cart_id[0], product_id[0], amount)
@@ -242,8 +245,12 @@ def buy():
             }
 
             return render_template('cart.html', userinfo=userinfo)
-    handler.message = 'Ошибка: требуется авторизация'
-    return handler.response
+    if request.method == 'POST':
+        message = handler.get_form(request)
+        handler.message = 'Ошибка: требуется авторизация'
+        return handler.response
+    else:
+        return redirect('/')
 
 
 @app.route('/menu')
