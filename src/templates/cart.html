@@ -50,7 +50,13 @@
                     </form>
                     </td>
                 <td class="cartItemPrice">{{ complexInfo['price'] *  complexInfo['amount']  }} &#x20BD;</td>
-                <td class="cartItemAction" data-itemid="{{ complexInfo['ID'] }}" onclick="cartAction(this, 'cartupd', 0)">x</td>
+                <td class="cartItemAction">
+                    <form action="/cart" method="POST" onsubmit="event.preventDefault();">
+                        <input type="hidden" name="amount" value="0">
+                        <input type="hidden" name="productID" value="{{ complexInfo['ID'] }}">
+                        <button type="submit" name="act" value="cartupd" data-itemid="{{ complexInfo['ID'] }}" onclick="cartAction(this, 'cartupd', 0)">x</button>
+                    </form>
+                </td>
             </tr>
         {% endfor %}
         {% for food in userinfo['cart']['menu'] %}
@@ -68,7 +74,13 @@
                     </form>
                 </td>
                 <td class="cartItemPrice">{{ food.price * food.amount }} &#x20BD;</td>
-                <td class="cartItemAction" data-itemid="{{ food.ID }}" onclick="cartAction(this, 'cartupd', 0)">x</td>
+                <td class="cartItemAction">
+                    <form action="/cart" method="POST" onsubmit="event.preventDefault();">
+                        <input type="hidden" name="amount" value="0">
+                        <input type="hidden" name="productID" value="{{ food.ID }}">
+                        <button type="submit" name="act" value="cartupd" data-itemid="{{ food.ID }}" onclick="cartAction(this, 'cartupd', 0)">x</button>
+                    </form>
+                </td>
             </tr>
         {% endfor %}
     </table>

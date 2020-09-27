@@ -5,17 +5,32 @@ table, th, td {
   padding: 20px;
 }
 
+button {
+  font-family: 'Times New Roman', Times, serif;
+  border: none;
+  background: none;
+  outline: none;
+  cursor: pointer;
+  user-select: none;
+}
+
 .cartItemPrice, .cartItemAmount {
   text-align: center;
 }
 
-.cartItemAction {
-  width: 100px;
-  height: 19px;
+.cartItemAction button {
+  width: 70px;
+  height: 70px;
   background-color: #810040;
   text-align: center;
-  cursor: pointer;
-  user-select: none;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 25px;
+  border-radius: 5px;
+  transition: .4s;
+}
+
+.cartItemAction button:hover {
+  background: #b4005a;
 }
 
 .tableProduct {
@@ -32,16 +47,11 @@ table, th, td {
   padding: 0 0 10px 20px;
 }
 
-.cartInfo, .cartAct button {
+.cartInfo, .cartAct button, .cartItemAction button {
   color: #dfdfdf;
 }
 
 .cartAct button {
-  font-family: 'Times New Roman', Times, serif;
-  border: none;
-  background: none;
-  outline: none;
-  cursor: pointer;
   transition: 0.4s;
 }
 
