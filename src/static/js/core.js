@@ -25,6 +25,10 @@ function showAlert(message) {
     document.body.appendChild(outer_div);
 }
 
+function between(x, min, max) {
+    return x >= min && x <= max;
+}
+
 // cart
 
 async function cartAction(e, act=null, amount=null) {
@@ -58,20 +62,17 @@ let loginButton = document.getElementById("showmodal"),
     userfield   = document.getElementById('userfield'),
     passfield   = document.getElementById('passfield');
 
-function between(x, min, max) {
-    return x >= min && x <= max;
-}
-
 async function login() {
-    // @@@ validate login form
     let pair = [userfield.value, passfield.value];
     for (str of pair)
         for (letter of str) {
             let code = letter.charCodeAt();
-            if (!between(code, 48, 57) && !between(code, 65, 90) && !between(code, 97, 122))
-                showAlert('Ошибка: только английские символы и числа');
+            if (!between(code, 48, 57) && !between(code, 65, 90) && !between(code, 97, 122)) {
+                return showAlert('Ошибка: только английские символы и числа');
+            }
         }
     let response = await postData('/login', {displayname: pair[0], password: pair[1]});
+    if (response.success) window.location.reload();
     if (response.message) showAlert(response.message);
 }
 

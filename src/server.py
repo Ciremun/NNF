@@ -53,51 +53,42 @@ def login():
             try:
                 target_user_id = int(target_user_id)
             except Exception:
-                handler.message = 'Ошибка: ID пользователя должен быть типа int'
-                return handler.response
+                return handler.make_response(message='Ошибка: ID пользователя должен быть типа int')
             target_userinfo = db.getUserByID(target_user_id)
             if not target_userinfo:
-                handler.message = 'Ошибка: пользователь не найден'
-                return handler.response
+                return handler.make_response(message='Ошибка: пользователь не найден')
             shareinfo = db.verifyAccountShare(target_user_id, session.user_id)
             if not shareinfo:
-                handler.message = 'Ошибка: раздача не найдена'
-                return handler.response
+                return handler.make_response(message='Ошибка: раздача не найдена')
             now = datetime.datetime.now()
             share_interval = shareinfo[0]
             if share_interval is not None:
                 share_date = shareinfo[1]
                 if share_date + share_interval < now:
                     db.deleteAccountShare(target_user_id, session.user_id)
-                    handler.message = 'Ошибка: раздача устарела'
-                    return handler.response
+                    return handler.make_response(message='Ошибка: раздача устарела')
             asID = shareinfo[2]
             SID = hash_password(keys['sessionSecret'])
             db.addSession(SID, now, target_user_id, asID)
             logger.info(f'shared login user {target_userinfo[0]}')
-            handler.cookie = Cookie('SID', SID)
-            return handler.response
-        handler.message = 'Ошибка: требуется авторизация'
-        return handler.response
+            return handler.make_response(cookie=Cookie('SID', SID), success=True)
+        return handler.make_response(message='Ошибка: требуется авторизация')
 
     displayname = message.get('displayname')
     password = message.get('password')
 
     if not all(isinstance(x, str) for x in [displayname, password]):
-        handler.message = 'Ошибка: введите имя пользователя и пароль'
-        return handler.response
+        return handler.make_response(message='Ошибка: введите имя пользователя и пароль')
 
     if not all(0 < len(x) <= 25 for x in [displayname, password]):
-        handler.message = 'Ошибка: имя пользователя и пароль от 1 до 25 символов'
-        return handler.response
+        return handler.make_response(message='Ошибка: имя пользователя и пароль от 1 до 25 символов')
 
     for i in displayname, password:
         for letter in i:
             code = ord(letter)
             if (48 <= code <= 57) or (65 <= code <= 90) or (97 <= code <= 122):
                 continue
-            handler.message = 'Ошибка: только английские символы и числа'
-            return handler.response
+            return handler.make_response(message='Ошибка: только английские символы и числа')
 
     username = displayname.lower()
     userinfo = db.getUser(username)
@@ -111,12 +102,10 @@ def login():
             if old_cookie:
                 db.deleteSession(old_cookie)
             logger.info(f'login user {username}')
-            handler.cookie = Cookie('SID', SID)
-            return handler.response
+            return handler.make_response(cookie=Cookie('SID', SID), success=True)
         else:
             logger.info(f'failed login user {username}')
-            handler.message = 'Ошибка: неверный пароль'
-            return handler.response
+            return handler.make_response(message='Ошибка: неверный пароль')
     else:
         hashed_pwd = hash_password(password)
         SID = hash_password(keys['sessionSecret'])
@@ -124,8 +113,7 @@ def login():
         user_id = db.addUser(username, displayname, hashed_pwd, 'user', date)
         db.addSession(SID, date, user_id[0])
         logger.info(f'register user {username}')
-        handler.cookie = Cookie('SID', SID)
-        return handler.response
+        return handler.make_response(cookie=Cookie('SID', SID), success=True)
 
 
 @app.route('/logout', methods=['POST'])
@@ -170,55 +158,49 @@ def cart():
             message = handler.get_form(request)
             act = message.get('act')
             if all(act != x for x in ['cartadd', 'cartupd', 'cartcl', 'cartsbm', 'fav']):
-                handler.message = 'Ошибка: неверное действие'
-                return handler.response
+                return handler.make_response(message='Ошибка: неверное действие')
 
             cart_id = db.getUserCartID(username)
             if not cart_id:
-                handler.message = 'Ошибка: корзина не найдена'
-                return handler.response
+                return handler.make_response(message='Ошибка: корзина не найдена')
 
             if act == 'cartsbm':
                 user_cart_items = db.getUserCartItems(username)
                 if not user_cart_items:
-                    handler.message = 'Ошибка: корзина пуста'
-                    return handler.response
+                    return handler.make_response(message='Ошибка: корзина пуста')
                 order_id = db.addOrder(session.user_id, datetime.datetime.now())
                 order_products = [(order_id, x[0], x[1], x[2], x[4]) for x in user_cart_items]
                 db.addOrderProducts(order_products)
                 db.clearUserCart(cart_id[0])
-                return handler.response
+                return handler.make_response(success=True)
 
             if act == 'cartcl':
                 db.clearUserCart(cart_id[0])
-                return handler.response
+                return handler.make_response(success=True)
 
             product_id = message.get('productID')
             try:
                 product_id = int(product_id)
             except Exception:
-                handler.message = 'Ошибка: ID продукта должен быть типа int'
-                return handler.response
+                return handler.make_response(message='Ошибка: ID продукта должен быть типа int')
 
             product_id = db.getProductByID(product_id)
             if not product_id:
-                handler.message = 'Ошибка: продукт не найден'
-                return handler.response
+                return handler.make_response(message='Ошибка: продукт не найден')
 
             if act == 'fav':
                 fav_product = db.getUserFavByProductID(session.user_id, product_id[0])
                 if fav_product:
                     db.deleteUserFav(fav_product)
-                    handler.message = 'Продукт удален из избранного'
+                    message = 'Продукт удален из избранного'
                 else:
                     db.addUserFav(session.user_id, product_id[0])
-                    handler.message = 'Продукт добавлен в избранное'
-                return handler.response
+                    message = 'Продукт добавлен в избранное'
+                return handler.make_response(message=message, success=True)
 
             if act == 'cartadd':
                 db.addCartProduct(cart_id[0], product_id[0], 1, datetime.datetime.now())
-                handler.message = 'Продукт добавлен в корзину'
-                return handler.response
+                return handler.make_response(message='Продукт добавлен в корзину', success=True)
 
             if act == 'cartupd':
                 amount = message.get('amount')
@@ -226,10 +208,9 @@ def cart():
                     amount = int(amount)
                     assert 100 > amount >= 0
                 except Exception:
-                    handler.message = 'Ошибка: неверное количество товара'
-                    return handler.response
+                    return handler.make_response(message='Ошибка: неверное количество товара')
                 db.updateCartProduct(cart_id[0], product_id[0], amount)
-                return handler.response
+                return handler.make_response(success=True)
         else:
             userinfo = db.getUser(username)
             cart = getUserCart(username)
@@ -247,8 +228,7 @@ def cart():
             return render_template('cart.html', userinfo=userinfo)
     if request.method == 'POST':
         message = handler.get_form(request)
-        handler.message = 'Ошибка: требуется авторизация'
-        return handler.response
+        return handler.make_response(message='Ошибка: требуется авторизация')
     else:
         return redirect('/')
 
@@ -303,19 +283,16 @@ def shared():
 
         act = message.get('act')
         if all(act != x for x in ['add', 'del']):
-            handler.message = 'Ошибка: неверное действие'
-            return handler.response
+            return handler.make_response(message='Ошибка: неверное действие')
 
         if act == 'add':
             username = message.get('username')
             if not username or not isinstance(username, str):
-                handler.message = 'Ошибка: неверное имя пользователя'
-                return handler.response
+                return handler.make_response(message='Ошибка: неверное имя пользователя')
 
             target_user_id = db.getUserID(username)
             if not target_user_id or target_user_id[0] == session.user_id:
-                handler.message = 'Ошибка: неверный пользователь'
-                return handler.response
+                return handler.make_response(message='Ошибка: неверный пользователь')
 
             duration = {'days': message.get('days'), 
                         'hours': message.get('hours'), 
@@ -324,7 +301,7 @@ def shared():
 
             if all(x == "" for x in duration.values()):
                 db.addAccountShare(session.user_id, target_user_id[0], None, datetime.datetime.now())
-                return handler.response
+                return handler.make_response(success=True)
 
             try:
                 for k, v in duration.items():
@@ -337,28 +314,24 @@ def shared():
                 duration = datetime.timedelta(**duration)
                 assert duration.total_seconds() <= 864276039
             except Exception:
-                handler.message = 'Ошибка: неверная длительность раздачи'
-                return handler.response
+                return handler.make_response(message='Ошибка: неверная длительность раздачи')
 
             db.addAccountShare(session.user_id, target_user_id[0], duration, datetime.datetime.now())
-            return handler.response
+            return handler.make_response(success=True)
         if act == 'del':
             target_user_id = message.get('target')
             try:
                 target_user_id = int(target_user_id)
             except Exception:
-                handler.message = 'Ошибка: ID пользователя должен быть типа int'
-                return handler.response
+                return handler.make_response(message='Ошибка: ID пользователя должен быть типа int')
 
             shareinfo = db.verifyAccountShare(session.user_id, target_user_id)
             if not shareinfo:
-                handler.message = 'Ошибка: раздача не найдена'
-                return handler.response
+                return handler.make_response(message='Ошибка: раздача не найдена')
 
             db.deleteAccountShare(session.user_id, target_user_id)
-            return handler.response
-    handler.message = 'Ошибка: требуется авторизация'
-    return handler.response
+            return handler.make_response()
+    return handler.make_response(message='Ошибка: требуется авторизация')
 
 # Production
 

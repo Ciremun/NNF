@@ -49,33 +49,26 @@ class FormHandler():
         self.redirect_url = redirect_url
         self.flash_type = flash_type
         self.response_type = response_type
-        self.message = None
-        self.cookie = None
 
-    @property
-    def response(self):
+    def make_response(self, **data):
         if self.response_type == ResponseType.JSON:
-            response_data = {'status': 200}
-            if self.message:
-                response_data['message'] = self.message
-            response_data = jsonify(response_data)
+            response_data = jsonify(**data)
         elif self.response_type == ResponseType.HTTP:
-            if self.message:
-                flash(self.message, self.flash_type)
+            if data.get('message'):
+                flash(data['message'], self.flash_type)
             response_data = redirect(self.redirect_url)
         else:
             raise ResponseTypeError('Unknown ResponseType')
         response = make_response(response_data)
-        if self.cookie:
-            response.set_cookie(self.cookie.key, self.cookie.value, max_age=2620000)
+        if data.get('cookie'):
+            response.set_cookie(data['cookie'].key, data['cookie'].value, max_age=2620000)
         return response
 
     def get_form(self, request: request) -> Optional[dict]:
         data = request.form
-        self.response_type = ResponseType.HTTP
         if not data:
             data = request.get_json()
-            self.response_type = ResponseType.JSON
             if not data:
                 abort(400)
+            self.response_type = ResponseType.JSON
         return data
