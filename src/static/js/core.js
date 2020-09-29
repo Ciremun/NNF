@@ -67,9 +67,8 @@ async function login() {
     for (str of pair)
         for (letter of str) {
             let code = letter.charCodeAt();
-            if (!between(code, 48, 57) && !between(code, 65, 90) && !between(code, 97, 122)) {
+            if (!between(code, 48, 57) && !between(code, 65, 90) && !between(code, 97, 122))
                 return showAlert('Ошибка: только английские символы и числа');
-            }
         }
     let response = await postData('/login', {displayname: pair[0], password: pair[1]});
     if (response.success) window.location.reload();
@@ -81,11 +80,15 @@ if (loginButton !== null) loginButton.onclick = () => userfield.focus();
 // account share
 
 function addShared() {
-    let shareUsername = document.getElementById('add-shared-username'),
-        shareDays     = document.getElementById('add-shared-days'),
-        shareHours    = document.getElementById('add-shared-hours'),
-        shareMinutes  = document.getElementById('add-shared-minutes'),
-        shareSeconds  = document.getElementById('add-shared-seconds');
-    // @@@ validate addShared form
+    let duration = [
+        +document.getElementById('add-shared-days').value,
+        +document.getElementById('add-shared-hours').value,
+        +document.getElementById('add-shared-minutes').value,
+        +document.getElementById('add-shared-seconds').value
+    ];
+    if (duration.some(x => isNaN(x) || (duration.reduce((a, b) => a + b, 0)) <= 0)) {
+        showAlert('Ошибка: неверная длительность раздачи');
+        return false;
+    }
     return true;
 }
