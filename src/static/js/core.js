@@ -86,7 +86,7 @@ function addShared() {
         +document.getElementById('add-shared-minutes').value,
         +document.getElementById('add-shared-seconds').value
     ];
-    if (duration.some(x => isNaN(x) || (duration.reduce((a, b) => a + b, 0)) <= 0)) {
+    if (duration.some(x => isNaN(x)) || (duration.reduce((a, b) => a + b, 0)) <= 0) {
         showAlert('Ошибка: неверная длительность раздачи');
         return false;
     }
