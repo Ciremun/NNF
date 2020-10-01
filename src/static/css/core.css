@@ -13,6 +13,7 @@ header {
 body {
     background-color: #191b1c;
     overflow-x: hidden;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 a {
@@ -42,6 +43,7 @@ label.logo {
     user-select: none;
     transition: none;
     background: #810040;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 nav ul {
@@ -64,7 +66,7 @@ nav li a, nav li input, nav li label {
 }
 
 nav li input, nav li label {
-    font-family: 'Times New Roman', Times, serif;
+    font-family: Arial, Helvetica, sans-serif;
     background: none;
     border: none;
     cursor: pointer;
@@ -85,10 +87,11 @@ nav a:hover, nav input:hover, nav li label:hover {
     color: white;
     float: right;
     line-height: 55px;
-    margin-right: 40px;
+    margin-right: 20px;
     cursor: pointer;
     display: none;
     user-select: none;
+    font-family: 'Times New Roman', Times, serif;
 }
 
 #check, #showmodal, #closemodal {
@@ -255,5 +258,8 @@ input {
     }
     #check:checked~ul {
         left: 0;
+    }
+    .alert {
+        width: 90vw;
     }
 }

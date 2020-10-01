@@ -71,7 +71,7 @@ button {
     position: absolute;
     background-color: #1d1f20;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    padding: 12px 16px;
+    padding: 10px 10px;
     z-index: 1;
     text-align: left;
     min-width: 220px;
@@ -210,32 +210,34 @@ button {
  }
 
  /* Mobile */
+ 
  @media (max-width: 858px) {
     .category_label {
-        font-size: 4em;
+        font-size: 1.6em;
     }
 
     .item, .complexitem {
-        width: 95vw;
-        padding: 40px;
+        width: 35vw;
+        padding: 5px;
+        margin: 5px;
     }
 
     .item img, .complexitem img {
-        width: 300px;
-        height: 300px;
+        width: 90px;
+        height: 90px;
     }
 
     .item_title {
-        font-size: 3em;
-    }
-
-    .item_tooltip_hover_content {
         font-size: 0.7em;
     }
 
+    .item_tooltip_hover_content {
+        font-size: 1.2em;
+    }
+
     .menu_item_img {
-        width: 300px;
-        height: 300px;
+        width: 90px;
+        height: 90px;
         position: relative;
         border-radius: 50%;
         margin: 10px auto;
@@ -243,26 +245,30 @@ button {
 
     .complex_category, .menu_category {
         width: 100vw;
-        margin: auto;
     }
 
     .category_head {
-        width: 95vw;
+        width: 100vw;
         align-items: center;
-        justify-content: center;
     }
 
     .circle {
-        width: 60px;
-        height: 60px;
-        margin: auto 0 auto 20px;
+        width: 30px;
+        height: 30px;
+        margin: auto 0 auto 10px;
     }
 
-    .rotate360 {
-        font-size: 70px;
+    .rotate360 button {
+        font-size: 30px;
     }
 
-    .heart {
-        font-size: 45px;
+    .heart button {
+        font-size: 20px;
     }
- }
+
+    .item .circle {
+        width: 30px;
+        height: 30px;
+        margin: auto 0 auto 12px;
+    }
+}

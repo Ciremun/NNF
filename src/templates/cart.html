@@ -46,7 +46,7 @@
                     <form action="/cart" method="POST" onsubmit="event.preventDefault();">
                         <input type="hidden" name="productID" value="{{ complexInfo['ID'] }}">
                         <input type="submit" name="act" value="cartupd" style="display: none;">
-                        <input data-itemid="{{ complexInfo['ID'] }}" type="text" name="amount" value="{{ complexInfo['amount'] }}" onkeyup="setCartAmountTypingTimer(this)" onkeydown="clearTypingTimer()">
+                        <input data-itemid="{{ complexInfo['ID'] }}" type="text" name="amount" value="{{ complexInfo['amount'] }}" maxlength="2" onkeyup="setCartAmountTypingTimer(this)" onkeydown="clearTypingTimer()">
                     </form>
                     </td>
                 <td class="cartItemPrice">{{ complexInfo['price'] *  complexInfo['amount']  }} &#x20BD;</td>
@@ -70,7 +70,7 @@
                     <form action="/cart" method="POST" onsubmit="event.preventDefault();">
                         <input type="hidden" name="productID" value="{{ food.ID }}">
                         <input type="submit" name="act" value="cartupd" style="display: none;">
-                        <input data-itemid="{{ food.ID }}" type="text" name="amount" value="{{ food.amount }}" onkeyup="setCartAmountTypingTimer(this)" onkeydown="clearTypingTimer()">
+                        <input data-itemid="{{ food.ID }}" type="text" name="amount" value="{{ food.amount }}" maxlength="2" onkeyup="setCartAmountTypingTimer(this)" onkeydown="clearTypingTimer()">
                     </form>
                 </td>
                 <td class="cartItemPrice">{{ food.price * food.amount }} &#x20BD;</td>
