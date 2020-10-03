@@ -168,7 +168,8 @@ def cart():
                 user_cart_items = db.getUserCartItems(username)
                 if not user_cart_items:
                     return handler.make_response(message='Ошибка: корзина пуста')
-                order_id = db.addOrder(session.user_id, datetime.datetime.now())
+                order_sum = db.getUserCartSum(username)
+                order_id = db.addOrder(session.user_id, datetime.datetime.now(), order_sum)
                 order_products = [(order_id, x[0], x[1], x[2], x[4]) for x in user_cart_items]
                 db.addOrderProducts(order_products)
                 db.clearUserCart(cart_id[0])
@@ -257,13 +258,13 @@ def orders_():
         orderProducts = db.getOrderProducts(session.user_id)
         orders = {}
         for op in orderProducts:
-            title, price, link, amount, order_id, order_date = \
-                op[0], op[1], op[2], op[3], op[4], op[5]
+            title, price, link, amount, order_id, order_date, order_sum = \
+                op[0], op[1], op[2], op[3], op[4], op[5], op[6]
             if not orders.get(order_id):
                 orders[order_id] = {
                     'products': [],
                     'order_date': order_date,
-                    'order_price': sum([i[1] * i[3] for i in orderProducts if i[4] == order_id])
+                    'order_price': order_sum
                 }
             orders[order_id]['products'].append(ShortFoodItem(title, price, link, amount))
         userinfo = {

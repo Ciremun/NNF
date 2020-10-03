@@ -22,9 +22,9 @@ def postgreInit():
     cursor.execute(open('src/sql/functions.sql').read())
 
 @acquireLock
-def addOrder(user_id: int, date: datetime.datetime):
-    sql = "INSERT INTO orders(user_id, date) VALUES (%s, %s) RETURNING id"
-    cursor.execute(sql, (user_id, date))
+def addOrder(user_id: int, date: datetime.datetime, order_sum: int):
+    sql = "INSERT INTO orders(user_id, date, order_sum) VALUES (%s, %s, %s) RETURNING id"
+    cursor.execute(sql, (user_id, date, order_sum))
     return cursor.fetchone()
 
 @acquireLock
@@ -38,7 +38,7 @@ orderproduct(order_id, title, price, link, amount) VALUES (%s, %s, %s, %s, %s)\
 @acquireLock
 def getOrderProducts(user_id: int):
     sql = """\
-SELECT op.title, op.price, op.link, op.amount, o.id, o.date \
+SELECT op.title, op.price, op.link, op.amount, o.id, o.date, o.order_sum \
 FROM orders o JOIN orderproduct op on op.order_id = o.id WHERE \
 o.user_id = %s ORDER BY o.date"""
     cursor.execute(sql, (user_id,))
