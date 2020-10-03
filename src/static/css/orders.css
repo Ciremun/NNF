@@ -18,3 +18,11 @@ table, th, td {
     font-size: 25px;
     padding: 0px 0px 10px 20px;
 }
+
+.order_item a {
+    transition: .4s;
+}
+
+.order_item a:hover {
+    color: #e70073;
+}

@@ -80,13 +80,13 @@
   border: none;
   outline: none;
   cursor: pointer;
+  transition: .4s;
 }
 
 .add-shared-submit input:hover, 
 .delete-shared button:hover,
 .available-user button:hover {
   color: #e70073;
-  transition: .4s;
 }
 
 .account-share-title {
