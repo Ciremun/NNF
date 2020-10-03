@@ -123,7 +123,7 @@ def logout():
     session = getSession(SID)
     if session and isinstance(SID, str):
         db.deleteSession(SID)
-        response.set_cookie('SID', '', expires=0)
+        response.set_cookie('SID', '', expires=0, secure=config['https'])
         logger.info(f'logout user {session.username}')
     return response
 
@@ -260,7 +260,11 @@ def orders_():
             title, price, link, amount, order_id, order_date = \
                 op[0], op[1], op[2], op[3], op[4], op[5]
             if not orders.get(order_id):
-                orders[order_id] = {'products': [], 'order_date': order_date}
+                orders[order_id] = {
+                    'products': [],
+                    'order_date': order_date,
+                    'order_price': sum([i[1] * i[3] for i in orderProducts if i[4] == order_id])
+                }
             orders[order_id]['products'].append(ShortFoodItem(title, price, link, amount))
         userinfo = {
             'auth': True,

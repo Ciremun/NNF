@@ -14,10 +14,10 @@
             <label for="check" class="checkbtn">
                 <div>&equiv;</div>
             </label>
-            <a href="/"><label class="logo">NNF</label></a>
+            <a href="/menu"><label class="logo">NNF</label></a>
             <ul>
                 {% if userinfo.get('auth') %}
-                    <li><a href="/menu">Меню</a></li>
+                    <li><a href="/orders">Заказы</a></li>
                     <li><a href="/cart">Корзина</a></li>
                     <li><a href="/u/{{ userinfo.get('username') }}">{{ userinfo.get('displayname') }}</a></li>
                     <li>

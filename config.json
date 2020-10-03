@@ -1,3 +1,4 @@
 {
-    "flaskLogging": true
+    "flaskLogging": true,
+    "https": false
 }

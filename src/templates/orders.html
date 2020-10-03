@@ -5,27 +5,42 @@
 {% endblock %}
 
 {% block title %}
-    {{ userinfo.get('displayname') }}
+    {{ userinfo.get('displayname') }} - Заказы
 {% endblock %}
 
 {% block content %}
+<section class="orders_page">
     {% if userinfo.get('orders') %}
-        {% for order_id, order_info in userinfo['orders'].items() %}
-            <div class="order">
-                {% for p in order_info.get('products') %}
-                    <div class="order_item">
-                        {{ p.title }}
-                        {{ p.price }}
-                        {{ p.link }}
-                        {{ p.amount }}
-                    </div>
-                {% endfor %}
-                <div class="order_date">
+        <table>
+            <tr>
+                <th>Товар</th>
+                <th>Сумма</th>
+                <th>Дата</th>
+            </tr>
+            {% for order_id, order_info in userinfo['orders'].items() %}
+            <tr class="order">
+                <td>
+                    {% for p in order_info.get('products') %}
+                        <div class="order_item">
+                            {% if p.link != 'None' %}
+                                <a href="{{ p.link }}">{{ p.title }} {{ p.price }}&#x20BD; {{ p.amount }} шт.</a>
+                            {% else %}
+                                {{ p.title }} {{ p.price }}&#x20BD; {{ p.amount }} шт.
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </td>
+                <td class="order_price">
+                    {{ order_info.get('order_price') }}&#x20BD;
+                </td>
+                <td class="order_date">
                     {{ order_info.get('order_date') }}
-                </div>
-            </div>
-        {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
     {% else %}
-        Список заказов пуст
+        <div class="orders_empty">Список заказов пуст</div>
     {% endif %}
+</section>
 {% endblock %}

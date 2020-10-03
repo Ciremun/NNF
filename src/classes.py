@@ -4,6 +4,8 @@ import datetime
 
 from flask import flash, redirect, make_response, abort, jsonify, request
 
+from .config import config
+
 class FoodItem:
 
     def __init__(self, title, weight, calories, price, link, image_link, ID=None):
@@ -61,7 +63,7 @@ class FormHandler():
             raise ResponseTypeError('Unknown ResponseType')
         response = make_response(response_data)
         if data.get('cookie'):
-            response.set_cookie(data['cookie'].key, data['cookie'].value, max_age=2620000)
+            response.set_cookie(data['cookie'].key, data['cookie'].value, max_age=2620000, secure=config['https'])
         return response
 
     def get_form(self, request: request) -> Optional[dict]:

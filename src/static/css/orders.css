@@ -1,0 +1,20 @@
+table, th, td {
+    border-bottom: 1.5px solid #aaa;
+    border-collapse: collapse;
+    padding: 20px;
+  }
+
+.orders_page {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    color: #dfdfdf;
+}
+
+.order {
+    min-height: 50px;
+}
+
+.orders_empty {
+    font-size: 25px;
+    padding: 0px 0px 10px 20px;
+}
