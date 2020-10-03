@@ -81,12 +81,15 @@ if (loginButton !== null) loginButton.onclick = () => userfield.focus();
 
 function addShared() {
     let duration = [
-        +document.getElementById('add-shared-days').value,
-        +document.getElementById('add-shared-hours').value,
-        +document.getElementById('add-shared-minutes').value,
-        +document.getElementById('add-shared-seconds').value
+        document.getElementById('add-shared-days').value,
+        document.getElementById('add-shared-hours').value,
+        document.getElementById('add-shared-minutes').value,
+        document.getElementById('add-shared-seconds').value
     ];
-    if (duration.some(x => isNaN(x)) || (duration.reduce((a, b) => a + b, 0)) <= 0) {
+    if (duration.every(x => x === ""))
+        return true;
+    duration = duration.map(x => +x);
+    if (duration.some(x => isNaN(x)) || duration.reduce((a, b) => a + b, 0) <= 0) {
         showAlert('Ошибка: неверная длительность раздачи');
         return false;
     }

@@ -80,6 +80,7 @@
   border: none;
   outline: none;
   cursor: pointer;
+  background-color: #191b1c;
   transition: .4s;
 }
 
