@@ -2,6 +2,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import logging
 import traceback
+import threading
 import sys
 
 
@@ -19,3 +20,4 @@ def uncaughtExceptionHandler(etype, value, tb):
     logger.error(f"Uncaught exception: {formatted_exception}")
 
 sys.excepthook = uncaughtExceptionHandler
+threading.excepthook = uncaughtExceptionHandler

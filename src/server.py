@@ -19,9 +19,11 @@ from .utils import (seconds_convert, get_catering, clearDB, dailyMenuUpdate,
 catering = get_catering()
 
 monthlyClearDBThread = Thread(target=clearDB)
+monthlyClearDBThread.daemon = True
 monthlyClearDBThread.start()
 
 dailyMenuUpdateThread = Thread(target=dailyMenuUpdate)
+dailyMenuUpdateThread.daemon = True
 dailyMenuUpdateThread.start()
 
 app = Flask(__name__)
@@ -121,7 +123,7 @@ def logout():
     response = make_response(redirect('/'))
     SID = request.cookies.get('SID')
     session = getSession(SID)
-    if session and isinstance(SID, str):
+    if session:
         db.deleteSession(SID)
         response.set_cookie('SID', '', expires=0, secure=config['https'])
         logger.info(f'logout user {session.username}')
