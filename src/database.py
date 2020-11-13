@@ -167,7 +167,7 @@ def getSessions():
 @acquireLock
 def getSession(SID: str):
     sql = """\
-SELECT u.username, u.displayname, u.usertype, s.date, s.user_id \
+SELECT u.username, u.displayname, u.usertype, s.date, s.user_id, s.account_share_id \
 FROM sessions s JOIN users u ON u.id = s.user_id WHERE sid = %s\
 """
     cursor.execute(sql, (SID,))

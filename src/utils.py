@@ -92,7 +92,7 @@ def getSession(SID: str) -> Optional[Session]:
         return
     s = db.getSession(SID)
     if s:
-        session = Session(SID, s[0], s[1], s[2], s[3], s[4])
+        session = Session(SID, s[0], s[1], s[2], s[3], s[4], s[5])
         updateUserSession(session)
         return session
 

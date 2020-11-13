@@ -33,6 +33,7 @@ class Session(NamedTuple):
     usertype: str
     date: datetime.datetime
     user_id: int
+    account_share_id: int
 
 class Cookie(NamedTuple):
     key: str

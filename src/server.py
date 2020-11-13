@@ -41,7 +41,7 @@ def index():
     return redirect('/menu')
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     """
     Login page does signup and login (username+password),
@@ -50,6 +50,11 @@ def login():
     Or register user: hash password, add user to database.
     Create cookie and session, refresh page or redirect to menu.
     """
+    if request.method == 'GET':
+        SID = request.cookies.get('SID')
+        session = getSession(SID)
+        redirect_url = f'/u/{session.username}' if session else '/'
+        return redirect(redirect_url)
     redirect_url = request.referrer or '/'
     handler = FormHandler(redirect_url, flash_type='login')
     message = handler.get_form(request)
@@ -282,14 +287,20 @@ def orders_():
     return redirect('/menu')
 
 
-@app.route('/shared', methods=['POST'])
+@app.route('/shared', methods=['GET', 'POST'])
 def shared():
     SID = request.cookies.get('SID')
     session = getSession(SID)
+    if request.method == 'GET':
+        redirect_url = f'/u/{session.username}' if session else '/'
+        return redirect(redirect_url)
     redirect_url = request.referrer or '/'
     handler = FormHandler(redirect_url, flash_type='accountShare')
     message = handler.get_form(request)
     if session:
+
+        if session.account_share_id is not None:
+            return handler.make_response(message='Ошибка: действие запрещено в режиме раздачи')
 
         act = message.get('act')
         if all(act != x for x in ['add', 'del']):
@@ -299,6 +310,8 @@ def shared():
             username = message.get('username')
             if not username or not isinstance(username, str):
                 return handler.make_response(message='Ошибка: неверное имя пользователя')
+
+            username = username.lower()
 
             target_user_id = db.getUserID(username)
             if not target_user_id or target_user_id[0] == session.user_id:
