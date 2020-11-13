@@ -45,7 +45,7 @@ class ResponseType(Enum):
 class ResponseTypeError(Exception):
     pass
 
-class FormHandler():
+class FormHandler:
 
     def __init__(self, redirect_url=None, flash_type=None, response_type=ResponseType.HTTP):
         self.redirect_url = redirect_url
@@ -60,7 +60,7 @@ class FormHandler():
                 flash(data['message'], self.flash_type)
             response_data = redirect(self.redirect_url)
         else:
-            raise ResponseTypeError('Unknown ResponseType')
+            raise ResponseTypeError(f'Unknown ResponseType: {self.response_type}')
         response = make_response(response_data)
         if data.get('cookie'):
             response.set_cookie(data['cookie'].key, data['cookie'].value, max_age=2620000, secure=config['https'])

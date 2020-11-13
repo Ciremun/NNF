@@ -1,33 +1,40 @@
 import logging
 
 import requests
+import datetime
 import pandas as pd
 from bs4 import BeautifulSoup
 
+import src.database as db
 from .classes import FoodItem, ShortFoodItem
+from .log import logger
 
 namnyamURL = "https://www.nam-nyam.ru/catering/"
 
-# def createExcel():
-#     try:
-#         dailycomplex, dailyMenu = getDailyMenu(requests.get(namnyamURL).text)
-#         dailyMenu = {k: [f'{x.title}, {x.weight}, {x.calories}, {x.price}' for x in v] for k, v in dailyMenu.items()}
+def createExcel() -> str:
+    userIDs = [x[0] for x in db.getUserIDs()]
+    orders = {db.getUserByID(user_id)[0]: [" ".join(str(x) for x in i) for i in db.getOrderProducts(user_id)] for user_id in userIDs}
+    columns = [pd.Series(foods, name=mealType) for mealType, foods in orders.items() if foods]
 
-#         columns = [pd.Series(foods, name=mealType) for mealType, foods in dailyMenu.items()]
+    if not columns:
+        return None
 
-#         writer = pd.ExcelWriter("result.xlsx", engine='xlsxwriter')
+    now = datetime.datetime.now()
+    filename = f'{now.year}-{now.month}-{now.day}-{now.minute}-{now.second}.xlsx'
+    path = f'src/static/xlsx/{filename}'
+    writer = pd.ExcelWriter(path, engine='xlsxwriter')
 
-#         result = pd.concat(columns, axis=1)
-#         result.to_excel(writer, sheet_name='Main', index=False)
+    result = pd.concat(columns, axis=1)
+    result.to_excel(writer, sheet_name='Main', index=False)
 
-#         worksheet = writer.sheets['Main']
-#         worksheet.set_column('A:D', 55, None)
+    worksheet = writer.sheets['Main']
+    worksheet.set_column('A:D', 55, None)
 
-#         writer.save()
+    writer.save()
+    print('file created')
 
-#         print('.xlsx created')
-#     except Exception:
-#         logging.exception('e')
+    logger.info('.xlsx created')
+    return filename
 
 def getDailyMenu(url: str):
 

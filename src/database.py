@@ -153,6 +153,12 @@ def getUserID(username: str):
     return cursor.fetchone()
 
 @acquireLock
+def getUserIDs():
+    sql = "SELECT id FROM users"
+    cursor.execute(sql)
+    return cursor.fetchall()
+
+@acquireLock
 def getSessions():
     sql = "SELECT id, date FROM sessions"
     cursor.execute(sql)

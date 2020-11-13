@@ -1,20 +1,26 @@
+import datetime
 import json
 import time
-import datetime
+import os
 from threading import Thread
 from typing import Optional
+from pathlib import Path
 
-from flask import Flask, render_template, request, redirect, make_response
-from gevent.pywsgi import WSGIServer
 import requests
+from flask import (Flask, render_template, request, redirect, 
+make_response, send_from_directory)
+from gevent.pywsgi import WSGIServer
 
 import src.database as db
 from .salt import hash_password, verify_password
+from src.parser import createExcel
 from .config import config, keys
 from .log import logger
 from .classes import ShortFoodItem, FormHandler, Cookie
-from .utils import (seconds_convert, get_catering, clearDB, dailyMenuUpdate, 
-    getSession, getSessionAccountShare, getUserCart)
+from .utils import (seconds_convert, get_catering, clearDB, 
+dailyMenuUpdate, getSession, getSessionAccountShare, getUserCart)
+
+Path("src/static/xlsx/").mkdir(exist_ok=True)
 
 catering = get_catering()
 
@@ -28,7 +34,7 @@ dailyMenuUpdateThread.start()
 
 app = Flask(__name__)
 app.secret_key = keys['sessionSecret']
-
+app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'xlsx')
 
 @app.route('/')
 def index():
@@ -151,26 +157,24 @@ def userprofile(username):
 def cart():
     SID = request.cookies.get("SID")
     session = getSession(SID)
-    redirect_url = request.referrer or '/'
-    handler = FormHandler(redirect_url, flash_type='cart')
-    if session:
-        username = session.username
-
-        if request.method == 'POST':
-            message = handler.get_form(request)
+    if request.method == 'POST':
+        redirect_url = request.referrer or '/'
+        handler = FormHandler(redirect_url, flash_type='cart')
+        message = handler.get_form(request)
+        if session:
             act = message.get('act')
             if all(act != x for x in ['cartadd', 'cartupd', 'cartcl', 'cartsbm', 'fav']):
                 return handler.make_response(message='Ошибка: неверное действие')
 
-            cart_id = db.getUserCartID(username)
+            cart_id = db.getUserCartID(session.username)
             if not cart_id:
                 return handler.make_response(message='Ошибка: корзина не найдена')
 
             if act == 'cartsbm':
-                user_cart_items = db.getUserCartItems(username)
+                user_cart_items = db.getUserCartItems(session.username)
                 if not user_cart_items:
                     return handler.make_response(message='Ошибка: корзина пуста')
-                order_sum = db.getUserCartSum(username)
+                order_sum = db.getUserCartSum(session.username)
                 order_id = db.addOrder(session.user_id, datetime.datetime.now(), order_sum)
                 order_products = [(order_id, x[0], x[1], x[2], x[4]) for x in user_cart_items]
                 db.addOrderProducts(order_products)
@@ -215,25 +219,24 @@ def cart():
                 db.updateCartProduct(cart_id[0], product_id[0], amount)
                 return handler.make_response(success=True)
         else:
-            userinfo = db.getUser(username)
-            cart = getUserCart(username)
+            return handler.make_response(message='Ошибка: требуется авторизация')
+    else:
+        if session:
+            cart = getUserCart(session.username)
             if cart:
-                cartSum = db.getUserCartSum(username)
+                cartSum = db.getUserCartSum(session.username)
                 cart['sum'] = cartSum[0]
 
             userinfo = {
                 'auth': True, 
-                'username': username, 
-                'displayname': userinfo[0], 
+                'username': session.username, 
+                'displayname': session.displayname, 
                 'cart': cart
             }
 
             return render_template('cart.html', userinfo=userinfo)
-    if request.method == 'POST':
-        message = handler.get_form(request)
-        return handler.make_response(message='Ошибка: требуется авторизация')
-    else:
-        return redirect('/')
+        else:
+            return redirect('/')
 
 
 @app.route('/menu')
@@ -339,6 +342,36 @@ def shared():
             db.deleteAccountShare(session.user_id, target_user_id)
             return handler.make_response()
     return handler.make_response(message='Ошибка: требуется авторизация')
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    SID = request.cookies.get('SID')
+    session = getSession(SID)
+    if request.method == 'POST':
+        redirect_url = request.referrer or '/'
+        handler = FormHandler(redirect_url, flash_type='admin')
+        message = handler.get_form(request)
+        if session and session.usertype == 'admin':
+            if message.get('act') == 'createExcel':
+                filename = createExcel()
+                if not filename:
+                    return handler.make_response(message='Ошибка: список заказов пуст')
+                return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+            return handler.make_response(message='Ошибка: неизвестное действие')
+        else:
+            return handler.make_response(message='Ошибка: требуется авторизация')
+    else:
+        if session and session.usertype == 'admin':
+            userinfo = {
+                'auth': True,
+                'username': session.username,
+                'displayname': session.displayname
+            }
+            return render_template('admin.html', userinfo=userinfo)
+        else:
+            return redirect('/menu')
+        
 
 # Production
 

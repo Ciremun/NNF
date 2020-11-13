@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='css/admin.css') }}">
+{% endblock %}
+
+{% block title %}
+    Панель управления
+{% endblock %}
+
+{% block content %}
+{% with errors = get_flashed_messages(category_filter=["admin"]) %}
+    {% if errors %}
+        <div class="alert">
+            {% for msg in errors %}
+                <div class="alert_content">
+                    {{ msg }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+<form action="/admin" method="POST">
+    <input type="hidden" name="act" value="createExcel">
+    <button type="submit">Создать Excel Файл</button>
+</form>
+{% endblock %}
