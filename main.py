@@ -5,4 +5,4 @@ if __name__ == '__main__':
 # TODO(#1): rework adaptive
 # TODO(#2): admin board: user roles management
 # TODO(#3): admin board: lock orders
-# TODO: weekly menu, get menu by date
+# TODO(#4): weekly menu, get menu by date
