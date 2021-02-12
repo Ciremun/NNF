@@ -6,6 +6,7 @@ import psycopg2
 
 from .config import keys
 
+# TODO(#5): move functions.sql here
 
 def acquireLock(func):
     def wrapper(*args, **kwargs):
