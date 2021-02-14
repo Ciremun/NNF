@@ -19,7 +19,7 @@ def acquireLock(func):
 
 @acquireLock
 def postgreInit():
-    cursor.execute(open('src/sql/tables.sql').read())
+    cursor.execute(open('src/tables.sql').read())
 
 
 @acquireLock
