@@ -76,7 +76,7 @@
 .add-shared-submit input, 
 .available-user button, 
 .delete-shared button {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Ubuntu Mono', monospace;
   border: none;
   outline: none;
   cursor: pointer;
@@ -118,7 +118,7 @@ button {
   border: none;
   background: inherit;
   outline: none;
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Ubuntu Mono', monospace;
   font-size: 25px;
   color: #fff;
 }

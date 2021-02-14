@@ -6,7 +6,7 @@ table, th, td {
 }
 
 button {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Ubuntu Mono', monospace;
   border: none;
   background: none;
   outline: none;
@@ -23,7 +23,7 @@ button {
   height: 70px;
   background-color: #810040;
   text-align: center;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'Ubuntu Mono', monospace;
   font-size: 25px;
   border-radius: 5px;
   transition: .4s;
@@ -44,6 +44,7 @@ button {
 
 .cartInfo, .cartAct button {
   font-size: 25px;
+  font-family: 'Ubuntu Mono', monospace;
   padding: 0 0 10px 20px;
 }
 

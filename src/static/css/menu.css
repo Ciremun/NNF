@@ -39,7 +39,7 @@ button {
 }
 
 .item, .complexitem {
-    font-family: Arial;
+    font-family: 'Ubuntu Mono', monospace;
     border: 2px solid #bd6508;
     border-radius: 5px;
     background-color: rgba(189, 101, 8, 0.5);
@@ -79,7 +79,7 @@ button {
 
 .category_label {
     color: #e8e6e3;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Ubuntu Mono', monospace;
     font-size: 2em;
     padding-left: 0.5em;
 }
@@ -122,7 +122,7 @@ button {
 .rotate360 button {
     font-size: 35px;
     font-weight: bold;
-    font-family: Courier;
+    font-family: 'Ubuntu Mono', monospace;
     color: white;
 }
 

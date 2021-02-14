@@ -13,7 +13,7 @@ header {
 body {
     background-color: #191b1c;
     overflow-x: hidden;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Ubuntu Mono', monospace;
 }
 
 a {
@@ -59,14 +59,14 @@ nav li {
 
 nav li a, nav li input, nav li label {
     color: white;
-    font-size: 17px;
+    font-size: 19px;
     padding: 7px 13px;
     border-radius: 3px;
     text-transform: uppercase;
 }
 
 nav li input, nav li label {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: 'Ubuntu Mono', monospace;
     background: none;
     border: none;
     cursor: pointer;
@@ -91,7 +91,7 @@ nav a:hover, nav input:hover, nav li label:hover {
     cursor: pointer;
     display: none;
     user-select: none;
-    font-family: 'Times New Roman', Times, serif;
+    font-family: 'Ubuntu Mono', monospace;
 }
 
 #check, #showmodal, #closemodal {
@@ -165,7 +165,7 @@ textarea:focus, input:focus{
 
 input {
     color: #fff;
-    font-family: 'Consolas';
+    font-family: 'Ubuntu Mono', monospace;
     background-color: #1c1c1c;
 }
 
@@ -192,7 +192,7 @@ input {
     z-index: 4;
     margin: 0 50%;
     transform: translateX(-50%);
-    font-family: 'Courier New', Courier, monospace;
+    font-family: 'Ubuntu Mono', monospace;
     font-weight: bold;
     color: #f3f3f3;
     cursor: default;
