@@ -1,22 +1,23 @@
 # nam-nyam-foods
-nam-nyam parser, office food management  
+
+nam-nyam.ru parser, office food management  
 
 ## Install
 
 [Python](https://python.org/)  
 
-### config.json
+### env
 
-`flaskLogging` (boolean): server logs to console  
-`dailyMenuUpdateInterval` (numeric): menu update interval in seconds  
+|      Key       |  Type |            Value            |
+|----------------|-------|-----------------------------|
+| `SECRET_KEY`   | `str` | session ID hashing password |
+| `DATABASE_URL` | `str` | postgres [connection URI](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING) `postgres://{user}:{password}@{hostname}:{port}/{database-name}` |
+| `FLASK_PORT`   | `int` | flask app port |
+| `FLASK_HOST`   | `str` | flask app host |
 
-### keys.json
+### src/config.py
 
-`sessionSecret` (str): random string for session ID hashing  
-`PostgreDatabase` (str): database name  
-`PostgreUser` (str)  
-`PostgrePassword` (str)  
-`PostgreHost` (str)  
-`PostgrePort` (int/str)  
-`flaskPort` (int/str)  
-`flaskHost` (str)  
+|      Key        |  Type  |            Value            |
+|-----------------|--------|-----------------------------|
+| flaskLogging    | `bool` | server logs?                |
+| https           | `bool` |                             |

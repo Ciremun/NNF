@@ -1,10 +1,9 @@
+import os
 import datetime
 from threading import Lock
 from typing import List, Optional, Tuple
 
 import psycopg2
-
-from .config import keys
 
 
 def acquireLock(func):
@@ -353,10 +352,7 @@ def vacuum():
     cursor.execute("VACUUM")
 
 
-conn = psycopg2.connect(
-    database=keys['PostgreDatabase'], user=keys['PostgreUser'], password=keys['PostgrePassword'],
-    host=keys['PostgreHost'], port=keys['PostgrePort']
-)
+conn = psycopg2.connect(os.environ.get('DATABASE_URL'))
 conn.autocommit = True
 cursor = conn.cursor()
 lock = Lock()

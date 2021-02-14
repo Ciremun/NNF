@@ -12,9 +12,9 @@ from flask import (
     send_from_directory)
 from gevent.pywsgi import WSGIServer
 
+import src.config as cfg
 import src.database as db
 from src.parser import createExcel
-from .config import config, keys
 from .log import logger
 from .classes import ShortFoodItem, FormHandler, Cookie
 from .utils import (
@@ -41,7 +41,7 @@ dailyMenuUpdateThread.daemon = True
 dailyMenuUpdateThread.start()
 
 app = Flask(__name__)
-app.secret_key = keys['sessionSecret']
+app.secret_key = os.environ.get('SECRET_KEY')
 app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'xlsx')
 
 
@@ -90,7 +90,7 @@ def login():
                     db.deleteAccountShare(target_user_id, session.user_id)
                     return handler.make_response(message='Ошибка: раздача устарела')
             asID = shareinfo[2]
-            SID = hash_password(keys['sessionSecret'])
+            SID = hash_password(app.secret_key)
             db.addSession(SID, now, target_user_id, asID)
             logger.info(f'shared login user {target_userinfo[0]}')
             return handler.make_response(cookie=Cookie('SID', SID), success=True)
@@ -118,7 +118,7 @@ def login():
         hashed_pwd = userinfo[1]
         user_id = userinfo[3]
         if verify_password(hashed_pwd, password):
-            SID = hash_password(keys['sessionSecret'])
+            SID = hash_password(app.secret_key)
             db.addSession(SID, datetime.datetime.now(), user_id)
             old_cookie = request.cookies.get('SID')
             if old_cookie:
@@ -130,7 +130,7 @@ def login():
             return handler.make_response(message='Ошибка: неверный пароль')
     else:
         hashed_pwd = hash_password(password)
-        SID = hash_password(keys['sessionSecret'])
+        SID = hash_password(app.secret_key)
         date = datetime.datetime.now()
         user_id = db.addUser(username, displayname, hashed_pwd, 'user', date)
         db.addSession(SID, date, user_id)
@@ -145,7 +145,7 @@ def logout():
     session = getSession(SID)
     if session:
         db.deleteSession(SID)
-        response.set_cookie('SID', '', expires=0, secure=config['https'])
+        response.set_cookie('SID', '', expires=0, secure=cfg.https)
         logger.info(f'logout user {session.username}')
     return response
 
@@ -185,6 +185,8 @@ def cart():
                 return handler.make_response(message='Ошибка: корзина не найдена')
 
             if act == 'cartsbm':
+                if not cfg.users_can_order:
+                    return handler.make_response(message='Ошибка: на данный момент заказы недоступны')
                 user_cart_items = db.getUserCartItems(session.username)
                 if not user_cart_items:
                     return handler.make_response(message='Ошибка: корзина пуста')
@@ -382,11 +384,17 @@ def admin():
         handler = FormHandler(redirect_url, flash_type='admin')
         message = handler.get_form(request)
         if session and session.usertype == 'admin':
-            if message.get('act') == 'createExcel':
+            act = message.get('act')
+            if act == 'createExcel':
                 filename = createExcel()
                 if not filename:
                     return handler.make_response(message='Ошибка: список заказов пуст')
                 return send_from_directory(app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+            elif act == 'toggleOrders':
+                cfg.users_can_order = not cfg.users_can_order
+                return redirect(redirect_url)
+            # TODO: replace act strings with IDs
+            # because string comp is too heavy
             return handler.make_response(message='Ошибка: неизвестное действие')
         else:
             return handler.make_response(message='Ошибка: требуется авторизация')
@@ -395,7 +403,8 @@ def admin():
             userinfo = {
                 'auth': True,
                 'username': session.username,
-                'displayname': session.displayname
+                'displayname': session.displayname,
+                'users_can_order': cfg.users_can_order
             }
             return render_template('admin.html', userinfo=userinfo)
         else:
@@ -404,10 +413,10 @@ def admin():
 
 # Production
 
-# requestLogs = 'default' if config['flaskLogging'] else None
+# requestLogs = 'default' if cfg.flaskLogging else None
 
-# wsgi = WSGIServer((keys['flaskHost'], keys['flaskPort']), app, log=requestLogs, error_log=logger)
+# wsgi = WSGIServer((os.environ.get('FLASK_HOST'), int(os.environ.get('FLASK_PORT'))), app, log=requestLogs, error_log=logger)
 # wsgi.serve_forever()
 
 # Debug.
-app.run(debug=True, host=keys['flaskHost'], port=keys['flaskPort'])
+app.run(debug=True, host=os.environ.get('FLASK_HOST'), port=int(os.environ.get('FLASK_PORT')))

@@ -4,7 +4,7 @@ import datetime
 
 from flask import flash, redirect, make_response, abort, jsonify, request
 
-from .config import config
+import src.config as cfg
 
 
 class FoodItem:
@@ -73,7 +73,7 @@ class FormHandler:
         response = make_response(response_data)
         if data.get('cookie'):
             response.set_cookie(
-                data['cookie'].key, data['cookie'].value, max_age=2620000, secure=config['https'])
+                data['cookie'].key, data['cookie'].value, max_age=2620000, secure=cfg.https)
         return response
 
     def get_form(self, request: request) -> Optional[dict]:

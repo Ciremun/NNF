@@ -24,4 +24,15 @@
     <input type="hidden" name="act" value="createExcel">
     <button type="submit">Создать Excel Файл</button>
 </form>
+<br>
+<form action="/admin" method="POST">
+<input type="hidden" name="act" value="toggleOrders">
+    <button type="submit">
+        {% if userinfo.get('users_can_order') %}
+            Закрыть заказы
+        {% else %}
+            Открыть заказы
+        {% endif %}
+    </button>
+</form>
 {% endblock %}

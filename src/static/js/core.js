@@ -37,7 +37,7 @@ async function cartAction(e, act = null, amount = null) {
     if (amount !== null) data.amount = +amount;
     if (!['cartsbm', 'cartcl'].includes(act)) data.productID = +e.dataset.itemid;
     let response = await postData('/cart', data);
-    if (!['cartadd', 'fav'].includes(act)) window.location.reload();
+    if (!['cartsbm', 'cartadd', 'fav'].includes(act) || (act == 'cartsbm' && !response.message)) window.location.reload();
     if (response.message) showAlert(response.message);
 }
 

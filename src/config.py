@@ -1,4 +1,10 @@
-import json
+from os.path import join, dirname
 
-config = json.load(open('config.json'))
-keys = json.load(open('keys.json'))
+from dotenv import load_dotenv
+
+flaskLogging = True
+https = False
+
+users_can_order = True
+
+load_dotenv(join(dirname(__name__), '.env'))
