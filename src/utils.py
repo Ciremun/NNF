@@ -10,6 +10,7 @@ import src.database as db
 from .log import logger
 from .classes import FoodItem, ShortFoodItem, Session
 
+
 def new_timecode_explicit(days, hours, minutes, seconds, duration):
     if duration < 1:
         return f'{floor(duration * 1000)}мс'
@@ -32,8 +33,10 @@ def seconds_convert(duration):
     duration %= 3600
     minutes = duration // 60
     seconds = duration % 60
-    days, hours, minutes, seconds = [floor(x) for x in [days, hours, minutes, seconds]]
+    days, hours, minutes, seconds = [
+        floor(x) for x in [days, hours, minutes, seconds]]
     return new_timecode_explicit(days, hours, minutes, seconds, init_duration)
+
 
 def clearDB():
     """
@@ -64,6 +67,7 @@ def clearDB():
         logger.debug('clearDB')
         time.sleep(60)
 
+
 def getUserCart(username: str) -> dict:
     cartItems = db.getUserCartItems(username)
     if not cartItems:
@@ -73,19 +77,22 @@ def getUserCart(username: str) -> dict:
     for i in cartItems:
         title, price, link, Type, amount, itemID = i[0], i[1], i[2], i[3], i[4], i[5]
         if Type == 'complex':
-            cart['complex'][title] = {'foods': [ShortFoodItem(x[0], x[1], x[2], ID=x[3]) 
+            cart['complex'][title] = {'foods': [ShortFoodItem(x[0], x[1], x[2], ID=x[3])
                                                 for x in db.getComplexItems(' '.join((title, f'{price} руб.')), 'complexItem')],
                                       'price': price, 'ID': itemID, 'amount': amount}
         elif Type == 'menu':
-            cart['menu'].append(ShortFoodItem(title, price, link, amount=amount, ID=itemID))
+            cart['menu'].append(ShortFoodItem(
+                title, price, link, amount=amount, ID=itemID))
 
     return cart
+
 
 def updateUserSession(session: Session):
     now = datetime.datetime.now()
     if session.date.day < now.day:
         db.updateSessionDate(session.SID, now)
         logger.info(f'update session {session.username}')
+
 
 def getSession(SID: str) -> Optional[Session]:
     if not isinstance(SID, str):
@@ -95,6 +102,7 @@ def getSession(SID: str) -> Optional[Session]:
         session = Session(SID, s[0], s[1], s[2], s[3], s[4], s[5])
         updateUserSession(session)
         return session
+
 
 def get_catering():
     catering = {'complex': {}, 'items': {}}
@@ -109,7 +117,8 @@ def get_catering():
                     v[section]['foods'] = []
                     v[section]['foods'].append(food_item)
                     split_ = section.split(' ')
-                    product_id = db.getProductID(' '.join(split_[:-2]), int(split_[-2:-1][0]), 'complex')
+                    product_id = db.getProductID(
+                        ' '.join(split_[:-2]), int(split_[-2:-1][0]), 'complex')
                     v[section]['ID'] = product_id[0]
                 else:
                     v[section] = []
@@ -122,13 +131,15 @@ def get_catering():
                 v[section].append(food_item)
     return catering
 
+
 def dailyMenuUpdate():
     global catering
 
     if not db.checkDailyMenu():
 
         logger.info('update menu')
-        catering = parser.getDailyMenu(requests.get("https://www.nam-nyam.ru/catering/").text)
+        catering = parser.getDailyMenu(requests.get(
+            "https://www.nam-nyam.ru/catering/").text)
 
         complexProducts = []
         for section in catering['complex'].keys():
@@ -139,12 +150,13 @@ def dailyMenuUpdate():
 
         db.clearDailyMenu()
         date = datetime.datetime.now()
-        db.addDailyMenu([(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'complexItem', date) \
-                            for k, foods in catering['complex'].items() for v in foods] + \
-                                [(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'menu', date) \
-                                    for k, foods in catering['items'].items() for v in foods] + \
-                                        [(p.title, 'None', 'None', p.price, 'None', 'None', 'None', 'complex', date) \
-                                            for p in complexProducts])
+        db.addDailyMenu([(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'complexItem', date)
+                         for k, foods in catering['complex'].items() for v in foods] +
+                        [(v.title, v.weight, v.calories, v.price, v.link, v.image_link, k, 'menu', date)
+                         for k, foods in catering['items'].items() for v in foods] +
+                        [(p.title, 'None', 'None', p.price, 'None', 'None', 'None', 'complex', date)
+                         for p in complexProducts])
+
 
 def getSessionAccountShare(session: Session, userinfo: dict) -> dict:
     account_share = db.getAccountShareByID(session.user_id)
@@ -164,7 +176,7 @@ def getSessionAccountShare(session: Session, userinfo: dict) -> dict:
                     else:
                         seconds_left = (expiration_date - now).total_seconds()
                         duration = seconds_convert(seconds_left)
-                shared_to[target_user] = {'id': target_user_id, 
+                shared_to[target_user] = {'id': target_user_id,
                                           'duration': duration}
             else:
                 available[user] = user_id
@@ -173,4 +185,3 @@ def getSessionAccountShare(session: Session, userinfo: dict) -> dict:
             'shared_to': shared_to
         }
     return userinfo
-    

@@ -6,6 +6,7 @@ from flask import flash, redirect, make_response, abort, jsonify, request
 
 from .config import config
 
+
 class FoodItem:
 
     def __init__(self, title, weight, calories, price, link, image_link, ID=None):
@@ -17,6 +18,7 @@ class FoodItem:
         self.image_link = image_link
         self.ID = ID
 
+
 class ShortFoodItem:
 
     def __init__(self, title, price, link, amount=None, ID=None):
@@ -25,6 +27,7 @@ class ShortFoodItem:
         self.link = link
         self.ID = ID
         self.amount = amount
+
 
 class Session(NamedTuple):
     SID: str
@@ -35,16 +38,20 @@ class Session(NamedTuple):
     user_id: int
     account_share_id: int
 
+
 class Cookie(NamedTuple):
     key: str
     value: str
+
 
 class ResponseType(Enum):
     HTTP = 1
     JSON = 2
 
+
 class ResponseTypeError(Exception):
     pass
+
 
 class FormHandler:
 
@@ -61,10 +68,12 @@ class FormHandler:
                 flash(data['message'], self.flash_type)
             response_data = redirect(self.redirect_url)
         else:
-            raise ResponseTypeError(f'Unknown ResponseType: {self.response_type}')
+            raise ResponseTypeError(
+                f'Unknown ResponseType: {self.response_type}')
         response = make_response(response_data)
         if data.get('cookie'):
-            response.set_cookie(data['cookie'].key, data['cookie'].value, max_age=2620000, secure=config['https'])
+            response.set_cookie(
+                data['cookie'].key, data['cookie'].value, max_age=2620000, secure=config['https'])
         return response
 
     def get_form(self, request: request) -> Optional[dict]:

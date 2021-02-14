@@ -7,8 +7,8 @@ from typing import Optional
 from pathlib import Path
 
 import requests
-from flask import (Flask, render_template, request, redirect, 
-make_response, send_from_directory)
+from flask import (Flask, render_template, request, redirect,
+                   make_response, send_from_directory)
 from gevent.pywsgi import WSGIServer
 
 import src.database as db
@@ -17,8 +17,8 @@ from src.parser import createExcel
 from .config import config, keys
 from .log import logger
 from .classes import ShortFoodItem, FormHandler, Cookie
-from .utils import (seconds_convert, get_catering, clearDB, 
-dailyMenuUpdate, getSession, getSessionAccountShare, getUserCart)
+from .utils import (seconds_convert, get_catering, clearDB,
+                    dailyMenuUpdate, getSession, getSessionAccountShare, getUserCart)
 
 Path("src/static/xlsx/").mkdir(exist_ok=True)
 
@@ -35,6 +35,7 @@ dailyMenuUpdateThread.start()
 app = Flask(__name__)
 app.secret_key = keys['sessionSecret']
 app.config['UPLOAD_FOLDER'] = os.path.join(app.static_folder, 'xlsx')
+
 
 @app.route('/')
 def index():
@@ -148,8 +149,8 @@ def userprofile(username):
     if session and session.username == username.lower():
 
         userinfo = {
-            'auth': True, 
-            'username': session.username, 
+            'auth': True,
+            'username': session.username,
             'displayname': session.displayname
         }
         userinfo = getSessionAccountShare(session, userinfo)
@@ -180,8 +181,10 @@ def cart():
                 if not user_cart_items:
                     return handler.make_response(message='Ошибка: корзина пуста')
                 order_sum = db.getUserCartSum(session.username)
-                order_id = db.addOrder(session.user_id, datetime.datetime.now(), order_sum)
-                order_products = [(order_id, x[0], x[1], x[2], x[4]) for x in user_cart_items]
+                order_id = db.addOrder(
+                    session.user_id, datetime.datetime.now(), order_sum)
+                order_products = [(order_id, x[0], x[1], x[2], x[4])
+                                  for x in user_cart_items]
                 db.addOrderProducts(order_products)
                 db.clearUserCart(cart_id[0])
                 return handler.make_response(success=True)
@@ -201,7 +204,8 @@ def cart():
                 return handler.make_response(message='Ошибка: продукт не найден')
 
             if act == 'fav':
-                fav_product = db.getUserFavByProductID(session.user_id, product_id[0])
+                fav_product = db.getUserFavByProductID(
+                    session.user_id, product_id[0])
                 if fav_product:
                     db.deleteUserFav(fav_product)
                     message = 'Продукт удален из избранного'
@@ -211,7 +215,8 @@ def cart():
                 return handler.make_response(message=message, success=True)
 
             if act == 'cartadd':
-                db.addCartProduct(cart_id[0], product_id[0], 1, datetime.datetime.now())
+                db.addCartProduct(
+                    cart_id[0], product_id[0], 1, datetime.datetime.now())
                 return handler.make_response(message='Продукт добавлен в корзину', success=True)
 
             if act == 'cartupd':
@@ -233,9 +238,9 @@ def cart():
                 cart['sum'] = cartSum[0]
 
             userinfo = {
-                'auth': True, 
-                'username': session.username, 
-                'displayname': session.displayname, 
+                'auth': True,
+                'username': session.username,
+                'displayname': session.displayname,
                 'cart': cart
             }
 
@@ -251,8 +256,8 @@ def menu():
     if session:
 
         userinfo = {
-            'auth': True, 
-            'username': session.username, 
+            'auth': True,
+            'username': session.username,
             'displayname': session.displayname
         }
 
@@ -276,7 +281,8 @@ def orders_():
                     'order_date': order_date,
                     'order_price': order_sum
                 }
-            orders[order_id]['products'].append(ShortFoodItem(title, price, link, amount))
+            orders[order_id]['products'].append(
+                ShortFoodItem(title, price, link, amount))
         userinfo = {
             'auth': True,
             'orders': orders,
@@ -317,13 +323,14 @@ def shared():
             if not target_user_id or target_user_id[0] == session.user_id:
                 return handler.make_response(message='Ошибка: неверный пользователь')
 
-            duration = {'days': message.get('days'), 
-                        'hours': message.get('hours'), 
-                        'minutes': message.get('minutes'), 
+            duration = {'days': message.get('days'),
+                        'hours': message.get('hours'),
+                        'minutes': message.get('minutes'),
                         'seconds': message.get('seconds')}
 
             if all(x == "" for x in duration.values()):
-                db.addAccountShare(session.user_id, target_user_id[0], None, datetime.datetime.now())
+                db.addAccountShare(
+                    session.user_id, target_user_id[0], None, datetime.datetime.now())
                 return handler.make_response(success=True)
 
             try:
@@ -339,7 +346,8 @@ def shared():
             except Exception:
                 return handler.make_response(message='Ошибка: неверная длительность раздачи')
 
-            db.addAccountShare(session.user_id, target_user_id[0], duration, datetime.datetime.now())
+            db.addAccountShare(
+                session.user_id, target_user_id[0], duration, datetime.datetime.now())
             return handler.make_response(success=True)
         if act == 'del':
             target_user_id = message.get('target')
@@ -384,7 +392,7 @@ def admin():
             return render_template('admin.html', userinfo=userinfo)
         else:
             return redirect('/menu')
-        
+
 
 # Production
 
