@@ -1,24 +1,32 @@
 import datetime
-import json
-import time
 import os
 from threading import Thread
-from typing import Optional
 from pathlib import Path
 
-import requests
-from flask import (Flask, render_template, request, redirect,
-                   make_response, send_from_directory)
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    make_response,
+    send_from_directory)
 from gevent.pywsgi import WSGIServer
 
 import src.database as db
-from .salt import hash_password, verify_password
 from src.parser import createExcel
 from .config import config, keys
 from .log import logger
 from .classes import ShortFoodItem, FormHandler, Cookie
-from .utils import (seconds_convert, get_catering, clearDB,
-                    dailyMenuUpdate, getSession, getSessionAccountShare, getUserCart)
+from .utils import (
+    get_catering,
+    clearDB,
+    dailyMenuUpdate,
+    getSession,
+    getSessionAccountShare,
+    getUserCart,
+    hash_password,
+    verify_password
+)
 
 Path("src/static/xlsx/").mkdir(exist_ok=True)
 

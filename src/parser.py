@@ -1,12 +1,10 @@
-import logging
-
 import requests
 import datetime
 import pandas as pd
 from bs4 import BeautifulSoup
 
 import src.database as db
-from .classes import FoodItem, ShortFoodItem
+from .classes import FoodItem
 from .log import logger
 
 namnyamURL = "https://www.nam-nyam.ru/catering/"
