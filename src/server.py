@@ -124,7 +124,7 @@ def login():
         SID = hash_password(keys['sessionSecret'])
         date = datetime.datetime.now()
         user_id = db.addUser(username, displayname, hashed_pwd, 'user', date)
-        db.addSession(SID, date, user_id[0])
+        db.addSession(SID, date, user_id)
         logger.info(f'register user {username}')
         return handler.make_response(cookie=Cookie('SID', SID), success=True)
 

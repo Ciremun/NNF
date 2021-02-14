@@ -3,18 +3,7 @@ nam-nyam parser, office food management
 
 ## Install
 
-### req
-
-    requests==2.24.0
-    beautifulsoup4==4.9.1
-    lxml==4.5.2
-    pandas==1.0.5
-    XlsxWriter==1.2.9
-    Flask==1.1.2
-    gevent==20.6.2
-    psycopg2==2.8.5
-
-Tested on Python 3.7, 3.8  
+[Python](https://python.org/)  
 
 ### config.json
 
@@ -30,3 +19,4 @@ Tested on Python 3.7, 3.8
 `PostgreHost` (str)  
 `PostgrePort` (int/str)  
 `flaskPort` (int/str)  
+`flaskHost` (str)  
