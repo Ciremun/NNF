@@ -59,6 +59,7 @@ nav li {
 
 nav li a, nav li input, nav li label {
     color: white;
+    font-family: 'Arial';
     font-size: 19px;
     padding: 7px 13px;
     border-radius: 3px;
@@ -66,7 +67,7 @@ nav li a, nav li input, nav li label {
 }
 
 nav li input, nav li label {
-    font-family: 'Ubuntu Mono', monospace;
+    font-family: 'Arial';
     background: none;
     border: none;
     cursor: pointer;
