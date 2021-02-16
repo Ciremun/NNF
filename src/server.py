@@ -393,8 +393,6 @@ def admin():
             elif act == 'toggleOrders':
                 cfg.users_can_order = not cfg.users_can_order
                 return redirect(redirect_url)
-            # TODO(#7): replace act strings with IDs
-            # because string comp is too heavy
             return handler.make_response(message='Ошибка: неизвестное действие')
         else:
             return handler.make_response(message='Ошибка: требуется авторизация')
